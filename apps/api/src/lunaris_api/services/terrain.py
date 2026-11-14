@@ -128,7 +128,7 @@ class TerrainService:
         evidence = Evidence(
             kind=EvidenceKind.CALCULATION,
             statement=(
-                "Height, slope, roughness and footprint statistics computed by LUNARIS from "
+                "Height, slope, roughness and footprint statistics computed by LUNARSEYE from "
                 f"a window of {manifest.title}."
             ),
             sources=(dem_source,),
@@ -160,7 +160,7 @@ class TerrainService:
                         kind=EvidenceKind.ASSUMPTION,
                         statement=(
                             "Hazard flags compare the computed values with thresholds "
-                            "supplied by the user. LUNARIS ships no default safe slope."
+                            "supplied by the user. LUNARSEYE ships no default safe slope."
                         ),
                         assumptions=tuple(
                             f"{name} = {value:g} (user threshold)"

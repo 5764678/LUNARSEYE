@@ -125,5 +125,5 @@ def test_site_terrain_values_carry_baselines_and_user_thresholds(client: TestCli
     hazard = body["hazard"]
     assert hazard["slope_p95_exceeds"] is True and hazard["roughness_exceeds"] is None
     assert hazard["evidence"]["kind"] == "assumption"
-    # No thresholds, no flag: LUNARIS ships no default "safe" slope.
+    # No thresholds, no flag: LUNARSEYE ships no default "safe" slope.
     assert client.get(f"/v1/sites/{PEAK}/terrain").json()["hazard"] is None

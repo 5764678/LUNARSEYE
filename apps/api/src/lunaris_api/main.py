@@ -1,4 +1,4 @@
-"""LUNARIS Round 2 API (Phase 1: one end-to-end path).
+"""LUNARSEYE Round 2 API (Phase 1: one end-to-end path).
 
     uv run uvicorn lunaris_api.main:app --port 8000
 
@@ -65,7 +65,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="LUNARIS API",
+    title="LUNARSEYE API",
     version=__version__,
     description="Lunar south-pole site analysis: SPICE geometry, terrain-aware sunlight and "
     "Earth line of sight, with evidence on every number.",

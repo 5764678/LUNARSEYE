@@ -474,7 +474,7 @@ def _evidence(mission: Mission, columns: dict[str, CompareColumn]) -> Evidence:
         statement=(
             "Mission-fit score. The priorities and limits are the mission answers given; the "
             "priority weights, the weights inside each need and the reference scales are "
-            "chosen by LUNARIS and are not mission requirements."
+            "chosen by LUNARSEYE and are not mission requirements."
         ),
         method=METHOD,
         assumptions=[

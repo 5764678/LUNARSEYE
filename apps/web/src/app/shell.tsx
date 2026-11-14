@@ -29,7 +29,7 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className={singleSite ? "app" : "app no-sidebar"}>
       <header className="topbar">
-        <div className="brand">LUNARIS</div>
+        <div className="brand">LUNARSEYE</div>
         <nav aria-label="Pages">
           {NAV.map((item) => (
             <Link

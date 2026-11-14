@@ -37,7 +37,7 @@ export async function GET(
     });
   } catch {
     if (request.signal.aborted) return new Response(null, { status: 499 });
-    return failure(503, "api_unreachable", "The LUNARIS API is not reachable.", requestId);
+    return failure(503, "api_unreachable", "The LUNARSEYE API is not reachable.", requestId);
   }
   const out = new Headers();
   for (const name of PASS_HEADERS) {

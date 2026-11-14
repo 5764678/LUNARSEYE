@@ -32,9 +32,9 @@ interface TextureManifest {
 function Intro() {
   const { href } = useMissionUrl();
   return (
-    <section className="intro" aria-label="About LUNARIS">
+    <section className="intro" aria-label="About LUNARSEYE">
       <p>
-        <b>Which lunar south-pole sites get sunlight, and can see Earth?</b> LUNARIS answers with
+        <b>Which lunar south-pole sites get sunlight, and can see Earth?</b> LUNARSEYE answers with
         SPICE geometry and the LOLA terrain, and shows the source, method and limits behind every
         number: click any <span className="ev ev-calculation">CALC</span>{" "}
         <span className="ev ev-derived_product">DERIVED</span>{" "}

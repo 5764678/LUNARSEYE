@@ -276,7 +276,7 @@ class AnalysisService:
         evidence = Evidence(
             kind=EvidenceKind.CALCULATION,
             statement=(
-                "Terrain horizon elevation versus azimuth at the site, computed by LUNARIS "
+                "Terrain horizon elevation versus azimuth at the site, computed by LUNARSEYE "
                 "from LOLA LDEM_75S_240M."
             ),
             sources=(self.masks.dem_source(mask),),

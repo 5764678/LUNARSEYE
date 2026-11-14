@@ -78,7 +78,7 @@ apps/web           Next.js 16 / React 19 / R3F / TanStack Query: /, /illuminatio
   excluded with the reason; the rest are scored 0–100 on fixed reference scales and the best
   fit is named with its lead over the runner-up, the reasons, what it gives up, and whether
   the pick survives a one-step change of each priority. The weights and scales are
-  assumptions chosen by LUNARIS and are shown behind the ASSUMED tag.
+  assumptions chosen by LUNARSEYE and are shown behind the ASSUMED tag.
 - **Globe**: a smooth sphere lit from the SPICE Sun direction. It draws no terrain
   shadows and says so; sunlight numbers come only from the timeline.
 
