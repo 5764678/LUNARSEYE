@@ -45,9 +45,9 @@ roughest; Malapert massif is smoothest; under the `landing` profile Malapert sco
   Measured: in a fresh sandbox with nothing cached, the first demo-trio compare for 2027 took
   5.5 s end to end. In the prewarmed Docker image (all 27 sites' masks and terrain windows
   built into it): trio 3.0 s cold / 0.02 s repeat; 10 sites cold 6.8 s. Memory: see DEPLOY.md.
-- **Deployed** (free Render plan): https://lunaris-zqih.onrender.com , see `docs/round2/DEPLOY.md`
+- **Deployed** (free Render plan): **https://lunarseye.onrender.com** , see `docs/round2/DEPLOY.md`
   for service ids, auto-deploy behaviour and the open collaborator-invite item. Free plan is
-  512 MiB: it was **OOM-killed once** (27 s of 502s) and fixed, see DEPLOY.md "Memory" (one timeline computation at a time; peak 377 MiB under a 512 MiB limit in Docker, not yet re-verified on Render at the time of writing; check `list_events` for `server_failed`).
+  512 MiB and 0.1 CPU: it was OOM-killed twice before fixes (502s). Fixed and **verified on Render** (memory ≈ 206 MiB under load; cold 10-site compare 2.2 s): one timeline computation at a time + default timelines baked at image build. See DEPLOY.md "Memory".
 - **Compare**: observer height fixed at 2 m; per-site rows cached in memory (256 max); sample
   cap is 10 000 per request (a year hourly = 8 761).
 - **Ruff**: ~28 style findings in `apps/api/src` from earlier work; no gate exists.

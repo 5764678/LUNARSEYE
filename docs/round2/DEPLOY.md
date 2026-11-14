@@ -8,11 +8,11 @@ user's go-ahead; the user chose to move to a service named exactly `lunarseye` (
 | **Primary URL** | **https://lunarseye.onrender.com** |
 | Web service (primary) | `lunarseye`, id `srv-dbrupou1egvs73cbr050`, Docker, free, Oregon. Created directly with `create_web_service` (NOT Blueprint-managed), tracks branch `claude/gifted-allen-smvncn`, auto-deploys on push |
 | Postgres | `lunaris-db-zqih`, id `dpg-dbruf23rjlhs73ckum6g-a`, free, version 16, expires 2026-12-14 (free plan: 30 days). Not Blueprint-independent: it was created by the Blueprint below |
-| Old web service | `lunaris-zqih`, id `srv-dbrufgbrjlhs73cl0bv0`, https://lunaris-zqih.onrender.com , **to be deleted by the user in the dashboard** (the connector has no delete tool) once `lunarseye` is confirmed |
+| Old web service | `lunaris-zqih`, id `srv-dbrufgbrjlhs73cl0bv0`: **suspended by the user** (14 Nov). Delete it in the dashboard when convenient (the connector has no delete tool). Its first deploys also crash-looped on a missing DB variable, which is the "failed deploy" the user saw on `lunarseye` |
 | Blueprint | `exs-dbruel2fngtc73b6u7jg` (manages the OLD service and the database), **auto-sync OFF** |
 | Workspace | "Matthew's workspace" `tea-dbnavfgu01pc73c87osg` |
 
-**Database wiring on `lunarseye`:** the connector cannot read the database password, so
+**Database wiring on `lunarseye`: DONE by the user (14 Nov 05:12 UTC).** Background:  the connector cannot read the database password, so
 `LUNARIS_DATABASE_URL` on `lunarseye` has to be added by the user in the dashboard
 (Environment → Add Environment Variable → "Add from Database" → `lunaris-db-zqih` → Internal
 Database URL). Without it the API cannot start. Whoever reads this: check `get_service` /
@@ -139,6 +139,13 @@ locally, cold process: 10-site compare **0.16 s** (was 9–13 s), single timelin
 Custom windows/steps outside the baked set still compute (and on Render's free CPU take ~11 s
 per site). Tests: `tests/api/test_timeline_disk_cache.py`. If the web windows in
 `apps/web/src/features/time/windows.ts` change, change `windows` in `scripts/prewarm.py` too.
+
+**Verified live on `lunarseye` (14 Nov 05:28 UTC, after the baked-timeline deploy):** cold
+10-site compares 2.2 s / 2.1 s, 7 sites 1.5 s, single-site year timeline 1.6 s (was 78–175 s);
+`scripts/smoke.mjs` all checks passed; Render events showed no `server_failed`/restart and
+memory stayed ≈ 206 MiB of 512. The first 502 (and the two OOM kills before the memory fix)
+are explained above; if a 502 recurs, run `list_events` (`server_failed`) and
+`get_metrics` (memory, CPU) before guessing.
 
 **Still true:** the free plan has no headroom for a burst of many simultaneous visitors; if the
 event log shows another `oomKilled`, move up a plan (check Render's plan table first) or lower
