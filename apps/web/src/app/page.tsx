@@ -1,11 +1,5 @@
-import { Suspense } from "react";
-
-import { Mission } from "./mission";
+import { Overview } from "@/features/overview/overview";
 
 export default function Page() {
-  return (
-    <Suspense fallback={null}>
-      <Mission />
-    </Suspense>
-  );
+  return <Overview />;
 }

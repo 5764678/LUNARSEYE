@@ -5,12 +5,12 @@ import { useCallback, useMemo, useRef } from "react";
 import type { BodySeries, SiteTimeline } from "@/shared/api/client";
 import { deg, pct } from "@/shared/lib/format";
 import { clamp, DAY_MS, formatUtc } from "@/shared/lib/time/time";
-import { RATES, useTime } from "@/shared/state/time";
+import { TimeControls } from "@/features/time/controls";
+import { useTime } from "@/shared/state/time";
 import { EvidenceBadge } from "@/shared/ui/evidence";
 
 import { DiskView } from "./disk-view";
 import { ElevationLane, FractionLane } from "./lanes";
-import { WINDOWS, type WindowId } from "./windows";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -82,23 +82,16 @@ function Readout({ body, index, name }: { body: BodySeries; index: number; name:
 
 export function TimelinePanel({
   timeline,
-  windowId,
-  onWindow,
   startMs,
   endMs,
 }: {
   timeline: SiteTimeline | null;
-  windowId: WindowId;
-  onWindow: (id: WindowId) => void;
   startMs: number;
   endMs: number;
 }) {
   const epochMs = useTime((s) => s.epochMs) ?? startMs;
-  const playing = useTime((s) => s.playing);
-  const rate = useTime((s) => s.rate);
   const setEpoch = useTime((s) => s.setEpoch);
   const setPlaying = useTime((s) => s.setPlaying);
-  const setRate = useTime((s) => s.setRate);
   const track = useRef<HTMLDivElement>(null);
 
   const scrub = useCallback(
@@ -143,44 +136,7 @@ export function TimelinePanel({
 
   return (
     <section className="timeline">
-      <div className="controls">
-        <button
-          type="button"
-          className="btn primary"
-          onClick={() => {
-            if (!playing && epochMs >= endMs) setEpoch(startMs);
-            setPlaying(!playing);
-          }}
-        >
-          {playing ? "❚❚ Pause" : "▶ Play"}
-        </button>
-        <div className="segmented" role="group" aria-label="Playback rate">
-          {RATES.map((r) => (
-            <button
-              key={r.value}
-              type="button"
-              className={r.value === rate ? "on" : ""}
-              onClick={() => setRate(r.value)}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
-        <div className="epoch mono">{formatUtc(epochMs, false)} UTC</div>
-        <div className="spacer" />
-        <div className="segmented" role="group" aria-label="Analysis window">
-          {WINDOWS.map((w) => (
-            <button
-              key={w.id}
-              type="button"
-              className={w.id === windowId ? "on" : ""}
-              onClick={() => onWindow(w.id)}
-            >
-              {w.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <TimeControls />
 
       <div className="lanes-grid">
         <div className="lane-labels">

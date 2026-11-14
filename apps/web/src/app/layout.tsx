@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import "./globals.css";
 import { Providers } from "./providers";
+import { Shell } from "./shell";
 
 export const metadata: Metadata = {
   title: "LUNARIS — lunar south-pole site analysis",
@@ -14,7 +15,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Suspense fallback={null}>
+            <Shell>{children}</Shell>
+          </Suspense>
+        </Providers>
       </body>
     </html>
   );
