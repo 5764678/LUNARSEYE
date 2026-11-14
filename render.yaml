@@ -1,4 +1,6 @@
 # Render blueprint: one Docker web service (API + web in one container) and a Postgres.
+# NOTE (14 Nov): the live service `lunarseye` is NOT created from this file and its database is
+# now Neon (see docs/round2/DEPLOY.md); this file documents a from-scratch Blueprint deploy.
 # New > Blueprint > pick this repo. The image build downloads ≈ 87 MB of NASA/NAIF/PDS data
 # and pre-computes the horizon caches; allow roughly 10 minutes for the first build.
 databases:

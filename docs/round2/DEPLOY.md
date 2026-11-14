@@ -7,12 +7,13 @@ user's go-ahead; the user chose to move to a service named exactly `lunarseye` (
 | --- | --- |
 | **Primary URL** | **https://lunarseye.onrender.com** |
 | Web service (primary) | `lunarseye`, id `srv-dbrupou1egvs73cbr050`, Docker, free, Oregon. Created directly with `create_web_service` (NOT Blueprint-managed), tracks branch `claude/gifted-allen-smvncn`, auto-deploys on push |
-| Postgres | `lunaris-db-zqih`, id `dpg-dbruf23rjlhs73ckum6g-a`, free, version 16, expires 2026-12-14 (free plan: 30 days). Not Blueprint-independent: it was created by the Blueprint below |
+| **Postgres (current)** | **Neon**, project `lunarseye` id `crimson-union-44796269`, Postgres 16, `aws-us-west-2`, database `neondb`, role `neondb_owner`, default branch. Direct (non-pooled) endpoint. Migrated 14 Nov 05:51 UTC (see "Database: migrated to Neon") |
+| Postgres (old, now unused) | Render `lunaris-db-zqih`, id `dpg-dbruf23rjlhs73ckum6g-a` (free, expires 2026-12-14). Nothing reads it; delete it in the dashboard whenever (the connector cannot). It is still managed by the old Blueprint |
 | Old web service | `lunaris-zqih`, id `srv-dbrufgbrjlhs73cl0bv0`: **suspended by the user** (14 Nov). Delete it in the dashboard when convenient (the connector has no delete tool). Its first deploys also crash-looped on a missing DB variable, which is the "failed deploy" the user saw on `lunarseye` |
 | Blueprint | `exs-dbruel2fngtc73b6u7jg` (manages the OLD service and the database), **auto-sync OFF** |
 | Workspace | "Matthew's workspace" `tea-dbnavfgu01pc73c87osg` |
 
-**Database wiring on `lunarseye`: DONE by the user (14 Nov 05:12 UTC).** Background:  the connector cannot read the database password, so
+**Database wiring on `lunarseye`:** first done by the user via the dashboard (14 Nov 05:12 UTC), then repointed to Neon by the session (below). Background on why:  the connector cannot read the database password, so
 `LUNARIS_DATABASE_URL` on `lunarseye` has to be added by the user in the dashboard
 (Environment → Add Environment Variable → "Add from Database" → `lunaris-db-zqih` → Internal
 Database URL). Without it the API cannot start. Whoever reads this: check `get_service` /
@@ -49,6 +50,35 @@ The image build (≈ 3–10 min depending on network) does the slow work once:
    sites (measured: 27/27 + 27/27 in 41 s). A site that fails is skipped, never fails the build;
    it is computed lazily at request time instead.
 4. `next build` with `output: "standalone"`.
+
+## Database: migrated to Neon (14 Nov 2026)
+
+The user added Neon and asked for the migration. What was done and verified:
+- The old Render database held one table, `sites`, 27 rows, **all `origin='catalog'`**, seeded
+  by the app at start-up (deterministic ids). No user data exists (the registry is read-only by
+  decision), so nothing was copied: the app re-seeds on first start.
+- Neon project created via the Neon connector in the user's free organisation, region matched
+  to Render (Oregon), Postgres 16. The app's own `CREATE TABLE` (generated from `db.Site`) was
+  run once on Neon beforehand to prove the schema and CHECK constraints work there.
+- `LUNARIS_DATABASE_URL` on `lunarseye` was set with the **direct** endpoint
+  (`sslmode=require&channel_binding=require&connect_timeout=15`), not the `-pooler` one: one
+  process and a tiny pool gain nothing from pooling, and the pooler (PgBouncer, transaction
+  mode) is a known source of prepared-statement problems with psycopg 3.
+- Verified: deploy `live`, `/api/health` database `ok`, **same 27 rows and identical fingerprint
+  (md5 of id+name+lat+lon) on Neon and on the old Render DB**, no `server_failed` events,
+  `scripts/smoke.mjs` all checks passed.
+- Not testable from the Claude sandbox: it has no raw TCP route to Postgres (HTTPS proxy only),
+  so the app was never run against Neon locally. The only end-to-end test is the live service.
+- Neon's free compute scales to zero when idle, so the first request after a quiet period can
+  take about a second longer (`pool_pre_ping` reconnects). Neon's free plan does not have
+  Render's 30-day database expiry as far as known; confirm in Neon's current terms.
+- **Secret handling:** the Neon password passed through the Claude session once (the connector
+  returns it) and is now only in Render's environment for `lunarseye`. Do not paste it into docs,
+  commits or issues. To rotate: reset the role password in Neon, then update the Render variable.
+- Rollback: in Render → `lunarseye` → Environment, replace `LUNARIS_DATABASE_URL` with the
+  old database via "Add from Database" (`lunaris-db-zqih`) while it still exists.
+- `render.yaml` still declares the Render database (it documents a from-scratch Blueprint
+  deploy and the old Blueprint still manages it); it is **not** what `lunarseye` uses now.
 
 ## Collaborator access: not possible from here; decided to skip
 

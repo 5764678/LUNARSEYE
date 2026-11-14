@@ -36,7 +36,7 @@ roughest; Malapert massif is smoothest; under the `landing` profile Malapert sco
 
 - **No site registration/deletion, by decision** (informational site, nothing user-mutable;
   see §6). Do not build it.
-- **No Alembic.** `create_all` + idempotent catalogue seed at start-up (`apps/api/.../db.py`).
+- **No Alembic.** `create_all` + idempotent catalogue seed at start-up (`apps/api/.../db.py`). Production DB is **Neon** (free, Postgres 16), see DEPLOY.md.
 - **No golden-master capture** against the prototype; the known fixture above is pinned in tests
   instead. Capturing needs the prototype run from the snapshot checkout.
 - **No CI** (`.github/workflows` absent), no import-linter/ESLint boundaries, no perf budgets.
@@ -155,7 +155,7 @@ width, copy review, screenshots. Deploy only when the user says go.
 - **Decisions from the user (14 Nov):** no login, no auth; it is an informational site with
   no user-mutable data, so **site registration/deletion is dropped** (the registry stays
   read-only; the "publicly writable" worry no longer applies). Hosting will be a **new Render
-  service**; do not deploy it for them without asking. Postgres stays (stack decision).
+  service**; do not deploy it for them without asking. Postgres stays (stack decision); hosted on Neon since 14 Nov (the user added it).
 - Commit trailers requested by the harness: `Co-Authored-By: …` and `Claude-Session: …`
   lines as given in the session's system reminder.
 
