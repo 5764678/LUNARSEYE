@@ -9,7 +9,7 @@ const KIND: Record<Evidence["kind"], { tag: string; label: string }> = {
   observation: { tag: "OBS", label: "Observation" },
   derived_product: { tag: "DERIVED", label: "Derived data product" },
   model: { tag: "MODEL", label: "Model output" },
-  calculation: { tag: "CALC", label: "LUNARIS calculation" },
+  calculation: { tag: "CALC", label: "LUNAREYES calculation" },
   assumption: { tag: "ASSUMED", label: "Assumption" },
   placeholder: { tag: "PLACEHOLDER", label: "Placeholder (not decision grade)" },
 };

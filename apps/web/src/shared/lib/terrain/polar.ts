@@ -1,6 +1,6 @@
 /**
  * South polar stereographic display math for the terrain scene (sphere R = 1 737 400 m,
- * MOON_ME). Mirrors lunaris_science.terrain.polar_stereographic: map x toward 90°E, map y
+ * MOON_ME). Mirrors lunareyes_science.terrain.polar_stereographic: map x toward 90°E, map y
  * toward 0°E, true scale at the pole.
  *
  * Local scene frame (three.js Y-up) centred on the south pole on the reference sphere:

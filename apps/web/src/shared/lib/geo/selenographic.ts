@@ -1,7 +1,7 @@
 /**
  * Selenographic helpers for display and 3D placement.
  *
- * Conventions match lunaris_science.coordinates: planetocentric latitude, east longitude
+ * Conventions match lunareyes_science.coordinates: planetocentric latitude, east longitude
  * in [0, 360), body-fixed MOON_ME (+X toward 0°N 0°E, +Y toward 0°N 90°E, +Z north).
  *
  * Scene frame: three.js is Y-up, so the scene is the MOON_ME frame rotated −90° about X:

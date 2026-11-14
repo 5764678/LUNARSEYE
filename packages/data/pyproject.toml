@@ -1,12 +1,12 @@
 [project]
-name = "lunaris-data"
+name = "lunareyes-data"
 version = "0.1.0"
-description = "LUNARIS data layer: dataset manifests with provenance, reproducible acquisition, integrity verification and preprocessing of NASA lunar products."
+description = "LUNAREYES data layer: dataset manifests with provenance, reproducible acquisition, integrity verification and preprocessing of NASA lunar products."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "UNLICENSED" }
 dependencies = [
-  "lunaris-science",
+  "lunareyes-science",
   "pydantic>=2.9",
   "httpx>=0.28",
   "rasterio>=1.4.2",
@@ -14,14 +14,14 @@ dependencies = [
 ]
 
 [project.scripts]
-lunaris-data = "lunaris_data.cli:main"
+lunareyes-data = "lunareyes_data.cli:main"
 
 [tool.uv.sources]
-lunaris-science = { workspace = true }
+lunareyes-science = { workspace = true }
 
 [build-system]
 requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/lunaris_data"]
+packages = ["src/lunareyes_data"]

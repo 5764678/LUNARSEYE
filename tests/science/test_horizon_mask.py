@@ -8,9 +8,9 @@ from typing import Any
 import numpy as np
 import pytest
 
-from lunaris_science.coordinates import CoordinateError, SelenographicCoordinate
-from lunaris_science.frames import LunarFrame
-from lunaris_science.horizon_mask import HorizonMask, HorizonMaskError
+from lunareyes_science.coordinates import CoordinateError, SelenographicCoordinate
+from lunareyes_science.frames import LunarFrame
+from lunareyes_science.horizon_mask import HorizonMask, HorizonMaskError
 
 SHA = "d031efe2611b17dfbf3c158f5e15dc04cd5719349dcbf6384bb21fd97697c490"
 

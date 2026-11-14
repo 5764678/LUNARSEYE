@@ -1,14 +1,14 @@
-# lunaris-science
+# lunareyes-science
 
-The scientific core of LUNARIS. Pure, deterministic, unit-explicit code.
+The scientific core of LUNAREYES. Pure, deterministic, unit-explicit code.
 
 **Rules for this package** (see `docs/ARCHITECTURE.md`):
 
 - No web framework imports, no network access, no implicit file I/O. Data loading
-  lives in `lunaris-data`; HTTP lives in `lunaris-api`.
+  lives in `lunareyes-data`; HTTP lives in `lunareyes-api`.
 - Every public function documents its units and reference frame.
 - Every result that leaves this package is accompanied by an
-  `lunaris_science.provenance.Evidence` record stating whether it is an
+  `lunareyes_science.provenance.Evidence` record stating whether it is an
   observation, a derived product, a model output, a calculation, an assumption,
   or a placeholder.
 

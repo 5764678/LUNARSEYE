@@ -7,7 +7,7 @@ import itertools
 import numpy as np
 import pytest
 
-from lunaris_science.illumination.timeline import TimelineError, summarize, windows
+from lunareyes_science.illumination.timeline import TimelineError, summarize, windows
 
 STEP = 3600.0
 

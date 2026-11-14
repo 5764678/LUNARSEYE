@@ -16,10 +16,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from lunaris_science.geometry import Body
-from lunaris_science.illumination.analysis import body_timeline
-from lunaris_science.illumination.timeline import sample_weights
-from lunaris_science.illumination.validation import (
+from lunareyes_science.geometry import Body
+from lunareyes_science.illumination.analysis import body_timeline
+from lunareyes_science.illumination.timeline import sample_weights
+from lunareyes_science.illumination.validation import (
     PublishedReference,
     ValidationError,
     compare,
@@ -50,7 +50,7 @@ def _source(fixture: dict[str, object]) -> dict[str, object]:
 
 
 def test_fixture_covers_every_catalogue_site_for_sun_and_earth(fixture: dict[str, object]) -> None:
-    catalog = resources.files("lunaris_data.catalogs") / "south-pole-candidate-sites.json"
+    catalog = resources.files("lunareyes_data.catalogs") / "south-pole-candidate-sites.json"
     site_ids = {s["id"] for s in json.loads(catalog.read_text(encoding="utf-8"))["sites"]}
     entries = fixture["entries"]
     assert isinstance(entries, list)
@@ -88,7 +88,7 @@ def test_unavailable_sources_are_recorded_as_such_not_filled_in(fixture: dict[st
 
 
 def test_published_site01_value_is_consistent_with_barker_2021(fixture: dict[str, object]) -> None:
-    """Two published sources, not LUNARIS: the Mazarico map at Site01 (>70%) agrees with
+    """Two published sources, not LUNAREYES: the Mazarico map at Site01 (>70%) agrees with
     Barker et al.'s statement that Site 1 has area with average illumination > 70%."""
     site01 = next(
         e

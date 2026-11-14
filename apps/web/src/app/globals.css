@@ -50,7 +50,9 @@ a { color: var(--primary); word-break: break-all; }
   grid-area: top; display: flex; align-items: center; gap: 12px; padding: 0 14px;
   border-bottom: 1px solid var(--border); background: var(--panel);
 }
-.brand { font-weight: 700; letter-spacing: 0.14em; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: 0.14em; }
+/* The logo is dark navy on transparent: it needs a light tile on the dark theme. */
+.brand img { background: #fff; border-radius: 6px; padding: 2px; }
 .brand .dim { font-weight: 400; letter-spacing: 0; margin-left: 10px; }
 .health { font-size: 12px; color: var(--muted); }
 .health::before { content: "●"; margin-right: 6px; }

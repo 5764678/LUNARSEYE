@@ -1,7 +1,7 @@
 [project]
-name = "lunaris-science"
+name = "lunareyes-science"
 version = "0.1.0"
-description = "LUNARIS scientific core: lunar reference constants, coordinate primitives, provenance/evidence model and (future) terrain, geometry, illumination, visibility, energy and scoring computations. No web or network dependencies."
+description = "LUNAREYES scientific core: lunar reference constants, coordinate primitives, provenance/evidence model and (future) terrain, geometry, illumination, visibility, energy and scoring computations. No web or network dependencies."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "UNLICENSED" }
@@ -16,4 +16,4 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/lunaris_science"]
+packages = ["src/lunareyes_science"]

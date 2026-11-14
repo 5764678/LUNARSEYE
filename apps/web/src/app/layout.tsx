@@ -6,7 +6,7 @@ import { Providers } from "./providers";
 import { Shell } from "./shell";
 
 export const metadata: Metadata = {
-  title: "LUNARIS — lunar south-pole site analysis",
+  title: "LUNAREYES — lunar south-pole site analysis",
   description:
     "Sun and Earth geometry, terrain-aware sunlight and Earth line of sight for cited lunar south-pole sites, with the evidence behind every number.",
 };

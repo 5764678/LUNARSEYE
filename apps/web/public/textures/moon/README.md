@@ -3,8 +3,8 @@
 This directory is filled by:
 
 ```bash
-uv run lunaris-data acquire nasa-svs-cgi-moon-kit
-uv run lunaris-data build-web-texture
+uv run lunareyes-data acquire nasa-svs-cgi-moon-kit
+uv run lunareyes-data build-web-texture
 ```
 
 which writes `moon-color.jpg` and `manifest.json` (provenance: source dataset, file

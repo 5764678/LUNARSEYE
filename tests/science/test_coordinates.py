@@ -9,8 +9,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from lunaris_science.constants import LOLA_REFERENCE_SPHERE_RADIUS
-from lunaris_science.coordinates import (
+from lunareyes_science.constants import LOLA_REFERENCE_SPHERE_RADIUS
+from lunareyes_science.coordinates import (
     CoordinateError,
     SelenographicCoordinate,
     cartesian_to_spherical,
@@ -19,7 +19,7 @@ from lunaris_science.coordinates import (
     to_signed_longitude_deg,
     validate_latitude_deg,
 )
-from lunaris_science.frames import LunarFrame
+from lunareyes_science.frames import LunarFrame
 
 R = LOLA_REFERENCE_SPHERE_RADIUS.value
 

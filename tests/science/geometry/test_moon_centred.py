@@ -10,8 +10,8 @@ import numpy as np
 import pytest
 import spiceypy
 
-from lunaris_science.coordinates import SelenographicCoordinate, spherical_to_cartesian
-from lunaris_science.geometry import (
+from lunareyes_science.coordinates import SelenographicCoordinate, spherical_to_cartesian
+from lunareyes_science.geometry import (
     Body,
     ObserverSite,
     body_geometry,
@@ -19,8 +19,8 @@ from lunaris_science.geometry import (
     uniform_utc_grid,
     utc_to_et,
 )
-from lunaris_science.geometry.spice import SpiceContext
-from lunaris_science.provenance import EvidenceKind
+from lunareyes_science.geometry.spice import SpiceContext
+from lunareyes_science.provenance import EvidenceKind
 
 FIXTURE = (
     Path(__file__).resolve().parents[3]
@@ -112,7 +112,7 @@ def _horizons() -> list[tuple[datetime, float, float]]:
 
 def test_horizons_subsolar_point_same_definition(spice_context: SpiceContext) -> None:
     """Horizons evaluates the Moon as seen from the geocentre: at t − (Earth–Moon light
-    time). Evaluated the same way, LUNARIS agrees to < 0.05 arcsec."""
+    time). Evaluated the same way, LUNAREYES agrees to < 0.05 arcsec."""
     rows = _horizons()
     ets = utc_to_et(spice_context, [r[0] for r in rows])
     with spice_context.session():

@@ -10,10 +10,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from lunaris_science.coordinates import CoordinateError, spherical_to_cartesian
-from lunaris_science.terrain.dem import PolarDem
-from lunaris_science.terrain.horizon import HorizonError, compute_horizon_mask
-from lunaris_science.terrain.polar_stereographic import (
+from lunareyes_science.coordinates import CoordinateError, spherical_to_cartesian
+from lunareyes_science.terrain.dem import PolarDem
+from lunareyes_science.terrain.horizon import HorizonError, compute_horizon_mask
+from lunareyes_science.terrain.polar_stereographic import (
     PolarStereographicGrid,
     SouthPolarStereographic,
 )
@@ -21,7 +21,7 @@ from lunaris_science.terrain.polar_stereographic import (
 R = 1_737_400.0
 PROJ = SouthPolarStereographic(R)
 REAL_LABEL = (
-    Path(os.environ.get("LUNARIS_DATA_DIR", "data")) / "raw/lola-ldem-75s-240m/LDEM_75S_240M.LBL"
+    Path(os.environ.get("LUNAREYES_DATA_DIR", "data")) / "raw/lola-ldem-75s-240m/LDEM_75S_240M.LBL"
 )
 
 
@@ -141,7 +141,7 @@ def test_parameter_validation() -> None:
 
 @pytest.mark.skipif(not REAL_LABEL.is_file(), reason="LDEM_75S_240M not acquired")
 def test_real_ldem_mask_quarter_degree_200_km_under_30_s() -> None:
-    from lunaris_data.readers.ldem import read_ldem_polar  # noqa: PLC0415 - optional data
+    from lunareyes_data.readers.ldem import read_ldem_polar  # noqa: PLC0415 - optional data
 
     dem = read_ldem_polar(REAL_LABEL, "lola-ldem-75s-240m")
     start = time.perf_counter()

@@ -3,7 +3,7 @@
 Real data: LDEM_75S_240M (checksum-verified) through T-15's horizon computation and
 the NAIF kernels; one year (2026) at a 1 h step. Masks come from S-TERRAIN's
 ``HorizonMaskService`` (T-16), the same path the API uses. Skipped without the data unless
-``LUNARIS_REQUIRE_KERNELS=1``, under which CI acquires both datasets.
+``LUNAREYES_REQUIRE_KERNELS=1``, under which CI acquires both datasets.
 """
 
 from __future__ import annotations
@@ -16,15 +16,15 @@ from importlib import resources
 import numpy as np
 import pytest
 
-from lunaris_api.services.horizon import HorizonMaskService
-from lunaris_data.registry import DatasetRegistry
-from lunaris_data.store import DataLayout
-from lunaris_data.validation.integrity import verify_dataset
-from lunaris_science.coordinates import SelenographicCoordinate
-from lunaris_science.geometry import Body, ObserverSite, body_geometry, uniform_utc_grid, utc_to_et
-from lunaris_science.geometry.spice import SpiceContext
-from lunaris_science.horizon_mask import HorizonMask
-from lunaris_science.illumination.analysis import BodyTimeline, body_timeline
+from lunareyes_api.services.horizon import HorizonMaskService
+from lunareyes_data.registry import DatasetRegistry
+from lunareyes_data.store import DataLayout
+from lunareyes_data.validation.integrity import verify_dataset
+from lunareyes_science.coordinates import SelenographicCoordinate
+from lunareyes_science.geometry import Body, ObserverSite, body_geometry, uniform_utc_grid, utc_to_et
+from lunareyes_science.geometry.spice import SpiceContext
+from lunareyes_science.horizon_mask import HorizonMask
+from lunareyes_science.illumination.analysis import BodyTimeline, body_timeline
 from tests.science.geometry.conftest import data_layout
 
 SHACKLETON_FLOOR = (-89.67, 129.2)
@@ -41,9 +41,9 @@ def masks(tmp_path_factory: pytest.TempPathFactory) -> HorizonMaskService:
     if not verify_dataset(manifest, source).ok:
         message = (
             "LDEM_75S_240M not acquired/verified: "
-            "run `uv run lunaris-data acquire lola-ldem-75s-240m`"
+            "run `uv run lunareyes-data acquire lola-ldem-75s-240m`"
         )
-        if os.environ.get("LUNARIS_REQUIRE_KERNELS") == "1":
+        if os.environ.get("LUNAREYES_REQUIRE_KERNELS") == "1":
             pytest.fail(message)
         pytest.skip(message)
     layout = DataLayout.from_root(tmp_path_factory.mktemp("data"))
@@ -88,7 +88,7 @@ def test_shackleton_floor_is_never_lit_by_terrain_but_is_astronomically(
 
 
 def _catalog_point(site_id: str) -> tuple[float, float]:
-    catalog = resources.files("lunaris_data.catalogs") / "south-pole-candidate-sites.json"
+    catalog = resources.files("lunareyes_data.catalogs") / "south-pole-candidate-sites.json"
     for site in json.loads(catalog.read_text(encoding="utf-8"))["sites"]:
         if site["id"] == site_id:
             point = site["reference_point"]

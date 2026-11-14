@@ -60,7 +60,7 @@ async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
     response = await fetch(`/api${path}`, { signal, headers: { Accept: "application/json" } });
   } catch (cause) {
     if (signal?.aborted) throw cause;
-    throw new ApiRequestError("The LUNARIS API is not reachable.", 0, "network_error", null);
+    throw new ApiRequestError("The LUNAREYES API is not reachable.", 0, "network_error", null);
   }
   if (!response.ok) {
     const requestId = response.headers.get("X-Request-ID");

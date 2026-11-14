@@ -26,7 +26,7 @@
     },
     "http_date": "Wed, 04 Nov 2026 11:18:12 GMT",
     "retrieved_on": "2026-11-04",
-    "retrieved_by": "LUNARIS S-GEOMETRY development session, direct HTTPS request to ssd.jpl.nasa.gov (reachable from the development environment).",
+    "retrieved_by": "LUNAREYES S-GEOMETRY development session, direct HTTPS request to ssd.jpl.nasa.gov (reachable from the development environment).",
     "ephemeris_reported": "DE441",
     "body_frame_reported": "MEAN_ME (high precision)"
   },
