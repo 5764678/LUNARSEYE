@@ -3,7 +3,8 @@
     uv run uvicorn lunaris_api.main:app --port 8000
 
 Routes: ``GET /health``, ``GET /v1/sites``, ``GET /v1/sites/{id}``,
-``GET /v1/sites/{id}/timeline``, ``GET /v1/ephemeris/sun``. No auth (explicit non-goal).
+``GET /v1/sites/{id}/timeline``, ``GET /v1/sites/{id}/terrain``, ``GET /v1/terrain/scene``,
+``GET /v1/compare``, ``GET /v1/datasets``, ``GET /v1/ephemeris/sun``. No auth (explicit non-goal).
 """
 
 from __future__ import annotations
@@ -28,9 +29,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from lunaris_api import __version__, db
 from lunaris_api.deps import load_site, site_out
 from lunaris_api.errors import ApiError
+from lunaris_api.routers import compare as compare_router
+from lunaris_api.routers import datasets as datasets_router
 from lunaris_api.routers import terrain as terrain_router
 from lunaris_api.schemas import ErrorEnvelope, Health, SiteList, SiteOut, SiteTimeline, SunDirection
 from lunaris_api.services.analysis import AnalysisService
+from lunaris_api.services.compare import CompareService
 from lunaris_api.services.terrain import TerrainService
 from lunaris_data.catalogs.sites import load_site_catalog
 
@@ -50,6 +54,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.terrain = TerrainService(
         app.state.analysis.registry, app.state.analysis.layout, app.state.analysis.masks
     )
+    app.state.compare = CompareService(app.state.analysis, app.state.terrain)
     try:  # load kernels and the DEM once, before the first request
         app.state.analysis.spice()
         app.state.analysis.masks.load_dem()
@@ -82,6 +87,8 @@ app.add_middleware(
 )
 
 app.include_router(terrain_router.router)
+app.include_router(compare_router.router)
+app.include_router(datasets_router.router)
 
 
 @app.middleware("http")

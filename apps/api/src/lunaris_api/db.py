@@ -59,10 +59,18 @@ def name_key(name: str) -> str:
     return " ".join(name.split()).casefold()
 
 
+def normalise_database_url(url: str) -> str:
+    """Hosts such as Render hand out ``postgres://`` or ``postgresql://`` URLs; this app
+    uses the psycopg 3 driver."""
+    for scheme in ("postgres://", "postgresql://"):
+        if url.startswith(scheme):
+            return "postgresql+psycopg://" + url[len(scheme) :]
+    return url
+
+
 def make_engine(url: str | None = None) -> Engine:
-    return create_engine(
-        url or os.environ.get("LUNARIS_DATABASE_URL", DEFAULT_DATABASE_URL), pool_pre_ping=True
-    )
+    raw = url or os.environ.get("LUNARIS_DATABASE_URL", DEFAULT_DATABASE_URL)
+    return create_engine(normalise_database_url(raw), pool_pre_ping=True)
 
 
 def init_db(engine: Engine, catalog: SiteCatalog | None = None) -> None:

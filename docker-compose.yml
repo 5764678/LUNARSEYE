@@ -1,4 +1,7 @@
-# Phase 1: Postgres only. The API and web app run from the checkout (see README).
+# Postgres only (default): run the API and web from the checkout, see README.
+#   docker compose up -d db
+# Whole stack in containers (builds the image, ≈ 10 min the first time):
+#   docker compose --profile app up --build      → http://localhost:10000
 services:
   db:
     image: postgres:16
@@ -10,5 +13,19 @@ services:
       - "5432:5432"
     volumes:
       - lunaris-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lunaris"]
+      interval: 3s
+      retries: 20
+  app:
+    profiles: ["app"]
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      LUNARIS_DATABASE_URL: postgresql://lunaris:lunaris@db:5432/lunaris
+    ports:
+      - "10000:10000"
 volumes:
   lunaris-pg:

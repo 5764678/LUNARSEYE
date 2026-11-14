@@ -77,6 +77,282 @@ export type CatalogInfo = {
 };
 
 /**
+ * ColumnLeaders
+ */
+export type ColumnLeaders = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Better
+     */
+    better: 'higher' | 'lower';
+    /**
+     * Site Ids
+     */
+    site_ids: Array<string>;
+    /**
+     * Value
+     */
+    value: number | null;
+    /**
+     * Compared Sites
+     */
+    compared_sites: number;
+};
+
+/**
+ * CompareCell
+ *
+ * One number with its evidence. ``value`` is null (with ``reason``) when it cannot be
+ * computed: never 0.
+ */
+export type CompareCell = {
+    /**
+     * Value
+     */
+    value: number | null;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Reason
+     */
+    reason?: string | null;
+    /**
+     * Baseline M
+     */
+    baseline_m?: number | null;
+    evidence?: Evidence | null;
+    /**
+     * Limitations
+     */
+    limitations?: Array<string>;
+};
+
+/**
+ * CompareColumn
+ */
+export type CompareColumn = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Better
+     */
+    better?: 'higher' | 'lower' | null;
+    /**
+     * Better Rationale
+     */
+    better_rationale?: string | null;
+};
+
+/**
+ * CompareRow
+ */
+export type CompareRow = {
+    /**
+     * Site Id
+     */
+    site_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Origin
+     */
+    origin: string;
+    /**
+     * Latitude Deg
+     */
+    latitude_deg: number;
+    /**
+     * Longitude Deg
+     */
+    longitude_deg: number;
+    /**
+     * Cells
+     */
+    cells: {
+        [key: string]: CompareCell;
+    };
+};
+
+/**
+ * ComparisonSummary
+ */
+export type ComparisonSummary = {
+    /**
+     * Leaders
+     */
+    leaders: Array<ColumnLeaders>;
+    /**
+     * Sites
+     */
+    sites: Array<SiteStanding>;
+    /**
+     * Verdict
+     */
+    verdict: string;
+    /**
+     * Method
+     */
+    method: string;
+    recommendation: Recommendation;
+};
+
+/**
+ * Dataset
+ */
+export type Dataset = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Category
+     */
+    category: string;
+    /**
+     * Evidence Kind
+     */
+    evidence_kind: string;
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Source Page
+     */
+    source_page: string;
+    /**
+     * Citation
+     */
+    citation: string | null;
+    /**
+     * Usage
+     */
+    usage: string | null;
+    /**
+     * Required By
+     */
+    required_by: Array<string>;
+    /**
+     * Notes
+     */
+    notes: Array<string>;
+    /**
+     * Files
+     */
+    files: Array<DatasetFile>;
+    local: DatasetLocal;
+    /**
+     * Acquire Command
+     */
+    acquire_command: string | null;
+};
+
+/**
+ * DatasetFile
+ */
+export type DatasetFile = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Url
+     */
+    url: string;
+    /**
+     * Present
+     */
+    present: boolean;
+    /**
+     * Size Bytes
+     */
+    size_bytes: number | null;
+    /**
+     * Sha256
+     */
+    sha256: string | null;
+};
+
+/**
+ * DatasetList
+ */
+export type DatasetList = {
+    /**
+     * Datasets
+     */
+    datasets: Array<Dataset>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * DatasetLocal
+ *
+ * ``remote_window``: read over HTTP byte ranges; nothing is stored whole.
+ */
+export type DatasetLocal = {
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Files Present
+     */
+    files_present: number;
+    /**
+     * Files Expected
+     */
+    files_expected: number;
+    /**
+     * Bytes On Disk
+     */
+    bytes_on_disk: number;
+    /**
+     * Acquired At Utc
+     */
+    acquired_at_utc: string | null;
+    /**
+     * Manifest Changed
+     */
+    manifest_changed: boolean;
+};
+
+/**
  * DemWindow
  */
 export type DemWindow = {
@@ -438,6 +714,73 @@ export type HorizonSummary = {
 };
 
 /**
+ * Mission
+ *
+ * The answers to the mission questions: how much each need matters, and the limits.
+ */
+export type Mission = {
+    /**
+     * Power
+     */
+    power?: 'none' | 'low' | 'medium' | 'high';
+    /**
+     * Comms
+     */
+    comms?: 'none' | 'low' | 'medium' | 'high';
+    /**
+     * Landing
+     */
+    landing?: 'none' | 'low' | 'medium' | 'high';
+    limits?: MissionLimits;
+};
+
+/**
+ * MissionLimits
+ *
+ * Hard requirements. A site that breaks one is excluded, never down-weighted.
+ */
+export type MissionLimits = {
+    /**
+     * Max Slope Deg
+     */
+    max_slope_deg?: number | null;
+    /**
+     * Max Darkness D
+     */
+    max_darkness_d?: number | null;
+    /**
+     * Max Earth Outage D
+     */
+    max_earth_outage_d?: number | null;
+    /**
+     * Min Sunlit D
+     */
+    min_sunlit_d?: number | null;
+};
+
+/**
+ * NeedInfo
+ */
+export type NeedInfo = {
+    /**
+     * Need
+     */
+    need: 'power' | 'comms' | 'landing';
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Priority
+     */
+    priority: 'none' | 'low' | 'medium' | 'high';
+    /**
+     * Weight
+     */
+    weight: number;
+};
+
+/**
  * Observer
  */
 export type Observer = {
@@ -469,6 +812,222 @@ export type Observer = {
      * Radius M
      */
     radius_m: number;
+};
+
+/**
+ * RankedSite
+ */
+export type RankedSite = {
+    /**
+     * Site Id
+     */
+    site_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Status
+     */
+    status: 'recommended' | 'ranked' | 'excluded' | 'unscored';
+    /**
+     * Rank
+     */
+    rank?: number | null;
+    /**
+     * Score
+     */
+    score?: number | null;
+    /**
+     * Need Scores
+     */
+    need_scores?: {
+        [key: string]: number;
+    };
+    /**
+     * Reasons
+     */
+    reasons?: Array<string>;
+};
+
+/**
+ * Recommendation
+ */
+export type Recommendation = {
+    mission: Mission;
+    /**
+     * Site Id
+     */
+    site_id: string | null;
+    /**
+     * Name
+     */
+    name: string | null;
+    /**
+     * Runner Up Site Id
+     */
+    runner_up_site_id?: string | null;
+    /**
+     * Margin
+     */
+    margin?: number | null;
+    /**
+     * Confidence
+     */
+    confidence: 'clear' | 'moderate' | 'narrow' | 'tie' | 'only_option' | 'none';
+    /**
+     * Headline
+     */
+    headline: string;
+    /**
+     * Reasons
+     */
+    reasons: Array<string>;
+    /**
+     * Tradeoffs
+     */
+    tradeoffs: Array<string>;
+    /**
+     * Caveats
+     */
+    caveats: Array<string>;
+    robustness?: Robustness | null;
+    /**
+     * Needs
+     */
+    needs: Array<NeedInfo>;
+    /**
+     * Scales
+     */
+    scales: Array<ScaleInfo>;
+    /**
+     * Ranking
+     */
+    ranking: Array<RankedSite>;
+    /**
+     * Method
+     */
+    method: string;
+    evidence: Evidence;
+};
+
+/**
+ * Robustness
+ */
+export type Robustness = {
+    /**
+     * Tested
+     */
+    tested: number;
+    /**
+     * Held
+     */
+    held: number;
+    /**
+     * Flips
+     */
+    flips: Array<RobustnessFlip>;
+    /**
+     * Statement
+     */
+    statement: string;
+};
+
+/**
+ * RobustnessFlip
+ */
+export type RobustnessFlip = {
+    /**
+     * Change
+     */
+    change: string;
+    /**
+     * Site Id
+     */
+    site_id: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * ScaleInfo
+ *
+ * Fixed reference scale of one scored measure: ``worst`` scores 0, ``best`` scores 1.
+ */
+export type ScaleInfo = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Need
+     */
+    need: 'power' | 'comms' | 'landing';
+    /**
+     * Weight
+     */
+    weight: number;
+    /**
+     * Worst
+     */
+    worst: number;
+    /**
+     * Best
+     */
+    best: number;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Rationale
+     */
+    rationale: string;
+};
+
+/**
+ * SiteComparison
+ */
+export type SiteComparison = {
+    /**
+     * Start Utc
+     */
+    start_utc: string;
+    /**
+     * End Utc
+     */
+    end_utc: string;
+    /**
+     * Step S
+     */
+    step_s: number;
+    /**
+     * Sample Count
+     */
+    sample_count: number;
+    /**
+     * Footprint Radius M
+     */
+    footprint_radius_m: number;
+    /**
+     * Columns
+     */
+    columns: Array<CompareColumn>;
+    /**
+     * Rows
+     */
+    rows: Array<CompareRow>;
+    /**
+     * Assumptions
+     */
+    assumptions: Array<string>;
+    summary: ComparisonSummary;
 };
 
 /**
@@ -531,6 +1090,40 @@ export type SiteOut = {
      */
     created_at_utc: string;
     catalog: CatalogInfo | null;
+};
+
+/**
+ * SiteStanding
+ */
+export type SiteStanding = {
+    /**
+     * Site Id
+     */
+    site_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Leads
+     */
+    leads: Array<string>;
+    /**
+     * Trails
+     */
+    trails: Array<string>;
+    /**
+     * Directed Compared
+     */
+    directed_compared: number;
+    /**
+     * Dominated By
+     */
+    dominated_by: Array<string>;
+    /**
+     * Dominance
+     */
+    dominance: string;
 };
 
 /**
@@ -893,6 +1486,183 @@ export type GetTerrainSceneResponses = {
 };
 
 export type GetTerrainSceneResponse = GetTerrainSceneResponses[keyof GetTerrainSceneResponses];
+
+export type CompareSitesData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Site Ids
+         *
+         * Comma-separated site ids, 1 to 10 distinct.
+         */
+        site_ids: string;
+        /**
+         * Start Utc
+         *
+         * Window start, ISO 8601 with UTC offset
+         */
+        start_utc: string;
+        /**
+         * End Utc
+         *
+         * Window end, ISO 8601 UTC
+         */
+        end_utc: string;
+        /**
+         * Step S
+         */
+        step_s?: number;
+        /**
+         * Footprint Radius M
+         */
+        footprint_radius_m?: number;
+        /**
+         * Power
+         *
+         * How much the mission depends on sunlight (none = e.g. nuclear).
+         */
+        power?: 'none' | 'low' | 'medium' | 'high';
+        /**
+         * Comms
+         *
+         * How much it depends on direct line of sight to Earth (none = relay).
+         */
+        comms?: 'none' | 'low' | 'medium' | 'high';
+        /**
+         * Landing
+         *
+         * How much it needs gentle, smooth terrain.
+         */
+        landing?: 'none' | 'low' | 'medium' | 'high';
+        /**
+         * Max Slope Deg
+         *
+         * Limit: steepest slope (at the site and footprint p95).
+         */
+        max_slope_deg?: number | null;
+        /**
+         * Max Darkness D
+         *
+         * Limit: longest darkness survivable, days.
+         */
+        max_darkness_d?: number | null;
+        /**
+         * Max Earth Outage D
+         *
+         * Limit: longest gap without Earth in view, days.
+         */
+        max_earth_outage_d?: number | null;
+        /**
+         * Min Sunlit D
+         *
+         * Limit: continuous sunlight required, days.
+         */
+        min_sunlit_d?: number | null;
+    };
+    url: '/v1/compare';
+};
+
+export type CompareSitesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type CompareSitesError = CompareSitesErrors[keyof CompareSitesErrors];
+
+export type CompareSitesResponses = {
+    /**
+     * Successful Response
+     */
+    200: SiteComparison;
+};
+
+export type CompareSitesResponse = CompareSitesResponses[keyof CompareSitesResponses];
+
+export type ListDatasetsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/datasets';
+};
+
+export type ListDatasetsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+};
+
+export type ListDatasetsError = ListDatasetsErrors[keyof ListDatasetsErrors];
+
+export type ListDatasetsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DatasetList;
+};
+
+export type ListDatasetsResponse = ListDatasetsResponses[keyof ListDatasetsResponses];
+
+export type GetDatasetData = {
+    body?: never;
+    path: {
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+    };
+    query?: never;
+    url: '/v1/datasets/{dataset_id}';
+};
+
+export type GetDatasetErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+};
+
+export type GetDatasetError = GetDatasetErrors[keyof GetDatasetErrors];
+
+export type GetDatasetResponses = {
+    /**
+     * Successful Response
+     */
+    200: Dataset;
+};
+
+export type GetDatasetResponse = GetDatasetResponses[keyof GetDatasetResponses];
 
 export type GetHealthData = {
     body?: never;

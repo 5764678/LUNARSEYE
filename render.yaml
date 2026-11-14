@@ -1,0 +1,25 @@
+# Render blueprint: one Docker web service (API + web in one container) and a Postgres.
+# NOTE (14 Nov): the live service `lunarseye` is NOT created from this file and its database is
+# now Neon (see docs/round2/DEPLOY.md); this file documents a from-scratch Blueprint deploy.
+# New > Blueprint > pick this repo. The image build downloads ≈ 87 MB of NASA/NAIF/PDS data
+# and pre-computes the horizon caches; allow roughly 10 minutes for the first build.
+databases:
+  - name: lunaris-db
+    databaseName: lunaris
+    user: lunaris
+    postgresMajorVersion: "16"   # the version the app was tested against
+    plan: free            # Render's free Postgres expires after 30 days; fine for the hackathon
+
+services:
+  - type: web
+    name: lunaris
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free            # see docs/round2/DEPLOY.md: measured memory vs the plan's limit
+    healthCheckPath: /api/health
+    envVars:
+      - key: LUNARIS_DATABASE_URL
+        fromDatabase:
+          name: lunaris-db
+          property: connectionString

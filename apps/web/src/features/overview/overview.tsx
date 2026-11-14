@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useMemo } from "react";
 
 import { SiteSummary } from "@/features/timeline/summary";
@@ -25,6 +26,37 @@ interface TextureManifest {
   usage: string;
   assumptions: string[];
   source: { dataset_id: string; dataset_title: string; source_url: string; sha256: string };
+}
+
+/** One paragraph on what this is, and the two shortest paths into the analysis. */
+function Intro() {
+  const { href } = useMissionUrl();
+  return (
+    <section className="intro" aria-label="About LUNARIS">
+      <p>
+        <b>Which lunar south-pole sites get sunlight, and can see Earth?</b> LUNARIS answers with
+        SPICE geometry and the LOLA terrain, and shows the source, method and limits behind every
+        number: click any <span className="ev ev-calculation">CALC</span>{" "}
+        <span className="ev ev-derived_product">DERIVED</span>{" "}
+        <span className="ev ev-assumption">ASSUMED</span> tag.
+      </p>
+      <p className="dim">
+        <b>1</b> Pick a cited site (list or globe marker) · <b>2</b> press Play or drag the
+        timeline · <b>3</b> open the other pages for the horizon, the terrain and a side-by-side.
+      </p>
+      <div className="intro-actions">
+        <Link className="btn primary" href={href("/compare")}>
+          Compare the demo trio →
+        </Link>
+        <Link className="btn" href={href("/illumination")}>
+          Sky and horizon at this site
+        </Link>
+        <Link className="btn" href={href("/terrain")}>
+          Terrain at this site
+        </Link>
+      </div>
+    </section>
+  );
 }
 
 export function Overview() {
@@ -83,6 +115,7 @@ export function Overview() {
 
   return (
     <>
+      <Intro />
       <div className="top-row">
         <div className="globe">
           <MoonGlobe

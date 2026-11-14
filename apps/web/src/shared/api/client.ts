@@ -6,10 +6,13 @@
 import type {
   BodySeries,
   ErrorEnvelope,
+  Dataset,
+  DatasetList,
   Evidence,
   Health,
   HorizonMaskOut,
   HorizonSummary,
+  SiteComparison,
   SiteList,
   SiteOut,
   SiteTerrain,
@@ -20,10 +23,13 @@ import type {
 
 export type {
   BodySeries,
+  Dataset,
+  DatasetList,
   Evidence,
   Health,
   HorizonMaskOut,
   HorizonSummary,
+  SiteComparison,
   SiteList,
   SiteOut,
   SiteTerrain,
@@ -92,6 +98,7 @@ const windowQuery = (w: AnalysisWindow) =>
 export const api = {
   health: (signal?: AbortSignal) => get<Health>("/health", signal),
   sites: (signal?: AbortSignal) => get<SiteList>("/v1/sites", signal),
+  datasets: (signal?: AbortSignal) => get<DatasetList>("/v1/datasets", signal),
   timeline: (siteId: string, w: AnalysisWindow, signal?: AbortSignal) =>
     get<SiteTimeline>(`/v1/sites/${siteId}/timeline?${windowQuery(w)}`, signal),
   sun: (w: AnalysisWindow, signal?: AbortSignal) =>
@@ -104,7 +111,41 @@ export const api = {
   },
   scene: (gridSize: number, signal?: AbortSignal) =>
     get<TerrainScene>(`/v1/terrain/scene?grid_size=${gridSize}`, signal),
+  compare: (siteIds: string[], w: AnalysisWindow, mission: MissionAnswers, signal?: AbortSignal) =>
+    get<SiteComparison>(
+      `/v1/compare?site_ids=${siteIds.join(",")}&${windowQuery(w)}${missionQuery(mission)}`,
+      signal,
+    ),
 };
+
+export type Priority = "none" | "low" | "medium" | "high";
+
+/** Answers to the mission questions on Compare; a null limit means "no limit". */
+export interface MissionAnswers {
+  power: Priority;
+  comms: Priority;
+  landing: Priority;
+  maxSlopeDeg: number | null;
+  maxDarknessD: number | null;
+  maxEarthOutageD: number | null;
+  minSunlitD: number | null;
+}
+
+/** Query-string tail for the mission answers; the API's defaults are left out. */
+export function missionQuery(m: MissionAnswers): string {
+  const parts: string[] = [];
+  for (const need of ["power", "comms", "landing"] as const) {
+    if (m[need] !== "medium") parts.push(`${need}=${m[need]}`);
+  }
+  const limits: Array<[string, number | null]> = [
+    ["max_slope_deg", m.maxSlopeDeg],
+    ["max_darkness_d", m.maxDarknessD],
+    ["max_earth_outage_d", m.maxEarthOutageD],
+    ["min_sunlit_d", m.minSunlitD],
+  ];
+  for (const [name, value] of limits) if (value !== null) parts.push(`${name}=${value}`);
+  return parts.map((part) => `&${part}`).join("");
+}
 
 export interface TerrainParams {
   footprintRadiusM: number;
@@ -117,12 +158,15 @@ export interface TerrainParams {
 export const keys = {
   health: ["health"] as const,
   sites: ["sites"] as const,
+  datasets: ["datasets"] as const,
   timeline: (siteId: string, w: AnalysisWindow) =>
     ["timeline", siteId, w.startUtc, w.endUtc, w.stepS] as const,
   sun: (w: AnalysisWindow) => ["sun", w.startUtc, w.endUtc, w.stepS] as const,
   terrain: (siteId: string, p: TerrainParams) =>
     ["terrain", siteId, p.footprintRadiusM, p.maxSlopeDeg, p.maxRoughnessM] as const,
   scene: (gridSize: number) => ["scene", gridSize] as const,
+  compare: (siteIds: string[], w: AnalysisWindow, mission: MissionAnswers) =>
+    ["compare", [...siteIds].sort().join(","), w.startUtc, w.endUtc, w.stepS, missionQuery(mission)] as const,
 };
 
 export function describeError(error: unknown): string {
