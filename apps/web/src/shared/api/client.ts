@@ -12,8 +12,10 @@ import type {
   HorizonSummary,
   SiteList,
   SiteOut,
+  SiteTerrain,
   SiteTimeline,
   SunDirection,
+  TerrainScene,
 } from "./generated";
 
 export type {
@@ -24,8 +26,10 @@ export type {
   HorizonSummary,
   SiteList,
   SiteOut,
+  SiteTerrain,
   SiteTimeline,
   SunDirection,
+  TerrainScene,
 };
 
 /** Row-wise Sun series consumed by the carried `shared/lib/globe/sun.ts`. */
@@ -92,7 +96,22 @@ export const api = {
     get<SiteTimeline>(`/v1/sites/${siteId}/timeline?${windowQuery(w)}`, signal),
   sun: (w: AnalysisWindow, signal?: AbortSignal) =>
     get<SunDirection>(`/v1/ephemeris/sun?${windowQuery(w)}`, signal),
+  terrain: (siteId: string, p: TerrainParams, signal?: AbortSignal) => {
+    const query = new URLSearchParams({ footprint_radius_m: String(p.footprintRadiusM) });
+    if (p.maxSlopeDeg !== null) query.set("max_slope_deg", String(p.maxSlopeDeg));
+    if (p.maxRoughnessM !== null) query.set("max_roughness_m", String(p.maxRoughnessM));
+    return get<SiteTerrain>(`/v1/sites/${siteId}/terrain?${query}`, signal);
+  },
+  scene: (gridSize: number, signal?: AbortSignal) =>
+    get<TerrainScene>(`/v1/terrain/scene?grid_size=${gridSize}`, signal),
 };
+
+export interface TerrainParams {
+  footprintRadiusM: number;
+  /** User thresholds (assumptions); null = no hazard flag requested. */
+  maxSlopeDeg: number | null;
+  maxRoughnessM: number | null;
+}
 
 /** One query-key factory: every input of a request is part of its key. */
 export const keys = {
@@ -101,6 +120,9 @@ export const keys = {
   timeline: (siteId: string, w: AnalysisWindow) =>
     ["timeline", siteId, w.startUtc, w.endUtc, w.stepS] as const,
   sun: (w: AnalysisWindow) => ["sun", w.startUtc, w.endUtc, w.stepS] as const,
+  terrain: (siteId: string, p: TerrainParams) =>
+    ["terrain", siteId, p.footprintRadiusM, p.maxSlopeDeg, p.maxRoughnessM] as const,
+  scene: (gridSize: number) => ["scene", gridSize] as const,
 };
 
 export function describeError(error: unknown): string {

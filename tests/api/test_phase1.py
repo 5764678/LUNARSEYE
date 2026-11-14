@@ -97,3 +97,33 @@ def test_errors_use_the_envelope_and_echo_the_request_id(client: TestClient) -> 
     )
     assert naive.status_code == 422
     assert naive.json()["error"]["details"][0]["type"] == "utc_required"
+
+
+def test_terrain_scene_is_a_square_heightmap_with_evidence(client: TestClient) -> None:
+    body = client.get("/v1/terrain/scene", params={"grid_size": 64}).json()
+    assert len(body["heights_m"]) == 64 * 64
+    assert body["half_extent_m"] == 125_000.0
+    assert body["height_min_m"] < 0 < body["height_max_m"]
+    assert body["evidence"]["kind"] == "derived_product"
+    assert len(body["evidence"]["sources"][0]["sha256"]) == 64
+    assert any("illustration" in text for text in body["evidence"]["limitations"])
+    assert client.get("/v1/terrain/scene", params={"grid_size": 1}).status_code == 422
+
+
+def test_site_terrain_values_carry_baselines_and_user_thresholds(client: TestClient) -> None:
+    response = client.get(f"/v1/sites/{PEAK}/terrain", params={"max_slope_deg": 4})
+    if response.status_code == 503:  # PGDA not reachable and no cached window
+        pytest.skip(response.json()["error"]["message"])
+    body = response.json()
+    assert body["height_m"] == pytest.approx(1645.28, abs=0.05)
+    assert body["slope_at_site"] == {"slope_deg": pytest.approx(3.6917, abs=1e-3), "baseline_m": 40.0}
+    footprint = body["footprint"]
+    assert footprint["slope_p95_deg"] == pytest.approx(4.855, abs=1e-3)
+    assert footprint["roughness_rms_m"] == pytest.approx(0.5179, abs=1e-3)
+    assert footprint["roughness_baseline_m"] == 100.0 and footprint["missing_cell_count"] == 0
+    assert body["evidence"]["kind"] == "calculation"
+    hazard = body["hazard"]
+    assert hazard["slope_p95_exceeds"] is True and hazard["roughness_exceeds"] is None
+    assert hazard["evidence"]["kind"] == "assumption"
+    # No thresholds, no flag: LUNARIS ships no default "safe" slope.
+    assert client.get(f"/v1/sites/{PEAK}/terrain").json()["hazard"] is None

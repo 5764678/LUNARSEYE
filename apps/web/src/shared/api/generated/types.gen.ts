@@ -77,6 +77,56 @@ export type CatalogInfo = {
 };
 
 /**
+ * DemWindow
+ */
+export type DemWindow = {
+    /**
+     * Dataset Id
+     */
+    dataset_id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Url
+     */
+    url: string;
+    /**
+     * Etag
+     */
+    etag: string | null;
+    /**
+     * Last Modified
+     */
+    last_modified: string | null;
+    /**
+     * Resolution M
+     */
+    resolution_m: number;
+    /**
+     * Window Col Row Width Height
+     */
+    window_col_row_width_height: Array<number>;
+    /**
+     * Bytes Requested
+     */
+    bytes_requested: number;
+    /**
+     * Http Retries
+     */
+    http_retries: number;
+    /**
+     * Served From Cache
+     */
+    served_from_cache: boolean;
+    /**
+     * Read At Utc
+     */
+    read_at_utc: string;
+};
+
+/**
  * ErrorBody
  */
 export type ErrorBody = {
@@ -151,6 +201,89 @@ export type Evidence = {
      * Limitations
      */
     limitations?: Array<string>;
+};
+
+/**
+ * Footprint
+ */
+export type Footprint = {
+    /**
+     * Radius M
+     */
+    radius_m: number;
+    /**
+     * Cell Count
+     */
+    cell_count: number;
+    /**
+     * Missing Cell Count
+     */
+    missing_cell_count: number;
+    /**
+     * Height Min M
+     */
+    height_min_m: number;
+    /**
+     * Height Max M
+     */
+    height_max_m: number;
+    /**
+     * Height Mean M
+     */
+    height_mean_m: number;
+    /**
+     * Slope Mean Deg
+     */
+    slope_mean_deg: number | null;
+    /**
+     * Slope P95 Deg
+     */
+    slope_p95_deg: number | null;
+    /**
+     * Slope Max Deg
+     */
+    slope_max_deg: number | null;
+    /**
+     * Slope Baseline M
+     */
+    slope_baseline_m: number;
+    /**
+     * Roughness Rms M
+     */
+    roughness_rms_m: number | null;
+    /**
+     * Roughness Baseline M
+     */
+    roughness_baseline_m: number;
+};
+
+/**
+ * Hazard
+ *
+ * Flags against user thresholds; ``evidence.kind`` is always ``assumption``.
+ */
+export type Hazard = {
+    /**
+     * Max Slope Deg
+     */
+    max_slope_deg: number | null;
+    /**
+     * Max Roughness M
+     */
+    max_roughness_m: number | null;
+    /**
+     * Slope Fraction Above
+     */
+    slope_fraction_above: number | null;
+    /**
+     * Slope P95 Exceeds
+     */
+    slope_p95_exceeds: boolean | null;
+    /**
+     * Roughness Exceeds
+     */
+    roughness_exceeds: boolean | null;
+    evidence: Evidence;
 };
 
 /**
@@ -401,6 +534,26 @@ export type SiteOut = {
 };
 
 /**
+ * SiteTerrain
+ */
+export type SiteTerrain = {
+    site: SiteOut;
+    /**
+     * Height M
+     */
+    height_m: number;
+    /**
+     * Scale Factor
+     */
+    scale_factor: number;
+    slope_at_site: SlopeValue;
+    footprint: Footprint;
+    hazard: Hazard | null;
+    dem: DemWindow;
+    evidence: Evidence;
+};
+
+/**
  * SiteTimeline
  */
 export type SiteTimeline = {
@@ -446,6 +599,20 @@ export type SiteTimeline = {
      */
     compute_s: number;
     software: Software;
+};
+
+/**
+ * SlopeValue
+ */
+export type SlopeValue = {
+    /**
+     * Slope Deg
+     */
+    slope_deg: number | null;
+    /**
+     * Baseline M
+     */
+    baseline_m: number;
 };
 
 /**
@@ -558,6 +725,53 @@ export type SunDirection = {
 };
 
 /**
+ * TerrainScene
+ */
+export type TerrainScene = {
+    /**
+     * Scene Id
+     */
+    scene_id: string;
+    /**
+     * Grid Size
+     */
+    grid_size: number;
+    /**
+     * Half Extent M
+     */
+    half_extent_m: number;
+    /**
+     * Vertex Spacing M
+     */
+    vertex_spacing_m: number;
+    /**
+     * Reference Radius M
+     */
+    reference_radius_m: number;
+    /**
+     * Height Min M
+     */
+    height_min_m: number;
+    /**
+     * Height Max M
+     */
+    height_max_m: number;
+    /**
+     * Nodata Vertex Count
+     */
+    nodata_vertex_count: number;
+    /**
+     * Layout
+     */
+    layout: string;
+    /**
+     * Heights M
+     */
+    heights_m: Array<number | null>;
+    evidence: Evidence;
+};
+
+/**
  * Window
  */
 export type Window = {
@@ -583,39 +797,32 @@ export type Window = {
     censored_end: boolean;
 };
 
-export type HealthHealthGetData = {
+export type GetSiteTerrainData = {
     body?: never;
-    path?: never;
-    query?: never;
-    url: '/health';
+    path: {
+        /**
+         * Site Id
+         */
+        site_id: string;
+    };
+    query?: {
+        /**
+         * Footprint Radius M
+         */
+        footprint_radius_m?: number;
+        /**
+         * Max Slope Deg
+         */
+        max_slope_deg?: number | null;
+        /**
+         * Max Roughness M
+         */
+        max_roughness_m?: number | null;
+    };
+    url: '/v1/sites/{site_id}/terrain';
 };
 
-export type HealthHealthGetErrors = {
-    /**
-     * Service Unavailable
-     */
-    503: Health;
-};
-
-export type HealthHealthGetError = HealthHealthGetErrors[keyof HealthHealthGetErrors];
-
-export type HealthHealthGetResponses = {
-    /**
-     * Successful Response
-     */
-    200: Health;
-};
-
-export type HealthHealthGetResponse = HealthHealthGetResponses[keyof HealthHealthGetResponses];
-
-export type ListSitesV1SitesGetData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/sites';
-};
-
-export type ListSitesV1SitesGetErrors = {
+export type GetSiteTerrainErrors = {
     /**
      * Not Found
      */
@@ -634,18 +841,122 @@ export type ListSitesV1SitesGetErrors = {
     503: ErrorEnvelope;
 };
 
-export type ListSitesV1SitesGetError = ListSitesV1SitesGetErrors[keyof ListSitesV1SitesGetErrors];
+export type GetSiteTerrainError = GetSiteTerrainErrors[keyof GetSiteTerrainErrors];
 
-export type ListSitesV1SitesGetResponses = {
+export type GetSiteTerrainResponses = {
+    /**
+     * Successful Response
+     */
+    200: SiteTerrain;
+};
+
+export type GetSiteTerrainResponse = GetSiteTerrainResponses[keyof GetSiteTerrainResponses];
+
+export type GetTerrainSceneData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Grid Size
+         */
+        grid_size?: number;
+    };
+    url: '/v1/terrain/scene';
+};
+
+export type GetTerrainSceneErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type GetTerrainSceneError = GetTerrainSceneErrors[keyof GetTerrainSceneErrors];
+
+export type GetTerrainSceneResponses = {
+    /**
+     * Successful Response
+     */
+    200: TerrainScene;
+};
+
+export type GetTerrainSceneResponse = GetTerrainSceneResponses[keyof GetTerrainSceneResponses];
+
+export type GetHealthData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/health';
+};
+
+export type GetHealthErrors = {
+    /**
+     * Service Unavailable
+     */
+    503: Health;
+};
+
+export type GetHealthError = GetHealthErrors[keyof GetHealthErrors];
+
+export type GetHealthResponses = {
+    /**
+     * Successful Response
+     */
+    200: Health;
+};
+
+export type GetHealthResponse = GetHealthResponses[keyof GetHealthResponses];
+
+export type ListSitesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/sites';
+};
+
+export type ListSitesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ListSitesError = ListSitesErrors[keyof ListSitesErrors];
+
+export type ListSitesResponses = {
     /**
      * Successful Response
      */
     200: SiteList;
 };
 
-export type ListSitesV1SitesGetResponse = ListSitesV1SitesGetResponses[keyof ListSitesV1SitesGetResponses];
+export type ListSitesResponse = ListSitesResponses[keyof ListSitesResponses];
 
-export type GetSiteV1SitesSiteIdGetData = {
+export type GetSiteData = {
     body?: never;
     path: {
         /**
@@ -657,7 +968,7 @@ export type GetSiteV1SitesSiteIdGetData = {
     url: '/v1/sites/{site_id}';
 };
 
-export type GetSiteV1SitesSiteIdGetErrors = {
+export type GetSiteErrors = {
     /**
      * Not Found
      */
@@ -676,18 +987,18 @@ export type GetSiteV1SitesSiteIdGetErrors = {
     503: ErrorEnvelope;
 };
 
-export type GetSiteV1SitesSiteIdGetError = GetSiteV1SitesSiteIdGetErrors[keyof GetSiteV1SitesSiteIdGetErrors];
+export type GetSiteError = GetSiteErrors[keyof GetSiteErrors];
 
-export type GetSiteV1SitesSiteIdGetResponses = {
+export type GetSiteResponses = {
     /**
      * Successful Response
      */
     200: SiteOut;
 };
 
-export type GetSiteV1SitesSiteIdGetResponse = GetSiteV1SitesSiteIdGetResponses[keyof GetSiteV1SitesSiteIdGetResponses];
+export type GetSiteResponse = GetSiteResponses[keyof GetSiteResponses];
 
-export type SiteTimelineV1SitesSiteIdTimelineGetData = {
+export type GetSiteTimelineData = {
     body?: never;
     path: {
         /**
@@ -718,7 +1029,7 @@ export type SiteTimelineV1SitesSiteIdTimelineGetData = {
     url: '/v1/sites/{site_id}/timeline';
 };
 
-export type SiteTimelineV1SitesSiteIdTimelineGetErrors = {
+export type GetSiteTimelineErrors = {
     /**
      * Not Found
      */
@@ -737,18 +1048,18 @@ export type SiteTimelineV1SitesSiteIdTimelineGetErrors = {
     503: ErrorEnvelope;
 };
 
-export type SiteTimelineV1SitesSiteIdTimelineGetError = SiteTimelineV1SitesSiteIdTimelineGetErrors[keyof SiteTimelineV1SitesSiteIdTimelineGetErrors];
+export type GetSiteTimelineError = GetSiteTimelineErrors[keyof GetSiteTimelineErrors];
 
-export type SiteTimelineV1SitesSiteIdTimelineGetResponses = {
+export type GetSiteTimelineResponses = {
     /**
      * Successful Response
      */
     200: SiteTimeline;
 };
 
-export type SiteTimelineV1SitesSiteIdTimelineGetResponse = SiteTimelineV1SitesSiteIdTimelineGetResponses[keyof SiteTimelineV1SitesSiteIdTimelineGetResponses];
+export type GetSiteTimelineResponse = GetSiteTimelineResponses[keyof GetSiteTimelineResponses];
 
-export type SunDirectionV1EphemerisSunGetData = {
+export type GetSunDirectionData = {
     body?: never;
     path?: never;
     query: {
@@ -774,7 +1085,7 @@ export type SunDirectionV1EphemerisSunGetData = {
     url: '/v1/ephemeris/sun';
 };
 
-export type SunDirectionV1EphemerisSunGetErrors = {
+export type GetSunDirectionErrors = {
     /**
      * Not Found
      */
@@ -793,13 +1104,13 @@ export type SunDirectionV1EphemerisSunGetErrors = {
     503: ErrorEnvelope;
 };
 
-export type SunDirectionV1EphemerisSunGetError = SunDirectionV1EphemerisSunGetErrors[keyof SunDirectionV1EphemerisSunGetErrors];
+export type GetSunDirectionError = GetSunDirectionErrors[keyof GetSunDirectionErrors];
 
-export type SunDirectionV1EphemerisSunGetResponses = {
+export type GetSunDirectionResponses = {
     /**
      * Successful Response
      */
     200: SunDirection;
 };
 
-export type SunDirectionV1EphemerisSunGetResponse = SunDirectionV1EphemerisSunGetResponses[keyof SunDirectionV1EphemerisSunGetResponses];
+export type GetSunDirectionResponse = GetSunDirectionResponses[keyof GetSunDirectionResponses];

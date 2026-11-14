@@ -26,9 +26,12 @@ from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from lunaris_api import __version__, db
-from lunaris_api.errors import ApiError, NotFoundError
+from lunaris_api.deps import load_site, site_out
+from lunaris_api.errors import ApiError
+from lunaris_api.routers import terrain as terrain_router
 from lunaris_api.schemas import ErrorEnvelope, Health, SiteList, SiteOut, SiteTimeline, SunDirection
 from lunaris_api.services.analysis import AnalysisService
+from lunaris_api.services.terrain import TerrainService
 from lunaris_data.catalogs.sites import load_site_catalog
 
 log = logging.getLogger("lunaris.api")
@@ -44,6 +47,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.engine = db.make_engine()
     db.init_db(app.state.engine)
     app.state.analysis = AnalysisService.from_env()
+    app.state.terrain = TerrainService(
+        app.state.analysis.registry, app.state.analysis.layout, app.state.analysis.masks
+    )
     try:  # load kernels and the DEM once, before the first request
         app.state.analysis.spice()
         app.state.analysis.masks.load_dem()
@@ -74,6 +80,8 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-Request-ID"],
     expose_headers=["X-Request-ID"],
 )
+
+app.include_router(terrain_router.router)
 
 
 @app.middleware("http")
@@ -119,36 +127,6 @@ async def _http_error(request: Request, exc: StarletteHTTPException) -> JSONResp
 
 
 # ── helpers ────────────────────────────────────────────────────────────────────────────
-def _catalog_by_uuid() -> dict[uuid.UUID, Any]:
-    return {db.catalog_site_uuid(s.id): s for s in load_site_catalog().sites}
-
-
-def _site_out(site: db.Site) -> dict[str, Any]:
-    entry = _catalog_by_uuid().get(site.id)
-    return {
-        "id": str(site.id),
-        "name": site.name,
-        "latitude_deg": site.lat_deg,
-        "longitude_deg": site.lon_deg,
-        "frame": site.frame,
-        "origin": site.origin,
-        "reference": site.reference,
-        "notes": site.notes,
-        "created_at_utc": site.created_at,
-        "catalog": (
-            {
-                "catalog_site_id": entry.id,
-                "pgda_site_id": entry.pgda_site_id,
-                "artemis_iii_2022_region": entry.artemis_iii_2022_region,
-                "demo_trio": entry.demo_trio,
-                "tile_url": str(entry.tile.url),
-            }
-            if entry
-            else None
-        ),
-    }
-
-
 def _coordinate_evidence() -> dict[str, Any]:
     catalog = load_site_catalog()
     return {
@@ -164,15 +142,10 @@ def _coordinate_evidence() -> dict[str, Any]:
     }
 
 
-def _load_site(request: Request, site_id: uuid.UUID) -> dict[str, Any]:
-    site = db.get_site(request.app.state.engine, site_id)
-    if site is None:
-        raise NotFoundError(f"No site with id {site_id}.")
-    return _site_out(site)
-
-
 # ── routes ─────────────────────────────────────────────────────────────────────────────
-@app.get("/health", response_model=Health, responses={503: {"model": Health}})
+@app.get(
+    "/health", response_model=Health, responses={503: {"model": Health}}, operation_id="getHealth"
+)
 def health(request: Request, response: Response) -> dict[str, Any]:
     checks = []
     try:
@@ -201,9 +174,9 @@ def health(request: Request, response: Response) -> dict[str, Any]:
     }
 
 
-@app.get("/v1/sites", response_model=SiteList, responses=ERRORS)
+@app.get("/v1/sites", response_model=SiteList, responses=ERRORS, operation_id="listSites")
 def list_sites(request: Request) -> dict[str, Any]:
-    sites = [_site_out(s) for s in db.list_sites(request.app.state.engine)]
+    sites = [site_out(s) for s in db.list_sites(request.app.state.engine)]
     sites.sort(key=lambda s: (not (s["catalog"] or {}).get("demo_trio", False), s["name"]))
     return {
         "sites": sites,
@@ -213,9 +186,9 @@ def list_sites(request: Request) -> dict[str, Any]:
     }
 
 
-@app.get("/v1/sites/{site_id}", response_model=SiteOut, responses=ERRORS)
+@app.get("/v1/sites/{site_id}", response_model=SiteOut, responses=ERRORS, operation_id="getSite")
 def get_site(request: Request, site_id: uuid.UUID) -> dict[str, Any]:
-    return _load_site(request, site_id)
+    return load_site(request, site_id)
 
 
 Start = Annotated[datetime, Query(description="Window start, ISO 8601 with explicit UTC offset")]
@@ -223,18 +196,25 @@ End = Annotated[datetime, Query(description="Window end (inclusive grid), ISO 86
 Step = Annotated[float, Query(description="Sample step in seconds (1 … 2 592 000)")]
 
 
-@app.get("/v1/sites/{site_id}/timeline", response_model=SiteTimeline, responses=ERRORS)
+@app.get(
+    "/v1/sites/{site_id}/timeline",
+    response_model=SiteTimeline,
+    responses=ERRORS,
+    operation_id="getSiteTimeline",
+)
 def site_timeline(
     request: Request, site_id: uuid.UUID, start_utc: Start, end_utc: End, step_s: Step = 3600.0
 ) -> dict[str, Any]:
     """Sun and Earth azimuth/elevation, visible disk fraction above the astronomical and
     the terrain horizon, Earth line of sight, summaries and windows for one site."""
-    site = _load_site(request, site_id)
+    site = load_site(request, site_id)
     analysis: AnalysisService = request.app.state.analysis
     return analysis.site_timeline(site, start_utc, end_utc, step_s)
 
 
-@app.get("/v1/ephemeris/sun", response_model=SunDirection, responses=ERRORS)
+@app.get(
+    "/v1/ephemeris/sun", response_model=SunDirection, responses=ERRORS, operation_id="getSunDirection"
+)
 def sun_direction(
     request: Request, start_utc: Start, end_utc: End, step_s: Step = 3600.0
 ) -> dict[str, Any]:
