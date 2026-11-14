@@ -5,6 +5,7 @@ databases:
   - name: lunaris-db
     databaseName: lunaris
     user: lunaris
+    postgresMajorVersion: "16"   # the version the app was tested against
     plan: free            # Render's free Postgres expires after 30 days; fine for the hackathon
 
 services:
