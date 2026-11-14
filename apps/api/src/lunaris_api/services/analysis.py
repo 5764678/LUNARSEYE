@@ -51,9 +51,11 @@ from lunaris_science.visibility import classify_line_of_sight
 
 MAX_SAMPLES = 10_000
 MAX_STEP_S = 30 * 86400.0
-# A cached full-year hourly timeline is ~30 MiB of Python floats (measured), so the cap is
-# small. Compare keeps per-site summary rows instead (see services/compare.py).
-_CACHE_SIZE = 8
+_CACHE_SIZE = 8  # a finished full-year hourly timeline is ~4.5 MiB (measured)
+# Computing one peaks at ~100 MiB of numpy temporaries (measured with tracemalloc), so at most
+# this many run at once, across all requests: a 512 MiB instance was OOM-killed when Compare
+# ran 4 in parallel on top of a normal page load.
+_MAX_CONCURRENT_TIMELINES = 1
 
 
 def evidence_dict(evidence: Evidence, limitations: tuple[str, ...] | list[str] = ()) -> dict[str, Any]:
@@ -74,6 +76,7 @@ class AnalysisService:
         self.masks = HorizonMaskService(registry, layout)
         self._cache: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()
         self._lock = threading.Lock()
+        self._heavy = threading.BoundedSemaphore(_MAX_CONCURRENT_TIMELINES)
 
     @classmethod
     def from_env(cls) -> AnalysisService:
@@ -325,6 +328,20 @@ class AnalysisService:
         key = ("timeline", site["id"], start_utc, end_utc, step_s)
         if (hit := self._cached(key)) is not None:
             return hit
+        with self._heavy:  # bound peak memory; see _MAX_CONCURRENT_TIMELINES
+            if (hit := self._cached(key)) is not None:  # computed while we waited
+                return hit
+            return self._site_timeline(site, start_utc, end_utc, step_s, key, cache)
+
+    def _site_timeline(
+        self,
+        site: dict[str, Any],
+        start_utc: datetime,
+        end_utc: datetime,
+        step_s: float,
+        key: tuple[Any, ...],
+        cache: bool,
+    ) -> dict[str, Any]:
         started = time.perf_counter()
         lat, lon = site["latitude_deg"], site["longitude_deg"]
         if abs(lat) == 90.0:  # noqa: PLR2004

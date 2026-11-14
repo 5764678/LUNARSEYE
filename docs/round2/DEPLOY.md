@@ -58,37 +58,41 @@ when it is done.
 4. After deploy: open `https://<service>.onrender.com/api/health` (expect `"status":"ok"`
    with `database`, `spice_kernels`, `horizon_dem` all `ok`), then `/compare`.
 
-## Memory: measured, and why the plan matters
+## Memory: the free plan was OOM-killed once; what we found and did
 
-Measured in the built image (Docker, one API worker):
+**Incident (14 Nov, 04:55 UTC):** the live service returned 502 for ≈ 27 s. Render's event log:
+`server_failed … oomKilled … memoryLimit 512Mi`, then `server_available`. Memory had reached
+461 MiB while a smoke test and screenshots were hitting the site. Reproduced locally with
+`docker run --memory=512m --memory-swap=512m` and the same load (`oomkilled=true`).
 
-| State | Container memory |
+**Diagnosis (tracemalloc on one full-year hourly timeline):**
+
+| | Measured |
 | --- | --- |
-| Idle after start | 183 MiB |
-| After one 10-site compare, **before** the cache fix | 481 MiB |
-| After 20 distinct sites, **before** the cache fix | 527 MiB |
+| Finished timeline, alive in memory | 4.5 MiB (not ~30 MiB: an earlier estimate here was wrong) |
+| Peak while computing it (numpy temporaries inside the frozen science core) | **97 MiB** |
+| Validate + serialise to JSON (1.16 MiB) | +10 MiB peak |
+| Process baseline (kernels + DEM loaded) | ≈ 150 MiB API + ≈ 90 MiB Next.js |
 
-Cause: the timeline LRU held up to 64 full-year results at ≈ 30 MiB each (Python float
-lists). Fix (in this repo): the LRU is capped at 8, and Compare caches only small per-site
-rows (`CompareService._rows`, 256 max, a few kB each) and calls the timeline with
-`cache=False`. The post-fix figure is recorded in the table in §"After the fix" below.
+Compare ran 4 timeline computations in parallel (4 × 97 ≈ 390 MiB transient) on top of ≈ 210 MiB
+baseline, so a 10-site compare plus normal page loads exceeded 512 MiB.
 
-### After the fix (measured on the rebuilt image)
+**Fix (in the repo):**
+1. `AnalysisService._heavy`: at most **1** timeline computation at a time, process-wide
+   (`_MAX_CONCURRENT_TIMELINES` in `services/analysis.py`). Peak ≈ baseline + 100 MiB.
+2. `MALLOC_ARENA_MAX=2`, `MALLOC_MMAP_THRESHOLD_=262144`, `MALLOC_TRIM_THRESHOLD_=262144` in the
+   `Dockerfile`, so glibc returns freed numpy buffers instead of keeping the high-water mark.
+3. Compare caches small per-site rows (256 max) and does not retain timelines; timeline LRU = 8.
 
-| State | Container memory |
-| --- | --- |
-| Idle after start | 209 MiB |
-| After one 10-site compare | 337 MiB |
-| After compares covering all 27 sites | 342 MiB (plateau) |
-| Then 10 distinct single-site year timelines (fills the 8-entry LRU) | 437 MiB |
+**Result under the same 512 MiB limit:** two concurrent cold 10-site compares + the full smoke
+test → **peak 377 MiB, no OOM kill**; memory back to ≈ 200 MiB afterwards.
+Cost: computations queue. Single visitor, cold, prewarmed image: demo trio 4.1 s, 10 sites
+9–13 s, repeats ≈ 35 ms (was 3.0 s / 6.8–9.8 s with 4 in parallel). The free plan's CPU is far
+smaller than this sandbox's, so expect slower cold numbers on Render (not measured there).
 
-So the bounded worst case I could produce is ≈ 440–450 MiB, well under the ≈ 2 GB the old
-64-entry cache could reach, but **not far under 512 MiB**. These are container totals
-(API ≈ 80 % of it, Next.js ≈ 90 MiB), measured with one visitor on an otherwise idle
-machine. Concurrent visitors add transient memory (Compare runs 4 sites in parallel, each
-briefly holding a ≈ 30 MiB timeline). **Check Render's current plan table; a plan with 512 MiB
-is risky, pick one with comfortable headroom (≥ 1 GiB).** If memory is still a problem, lower
-`_CACHE_SIZE` in `services/analysis.py` or `MAX_WORKERS` in `services/compare.py`.
+**Still true:** the free plan has no headroom for a burst of many simultaneous visitors; if the
+event log shows another `oomKilled`, move up a plan (check Render's plan table first) or lower
+`_CACHE_SIZE`. To check: `list_events` with `eventTypes: ["server_failed"]`.
 
 ## Other facts worth knowing
 

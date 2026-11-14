@@ -60,6 +60,9 @@ COPY --from=web /app/apps/web/.next/standalone /app/web
 COPY --from=web /app/apps/web/.next/static /app/web/apps/web/.next/static
 COPY --from=py /app/apps/web/public /app/web/apps/web/public
 COPY deploy/start.sh /app/start.sh
+# glibc: fixed mmap threshold + few arenas return freed numpy buffers to the OS instead of
+# hoarding them (measured: RSS otherwise stays at its high-water mark on a 512 MiB instance)
+ENV MALLOC_ARENA_MAX=2 MALLOC_MMAP_THRESHOLD_=262144 MALLOC_TRIM_THRESHOLD_=262144
 ENV PATH=/app/.venv/bin:$PATH LUNARIS_DATA_DIR=/app/data PORT=10000 \
     NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 USER app
