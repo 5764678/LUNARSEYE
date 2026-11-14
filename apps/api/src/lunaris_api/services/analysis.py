@@ -51,7 +51,9 @@ from lunaris_science.visibility import classify_line_of_sight
 
 MAX_SAMPLES = 10_000
 MAX_STEP_S = 30 * 86400.0
-_CACHE_SIZE = 64
+# A cached full-year hourly timeline is ~30 MiB of Python floats (measured), so the cap is
+# small. Compare keeps per-site summary rows instead (see services/compare.py).
+_CACHE_SIZE = 8
 
 
 def evidence_dict(evidence: Evidence, limitations: tuple[str, ...] | list[str] = ()) -> dict[str, Any]:
@@ -317,6 +319,8 @@ class AnalysisService:
         start_utc: datetime,
         end_utc: datetime,
         step_s: float,
+        *,
+        cache: bool = True,
     ) -> dict[str, Any]:
         key = ("timeline", site["id"], start_utc, end_utc, step_s)
         if (hit := self._cached(key)) is not None:
@@ -381,5 +385,6 @@ class AnalysisService:
                 "components": {c.name: c.version for c in scientific_runtime()},
             },
         }
-        self._store(key, result)
+        if cache:
+            self._store(key, result)
         return result

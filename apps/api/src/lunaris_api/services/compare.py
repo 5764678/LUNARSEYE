@@ -9,27 +9,31 @@ Cells come from services that already exist:
 
 A cell that cannot be computed is ``null`` with a reason, never 0. Rows are computed in
 parallel (the unit of work and of caching is one site); the summary is a pure function of
-the rows and never touches the profile before scoring. Row caching is the timeline's and
-terrain service's own in-process cache.
+the rows and never touches the profile before scoring. A row (a few kB of cells) is cached
+in a small LRU; the 30 MiB timeline it was computed from is not.
 """
 
 from __future__ import annotations
 
 import math
+import threading
+from collections import OrderedDict
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from typing import Any
+
+from lunaris_science.geometry import sample_count
 
 from lunaris_api.errors import ApiError, InvalidRequestError
 from lunaris_api.schemas_compare import CompareCell, CompareColumn, CompareRow, Profile
 from lunaris_api.services.analysis import MAX_SAMPLES, AnalysisService
 from lunaris_api.services.compare_summary import summarize, with_directions
 from lunaris_api.services.terrain import DEFAULT_FOOTPRINT_RADIUS_M, TerrainService
-from lunaris_science.geometry import sample_count
 
 MAX_COMPARE_SITES = 10
 MAX_WORKERS = 4
+ROW_CACHE_SIZE = 256
 ILLUMINATION_UNAVAILABLE = "terrain illumination not available"
 
 COLUMNS = [
@@ -222,6 +226,8 @@ class CompareService:
     def __init__(self, analysis: AnalysisService, terrain: TerrainService) -> None:
         self._analysis = analysis
         self._terrain = terrain
+        self._rows: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()
+        self._lock = threading.Lock()
 
     def compare(
         self,
@@ -287,12 +293,23 @@ class CompareService:
         step_s: float,
         footprint_radius_m: float,
     ) -> dict[str, Any]:
+        key = (site["id"], start, end, step_s, footprint_radius_m)
+        with self._lock:
+            cached = self._rows.get(key)
+            if cached is not None:
+                self._rows.move_to_end(key)
+        if cached is not None:
+            return {**cached, "name": site["name"], "origin": site["origin"]}
+        failed = False
         cells: dict[str, CompareCell] = {}
         attempts: list[tuple[list[str], Callable[[], dict[str, CompareCell]]]] = [
             (
                 [c.key for c in COLUMNS if c.key.startswith(("surface", "horizon", "sun", "earth"))],
                 lambda: _timeline_cells(
-                    self._analysis.site_timeline(site, start, end, step_s), start, end, step_s
+                    self._analysis.site_timeline(site, start, end, step_s, cache=False),
+                    start,
+                    end,
+                    step_s
                 ),
             ),
             (
@@ -307,7 +324,8 @@ class CompareService:
                 cells.update(compute())
             except ApiError as exc:
                 cells.update(_fail(keys, exc.message))
-        return {
+                failed = failed or exc.status_code >= 500  # may recover: do not cache
+        row = {
             "site_id": site["id"],
             "name": site["name"],
             "origin": site["origin"],
@@ -315,3 +333,9 @@ class CompareService:
             "longitude_deg": site["longitude_deg"],
             "cells": {k: cells[k].model_dump() for k in UNITS},
         }
+        if not failed:
+            with self._lock:
+                self._rows[key] = row
+                while len(self._rows) > ROW_CACHE_SIZE:
+                    self._rows.popitem(last=False)
+        return row

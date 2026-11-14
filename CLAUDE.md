@@ -11,7 +11,8 @@ verify). Update it before you stop; the next session has no other context.
 - `packages/science`, `packages/data`, `tests/science` are FROZEN (copied from the prototype
   at commit `8edfb32`). Never edit them; their tests are the acceptance gate.
 - No auth. No educational features. Anything beyond the handoff (new features, stack
-  changes): ask the user.
+  changes): ask the user. The registry is read-only by decision (informational site; no
+  site registration/deletion). Hosting = new Render service; do not deploy without asking.
 - `5764678/lunaris` (the old prototype) is **read-only** reference: branch
   `snapshot/pre-education-pivot-2026-11-11`, code identical to `8edfb32`. Never push to it.
   Clone it read-only outside this repo (e.g. `/home/user/lunaris`) when you need to port logic.
@@ -21,6 +22,10 @@ verify). Update it before you stop; the next session has no other context.
   any open and future pull requests** in `5764678/LUNARSEYE` (they authorised merging; do not
   open a PR unless the user asks).
 - Say plainly what you cut and what you did not verify. Do not claim unrun things were run.
+
+## Priority order from the user
+Phase 1 (done) → Illumination → Terrain → Compare (done) → **quality work (contracts, caching,
+tests, docs)** → polish for the submission. Details in `docs/round2/STATUS.md` §5–6.
 
 ## Commands
 ```bash

@@ -176,3 +176,16 @@ def test_datasets_list_reports_status_and_hashes(client: TestClient) -> None:
     assert all(f["sha256"] and len(f["sha256"]) == 64 for f in ldem["files"] if f["present"])
     missing = client.get("/v1/datasets/nope")
     assert missing.status_code == 404 and missing.json()["error"]["code"] == "not_found"
+
+
+def test_compare_caches_small_rows_not_30_mib_timelines(client: TestClient) -> None:
+    """Measured: a cached full-year timeline is ~30 MiB, so a 10-site compare must not
+    leave 10 of them in memory (that OOM-kills a small instance)."""
+    ids = list(demo_ids(client).values())
+    params = {"site_ids": ",".join(ids), **YEAR_2027}
+    first = client.get("/v1/compare", params=params)
+    assert first.status_code == 200
+    assert not any(key[0] == "timeline" for key in app.state.analysis._cache)
+    assert len(app.state.compare._rows) >= len(ids)
+    second = client.get("/v1/compare", params=params)
+    assert second.json() == first.json()
