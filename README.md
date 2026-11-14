@@ -35,10 +35,17 @@ Postgres 16 was run directly.
 colour map, and builds the globe texture. Nothing acquired is committed. Without the
 texture the globe shows a labelled procedural placeholder.
 
+## Docker / Render
+
+`docker compose --profile app up --build` runs the whole stack in containers at
+<http://localhost:10000>; `render.yaml` + `Dockerfile` are the Render blueprint. Details,
+measured memory and latency: [`docs/round2/DEPLOY.md`](docs/round2/DEPLOY.md). Not deployed yet.
+`BASE_URL=<site> NODE_PATH=$(npm root -g) node scripts/smoke.mjs` checks any running instance.
+
 ## Checks
 
 ```bash
-uv run pytest                # 282 pass, 1 skipped: frozen science tests + API tests
+uv run pytest                # 285 pass, 1 skipped: frozen science tests + API tests
 npm run test:web             # 38 pass: carried display math
 npm run typecheck
 npm run contracts:generate   # API running: regenerates the TypeScript contract types

@@ -110,16 +110,24 @@ with a reason (compare).
 
 ## 5. Next steps (user's order: quality work, then polish)
 
-Quality work:
-1. **Contracts:** types are generated from OpenAPI (`npm run contracts:generate`) but the
-   fetch wrapper is hand-written and there is no drift gate. Cheapest useful step: a test that
-   regenerates `openapi.json` from the app and fails if it differs from the committed file.
+Quality work (14 Nov progress marked):
+1. **Contracts — drift gate DONE.** `tests/api/test_contract_drift.py` fails if the committed
+   `apps/web/src/shared/api/openapi.json` differs from the app's live schema, and checks every
+   declared error response uses the shared envelope (it caught `/v1/datasets/{id}` advertising
+   FastAPI's default 422 schema; fixed). Still hand-written: the fetch wrapper in
+   `shared/api/client.ts` (types come from the generated file; no Zod/runtime validation).
+   Regenerate after any API change: `npm run contracts:generate` (API running), or
+   `uv run python -c "import json; from lunaris_api.main import app; open('apps/web/src/shared/api/openapi.json','w').write(json.dumps(app.openapi()))" && npm run generate -w @lunaris/web`.
 2. **Caching:** done for now (see DEPLOY.md "Memory": timeline LRU capped at 8, compare caches
    small rows). Remaining ideas (optional): single-flight for identical concurrent requests,
    ETag/`Cache-Control` on compare. Only if measurements justify.
-3. **Tests:** API tests exist for compare/datasets/timeline; web has only carried display-math
-   tests. Candidates: a Playwright e2e of the demo path (Shackleton floor 0 % sunlit; compare
-   verdict as in §1); golden-master capture vs the prototype (needs the prototype run).
+3. **Tests:** API tests cover compare/datasets/timeline/terrain/contract; web has only carried
+   display-math tests. **E2E smoke DONE:** `scripts/smoke.mjs` (any `BASE_URL`; see header)
+   checks health, all 5 pages for console errors, the compare verdict + landing-profile
+   ranking, and the evidence drawer; passes against the production container; exits non-zero
+   when the site is down. Run it against Render after deploying. Not done: golden-master
+   capture vs the prototype (needs the prototype run); "Shackleton floor 0 % sunlit" has no
+   catalogue site to test with (the catalogue has tile centres such as "Shackleton rim").
 4. **Docs:** keep README + this file current; add `docs/round2/disposition.md` only if asked.
 5. Alembic replacing `create_all`; CI (typecheck, vitest, build, pytest with Postgres + data).
 Polish for the submission: demo path on `/` (call to action to compare the trio), mobile

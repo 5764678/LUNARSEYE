@@ -12,7 +12,7 @@ from lunaris_data.manifest import DatasetManifest
 from lunaris_data.registry import UnknownDatasetError
 from lunaris_data.store import DatasetLocalState, inspect_dataset
 
-ERRORS: dict[int | str, dict[str, Any]] = {code: {"model": ErrorEnvelope} for code in (404, 500)}
+ERRORS: dict[int | str, dict[str, Any]] = {code: {"model": ErrorEnvelope} for code in (404, 422, 500)}
 router = APIRouter(prefix="/v1", tags=["datasets"])
 
 

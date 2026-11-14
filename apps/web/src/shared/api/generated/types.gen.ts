@@ -534,16 +534,6 @@ export type Footprint = {
 };
 
 /**
- * HTTPValidationError
- */
-export type HttpValidationError = {
-    /**
-     * Detail
-     */
-    detail?: Array<ValidationError>;
-};
-
-/**
  * Hazard
  *
  * Flags against user thresholds; ``evidence.kind`` is always ``assumption``.
@@ -1178,34 +1168,6 @@ export type TerrainScene = {
 };
 
 /**
- * ValidationError
- */
-export type ValidationError = {
-    /**
-     * Location
-     */
-    loc: Array<string | number>;
-    /**
-     * Message
-     */
-    msg: string;
-    /**
-     * Error Type
-     */
-    type: string;
-    /**
-     * Input
-     */
-    input?: unknown;
-    /**
-     * Context
-     */
-    ctx?: {
-        [key: string]: unknown;
-    };
-};
-
-/**
  * Window
  */
 export type Window = {
@@ -1411,6 +1373,10 @@ export type ListDatasetsErrors = {
      */
     404: ErrorEnvelope;
     /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
      * Internal Server Error
      */
     500: ErrorEnvelope;
@@ -1445,9 +1411,9 @@ export type GetDatasetErrors = {
      */
     404: ErrorEnvelope;
     /**
-     * Validation Error
+     * Unprocessable Content
      */
-    422: HttpValidationError;
+    422: ErrorEnvelope;
     /**
      * Internal Server Error
      */
