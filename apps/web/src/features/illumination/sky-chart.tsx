@@ -3,10 +3,21 @@
 import { memo, useMemo } from "react";
 
 import type { BodySeries, HorizonMaskOut } from "@/shared/api/client";
+import { deg } from "@/shared/lib/format";
+import { clamp } from "@/shared/lib/time/time";
+import { useElementWidth } from "@/shared/lib/use-element-width";
 
-const W = 1200;
-const H = 360;
 const PAD = { left: 44, right: 10, top: 10, bottom: 26 };
+
+interface Frame {
+  width: number;
+  height: number;
+  range: [number, number];
+}
+
+const xOf = (f: Frame) => (az: number) => PAD.left + (az / 360) * (f.width - PAD.left - PAD.right);
+const yOf = (f: Frame) => (el: number) =>
+  PAD.top + (1 - (el - f.range[0]) / (f.range[1] - f.range[0])) * (f.height - PAD.top - PAD.bottom);
 
 /** Vertical bars, one per sample: centre ± disc radius at the body's azimuth. */
 function trackPath(body: BodySeries, x: (az: number) => number, y: (el: number) => number): string {
@@ -25,16 +36,20 @@ const Static = memo(function Static({
   horizon,
   sun,
   earth,
+  width,
+  height,
   range,
 }: {
   horizon: HorizonMaskOut;
   sun: BodySeries;
   earth: BodySeries;
+  width: number;
+  height: number;
   range: [number, number];
 }) {
-  const x = (az: number) => PAD.left + (az / 360) * (W - PAD.left - PAD.right);
-  const y = (el: number) =>
-    PAD.top + (1 - (el - range[0]) / (range[1] - range[0])) * (H - PAD.top - PAD.bottom);
+  const frame = useMemo<Frame>(() => ({ width, height, range }), [width, height, range]);
+  const x = useMemo(() => xOf(frame), [frame]);
+  const y = useMemo(() => yOf(frame), [frame]);
   const skyline = useMemo(() => {
     const az = horizon.azimuth_deg;
     const el = horizon.elevation_deg;
@@ -43,38 +58,43 @@ const Static = memo(function Static({
     points.push(`${x(360).toFixed(1)},${y(el[0]!).toFixed(1)}`);
     const base = y(range[0]);
     return `M${x(0)},${base}L${points.join("L")}L${x(360)},${base}Z`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [horizon, range]);
+  }, [horizon, range, x, y]);
   const truncated = useMemo(() => {
     const flags = horizon.truncated ?? [];
+    // One marker per 2° of azimuth keeps a long truncated arc readable.
+    const stride = Math.max(1, Math.round(2 / (360 / Math.max(1, flags.length))));
     const out: Array<{ az: number; el: number }> = [];
     flags.forEach((flag, i) => {
-      // One marker per 2° keeps a long truncated arc readable.
-      if (flag && i % 8 === 0) out.push({ az: horizon.azimuth_deg![i]!, el: horizon.elevation_deg![i]! });
+      if (flag && i % stride === 0) out.push({ az: horizon.azimuth_deg![i]!, el: horizon.elevation_deg![i]! });
     });
     return out;
   }, [horizon]);
-  const sunPath = useMemo(() => trackPath(sun, x, y), [sun, range]); // eslint-disable-line react-hooks/exhaustive-deps
-  const earthPath = useMemo(() => trackPath(earth, x, y), [earth, range]); // eslint-disable-line react-hooks/exhaustive-deps
+  const sunPath = useMemo(() => trackPath(sun, x, y), [sun, x, y]);
+  const earthPath = useMemo(() => trackPath(earth, x, y), [earth, x, y]);
 
+  // Tick spacing follows the pixels available, so a short chart does not stack its labels.
+  const pxPerDeg = (height - PAD.top - PAD.bottom) / (range[1] - range[0]);
+  const stepEl = [1, 2, 5, 10, 20].find((s) => s * pxPerDeg >= 26) ?? 20;
   const elTicks: number[] = [];
-  const stepEl = range[1] - range[0] > 16 ? 5 : 2;
   for (let e = Math.ceil(range[0] / stepEl) * stepEl; e <= range[1]; e += stepEl) elTicks.push(e);
+  // Compass labels every 45° when there is room, every 90° on a phone.
+  const azStep = width < 560 ? 90 : 45;
+  const azTicks = Array.from({ length: 360 / azStep + 1 }, (_, i) => i * azStep);
 
   return (
     <>
       {elTicks.map((e) => (
         <g key={e}>
-          <line x1={PAD.left} x2={W - PAD.right} y1={y(e)} y2={y(e)} className={e === 0 ? "sky-zero" : "sky-grid"} />
+          <line x1={PAD.left} x2={width - PAD.right} y1={y(e)} y2={y(e)} className={e === 0 ? "sky-zero" : "sky-grid"} />
           <text x={PAD.left - 6} y={y(e) + 3.5} textAnchor="end" className="sky-tick">
-            {e}°
+            {deg(e, 0)}
           </text>
         </g>
       ))}
-      {[0, 45, 90, 135, 180, 225, 270, 315, 360].map((a) => (
+      {azTicks.map((a) => (
         <g key={a}>
-          <line x1={x(a)} x2={x(a)} y1={PAD.top} y2={H - PAD.bottom} className="sky-grid" />
-          <text x={x(a)} y={H - 9} textAnchor="middle" className="sky-tick">
+          <line x1={x(a)} x2={x(a)} y1={PAD.top} y2={height - PAD.bottom} className="sky-grid" />
+          <text x={x(a)} y={height - 9} textAnchor="middle" className="sky-tick">
             {a === 0 || a === 360 ? "N" : a === 90 ? "E" : a === 180 ? "S" : a === 270 ? "W" : `${a}°`}
           </text>
         </g>
@@ -97,6 +117,9 @@ const Static = memo(function Static({
  * The site's sky as azimuth × elevation: terrain skyline, and every sampled position of
  * the Sun and the Earth drawn as a bar of the disc's height. The axes have different
  * scales (360° across, a few degrees up), so discs are bars, not circles.
+ *
+ * The chart is drawn at its real pixel width, not scaled from a fixed viewBox, so its
+ * labels stay 11 px on a phone instead of shrinking with the drawing.
  */
 export function SkyChart({
   horizon,
@@ -109,6 +132,8 @@ export function SkyChart({
   earth: BodySeries;
   index: number;
 }) {
+  const [ref, width] = useElementWidth<HTMLDivElement>(1000);
+  const height = clamp(Math.round(width * 0.3), 220, 360);
   const range = useMemo((): [number, number] => {
     let lo = 0;
     let hi = 0;
@@ -120,14 +145,23 @@ export function SkyChart({
     }
     return [Math.floor(lo - 1.5), Math.ceil(hi + 1.5)];
   }, [horizon, sun, earth]);
-  const x = (az: number) => PAD.left + (az / 360) * (W - PAD.left - PAD.right);
-  const y = (el: number) =>
-    PAD.top + (1 - (el - range[0]) / (range[1] - range[0])) * (H - PAD.top - PAD.bottom);
+  const frame: Frame = { width, height, range };
+  const x = xOf(frame);
+  const y = yOf(frame);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="sky-chart" role="img" aria-label="Sky chart: terrain skyline with Sun and Earth tracks">
-      <Static horizon={horizon} sun={sun} earth={earth} range={range} />
-      <circle cx={x(earth.azimuth_deg[index]!)} cy={y(earth.elevation_deg[index]!)} r={5} className="sky-now earth" />
-      <circle cx={x(sun.azimuth_deg[index]!)} cy={y(sun.elevation_deg[index]!)} r={5} className="sky-now sun" />
-    </svg>
+    <div ref={ref} className="sky-chart-wrap">
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        className="sky-chart"
+        role="img"
+        aria-label="Sky chart: terrain skyline with Sun and Earth tracks"
+      >
+        <Static horizon={horizon} sun={sun} earth={earth} width={width} height={height} range={range} />
+        <circle cx={x(earth.azimuth_deg[index]!)} cy={y(earth.elevation_deg[index]!)} r={5} className="sky-now earth" />
+        <circle cx={x(sun.azimuth_deg[index]!)} cy={y(sun.elevation_deg[index]!)} r={5} className="sky-now sun" />
+      </svg>
+    </div>
   );
 }

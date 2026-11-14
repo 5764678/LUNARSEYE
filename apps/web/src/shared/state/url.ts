@@ -6,8 +6,8 @@ import { useCallback, useMemo } from "react";
 import { isWindowId, resolveWindow, type WindowId } from "@/features/time/windows";
 
 /**
- * Shareable state lives in the URL: the selected site, the analysis window and (on
- * Compare) the compared set and profile. Links between pages keep the query string.
+ * Shareable state lives in the URL: the selected site and the analysis window. Links between
+ * pages keep the query string.
  */
 export function useMissionUrl() {
   const router = useRouter();

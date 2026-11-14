@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { formatUtc } from "@/shared/lib/time/time";
 import { RATES, useTime } from "@/shared/state/time";
 import { useMissionUrl } from "@/shared/state/url";
+import { Icon } from "@/shared/ui/icons";
 
 import { WINDOWS } from "./windows";
 
@@ -57,14 +58,15 @@ export function TimeControls() {
           setPlaying(!playing);
         }}
       >
-        {playing ? "❚❚ Pause" : "▶ Play"}
+        <Icon name={playing ? "pause" : "play"} />
+        {playing ? "Pause" : "Play"}
       </button>
       <div className="segmented" role="group" aria-label="Playback rate">
         {RATES.map((r) => (
           <button
             key={r.value}
             type="button"
-            className={r.value === rate ? "on" : ""}
+            aria-pressed={r.value === rate}
             onClick={() => setRate(r.value)}
           >
             {r.label}
@@ -78,7 +80,7 @@ export function TimeControls() {
           <button
             key={w.id}
             type="button"
-            className={w.id === windowId ? "on" : ""}
+            aria-pressed={w.id === windowId}
             onClick={() => setParams({ window: w.id })}
           >
             {w.label}
