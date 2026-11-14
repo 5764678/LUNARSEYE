@@ -95,5 +95,4 @@ Known wrinkles:
 
 ## Rules carried from the handoff
 
-No auth. No educational features. The old repository (`5764678/lunaris`) is read-only
-reference; nothing is ever written to it.
+No auth. No educational features (yet).
