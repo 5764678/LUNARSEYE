@@ -1,0 +1,14 @@
+# Phase 1: Postgres only. The API and web app run from the checkout (see README).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: lunaris
+      POSTGRES_PASSWORD: lunaris
+      POSTGRES_DB: lunaris
+    ports:
+      - "5432:5432"
+    volumes:
+      - lunaris-pg:/var/lib/postgresql/data
+volumes:
+  lunaris-pg:

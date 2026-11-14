@@ -1,0 +1,35 @@
+# LUNARIS Round 2 — Python workspace root (not a distributable package).
+#   uv sync && uv run pytest
+[project]
+name = "lunaris-workspace"
+version = "0.2.0"
+description = "LUNARIS Round 2 monorepo Python workspace root."
+requires-python = ">=3.11"
+dependencies = ["lunaris-science", "lunaris-data", "lunaris-api"]
+
+[dependency-groups]
+dev = ["pytest>=8.3", "hypothesis>=6.120", "ruff>=0.8", "httpx2>=2.16"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/science", "packages/data", "apps/api"]
+
+[tool.uv.sources]
+lunaris-science = { workspace = true }
+lunaris-data = { workspace = true }
+lunaris-api = { workspace = true }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
+filterwarnings = [
+  "error",
+  "ignore::rasterio.errors.NotGeoreferencedWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

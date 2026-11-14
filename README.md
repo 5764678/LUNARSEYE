@@ -1,1 +1,99 @@
-# LUNARSEYE
+# LUNARIS — Round 2
+
+Lunar south-pole site analysis. Pick a cited candidate site, see the Moon lit from the
+SPICE Sun direction, and see that site's Sun and Earth elevation, terrain-aware sunlight
+and Earth line of sight on a timeline. Every number carries a tag (OBS / DERIVED / MODEL /
+CALC / ASSUMED / PLACEHOLDER / N/C) that opens its source, method, limits and SHA-256.
+
+**Status (14 Nov 2026): Phase 1 works end to end.** One page, one path. Hackathon
+submission for 14–15 Nov; the Illumination, Terrain and Compare pages are Phase 2.
+
+## Run it
+
+Needs Python ≥ 3.11 with [uv](https://docs.astral.sh/uv/), Node ≥ 20 and Postgres 16.
+
+```bash
+docker compose up -d db      # or any Postgres 16 with role/db/password "lunaris"
+uv sync
+npm install
+npm run data                 # ≈ 87 MB from NASA/NAIF/PDS, SHA-256 verified
+npm run dev:api              # FastAPI on http://127.0.0.1:8000  (docs at /docs)
+npm run dev:web              # Next.js on http://localhost:3000
+```
+
+Open <http://localhost:3000>. The browser only talks to port 3000; `/api/*` is rewritten
+to the API. Settings are in `.env.example` (all optional).
+
+Without Docker: create the database by hand, e.g.
+`psql -c "CREATE ROLE lunaris LOGIN PASSWORD 'lunaris'" -c "CREATE DATABASE lunaris OWNER lunaris"`.
+The compose file has not been run in the build environment (no Docker daemon there);
+Postgres 16 was run directly.
+
+`npm run data` acquires the NAIF kernels (DE440s), LOLA `LDEM_75S_240M` and the NASA SVS
+colour map, and builds the globe texture. Nothing acquired is committed. Without the
+texture the globe shows a labelled procedural placeholder.
+
+## Checks
+
+```bash
+uv run pytest                # 271 pass: frozen science tests + Phase 1 API tests
+npm run test:web             # 33 pass: carried display math
+npm run typecheck
+npm run contracts:generate   # API running: regenerates the TypeScript contract types
+```
+
+## What is here
+
+```
+packages/science   FROZEN  lunaris_science, unchanged from the prototype at 8edfb32
+packages/data      FROZEN  lunaris_data, unchanged from 8edfb32
+tests/science      copied unchanged (acceptance gate for the frozen core)
+apps/api           FastAPI: /health, /v1/sites, /v1/sites/{id}/timeline, /v1/ephemeris/sun
+apps/web           Next.js 16 / React 19 / R3F / TanStack Query, one page
+```
+
+- **Sites**: the 27 PGDA product 78 sites, seeded into Postgres. Coordinates are DEM tile
+  centres, not landing points. PGDA labels two tiles "de Gerlache rim"; registry names are
+  unique, so those two carry their PGDA tile id.
+- **Geometry**: local SPICE (`MOON_ME`, `CN+S`, UTC→ET through the leap-seconds kernel).
+- **Terrain horizon**: 1440 azimuths, 200 km, curvature-corrected, from `LDEM_75S_240M`,
+  eye 2 m above the surface (a stated assumption). Cached as files under `data/processed/`.
+- **Sunlight / Earth**: visible disc fraction above the terrain horizon and, separately,
+  the flat (astronomical) horizon. Runs that touch the window edge are shown as "≥".
+  Earth visibility is geometric line of sight only, not a radio link.
+- **Globe**: a smooth sphere lit from the SPICE Sun direction. It draws no terrain
+  shadows and says so; sunlight numbers come only from the timeline.
+
+Carried from the prototype (moved, imports adjusted, tests carried): `moon-shader.ts`,
+`geo/selenographic.ts`, `globe/sun.ts`, `terrain/sun.ts`, `time/time.ts`.
+
+## Phase 1 scope cuts
+
+Deliberate, per the Phase 1 brief. Each is Phase 2 work unless noted.
+
+| Cut | Why | Now |
+| --- | --- | --- |
+| Registering/deleting user sites | Not needed to pick a catalogue site; a writable registry with no auth needs a decision before any public deploy | Registry is read-only; table has the target columns and CHECKs |
+| Alembic migrations | Speed | `create_all` + idempotent catalogue seed at start-up |
+| Terrain page (PGDA 20 m slope/roughness), Compare, Illumination page, Data page | Phase 2 | — |
+| South-pole terrain mesh (D5) | Phase 2 | Globe only |
+| Content-addressed cache, single-flight, process pool, ETags | Phase 1 brief | In-process LRU + horizon-mask file cache; science runs in the request thread pool |
+| Golden-master capture against the prototype | Phase 1 brief | Four API tests pin the Phase 1 numbers |
+| import-linter / ESLint boundaries, CI, budgets | Phase 1 brief | — |
+| Generated client and Zod | Speed | Types are generated (`@hey-api/openapi-ts`); the fetch wrapper is hand-written |
+| Deploy | Needs sign-off | Local only |
+
+Known wrinkles:
+
+- `tests/science/illumination/test_terrain_physics.py` imports
+  `lunaris_api.services.horizon.HorizonMaskService`, so the horizon service keeps that
+  module path and constructor to leave the frozen tests untouched.
+- One science test is skipped where the `gdaldem` binary is not installed.
+- Measured locally: a year of hourly samples for one site takes 1.2 s cold (first request
+  for a site adds about 2 s for its horizon mask) and 0.14 s from the in-process cache;
+  the response is 1.2 MB, 240 kB gzipped.
+
+## Rules carried from the handoff
+
+No auth. No educational features. The old repository (`5764678/lunaris`) is read-only
+reference; nothing is ever written to it.
