@@ -15,6 +15,7 @@ const NAV = [
   { path: "/illumination", label: "Illumination & Earth" },
   { path: "/terrain", label: "Terrain" },
   { path: "/compare", label: "Compare" },
+  { path: "/data", label: "Data" },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -22,7 +23,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const health = useHealth();
   const { sites, siteId } = useSelectedSite();
   usePlayback(window.startMs, window.endMs);
-  const singleSite = pathname !== "/compare";
+  const singleSite = pathname !== "/compare" && pathname !== "/data";
 
   return (
     <div className={singleSite ? "app" : "app no-sidebar"}>

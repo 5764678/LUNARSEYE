@@ -5,8 +5,10 @@ SPICE Sun direction, and see that site's Sun and Earth elevation, terrain-aware 
 and Earth line of sight on a timeline. Every number carries a tag (OBS / DERIVED / MODEL /
 CALC / ASSUMED / PLACEHOLDER / N/C) that opens its source, method, limits and SHA-256.
 
-**Status (14 Nov 2026): Phase 1 works end to end.** One page, one path. Hackathon
-submission for 14–15 Nov; the Illumination, Terrain and Compare pages are Phase 2.
+**Status (14 Nov 2026): five pages work end to end** — Overview, Illumination & Earth,
+Terrain, Compare and Data. Hackathon submission for 14–15 Nov. **Handoff for the next
+session: [`docs/round2/STATUS.md`](docs/round2/STATUS.md)** (what is built, what is not,
+how to run it, what to do next).
 
 ## Run it
 
@@ -36,8 +38,8 @@ texture the globe shows a labelled procedural placeholder.
 ## Checks
 
 ```bash
-uv run pytest                # 271 pass: frozen science tests + Phase 1 API tests
-npm run test:web             # 33 pass: carried display math
+uv run pytest                # 282 pass, 1 skipped: frozen science tests + API tests
+npm run test:web             # 38 pass: carried display math
 npm run typecheck
 npm run contracts:generate   # API running: regenerates the TypeScript contract types
 ```
@@ -48,8 +50,10 @@ npm run contracts:generate   # API running: regenerates the TypeScript contract 
 packages/science   FROZEN  lunaris_science, unchanged from the prototype at 8edfb32
 packages/data      FROZEN  lunaris_data, unchanged from 8edfb32
 tests/science      copied unchanged (acceptance gate for the frozen core)
-apps/api           FastAPI: /health, /v1/sites, /v1/sites/{id}/timeline, /v1/ephemeris/sun
-apps/web           Next.js 16 / React 19 / R3F / TanStack Query, one page
+apps/api           FastAPI: /health, /v1/sites, …/timeline, …/terrain, /v1/terrain/scene,
+                   /v1/compare, /v1/datasets, /v1/ephemeris/sun
+apps/web           Next.js 16 / React 19 / R3F / TanStack Query: /, /illumination, /terrain,
+                   /compare, /data
 ```
 
 - **Sites**: the 27 PGDA product 78 sites, seeded into Postgres. Coordinates are DEM tile
@@ -67,16 +71,16 @@ apps/web           Next.js 16 / React 19 / R3F / TanStack Query, one page
 Carried from the prototype (moved, imports adjusted, tests carried): `moon-shader.ts`,
 `geo/selenographic.ts`, `globe/sun.ts`, `terrain/sun.ts`, `time/time.ts`.
 
-## Phase 1 scope cuts
+## Scope cuts
 
-Deliberate, per the Phase 1 brief. Each is Phase 2 work unless noted.
+Deliberate. Current list with priorities: `docs/round2/STATUS.md` §2 and §5. The table
+below is the original Phase 1 list; rows marked Done were closed in Phase 2.
 
 | Cut | Why | Now |
 | --- | --- | --- |
 | Registering/deleting user sites | Not needed to pick a catalogue site; a writable registry with no auth needs a decision before any public deploy | Registry is read-only; table has the target columns and CHECKs |
 | Alembic migrations | Speed | `create_all` + idempotent catalogue seed at start-up |
-| Terrain page (PGDA 20 m slope/roughness), Compare, Illumination page, Data page | Phase 2 | — |
-| South-pole terrain mesh (D5) | Phase 2 | Globe only |
+| Terrain, Compare, Illumination and Data pages; south-pole terrain mesh | Phase 2 | **Done** (see `docs/round2/STATUS.md`) |
 | Content-addressed cache, single-flight, process pool, ETags | Phase 1 brief | In-process LRU + horizon-mask file cache; science runs in the request thread pool |
 | Golden-master capture against the prototype | Phase 1 brief | Four API tests pin the Phase 1 numbers |
 | import-linter / ESLint boundaries, CI, budgets | Phase 1 brief | — |

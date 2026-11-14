@@ -218,6 +218,141 @@ export type ComparisonSummary = {
 };
 
 /**
+ * Dataset
+ */
+export type Dataset = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Category
+     */
+    category: string;
+    /**
+     * Evidence Kind
+     */
+    evidence_kind: string;
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Source Page
+     */
+    source_page: string;
+    /**
+     * Citation
+     */
+    citation: string | null;
+    /**
+     * Usage
+     */
+    usage: string | null;
+    /**
+     * Required By
+     */
+    required_by: Array<string>;
+    /**
+     * Notes
+     */
+    notes: Array<string>;
+    /**
+     * Files
+     */
+    files: Array<DatasetFile>;
+    local: DatasetLocal;
+    /**
+     * Acquire Command
+     */
+    acquire_command: string | null;
+};
+
+/**
+ * DatasetFile
+ */
+export type DatasetFile = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Url
+     */
+    url: string;
+    /**
+     * Present
+     */
+    present: boolean;
+    /**
+     * Size Bytes
+     */
+    size_bytes: number | null;
+    /**
+     * Sha256
+     */
+    sha256: string | null;
+};
+
+/**
+ * DatasetList
+ */
+export type DatasetList = {
+    /**
+     * Datasets
+     */
+    datasets: Array<Dataset>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * DatasetLocal
+ *
+ * ``remote_window``: read over HTTP byte ranges; nothing is stored whole.
+ */
+export type DatasetLocal = {
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Files Present
+     */
+    files_present: number;
+    /**
+     * Files Expected
+     */
+    files_expected: number;
+    /**
+     * Bytes On Disk
+     */
+    bytes_on_disk: number;
+    /**
+     * Acquired At Utc
+     */
+    acquired_at_utc: string | null;
+    /**
+     * Manifest Changed
+     */
+    manifest_changed: boolean;
+};
+
+/**
  * DemWindow
  */
 export type DemWindow = {
@@ -396,6 +531,16 @@ export type Footprint = {
      * Roughness Baseline M
      */
     roughness_baseline_m: number;
+};
+
+/**
+ * HTTPValidationError
+ */
+export type HttpValidationError = {
+    /**
+     * Detail
+     */
+    detail?: Array<ValidationError>;
 };
 
 /**
@@ -1033,6 +1178,34 @@ export type TerrainScene = {
 };
 
 /**
+ * ValidationError
+ */
+export type ValidationError = {
+    /**
+     * Location
+     */
+    loc: Array<string | number>;
+    /**
+     * Message
+     */
+    msg: string;
+    /**
+     * Error Type
+     */
+    type: string;
+    /**
+     * Input
+     */
+    input?: unknown;
+    /**
+     * Context
+     */
+    ctx?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * Window
  */
 export type Window = {
@@ -1224,6 +1397,73 @@ export type CompareSitesResponses = {
 };
 
 export type CompareSitesResponse = CompareSitesResponses[keyof CompareSitesResponses];
+
+export type ListDatasetsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/datasets';
+};
+
+export type ListDatasetsErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+};
+
+export type ListDatasetsError = ListDatasetsErrors[keyof ListDatasetsErrors];
+
+export type ListDatasetsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DatasetList;
+};
+
+export type ListDatasetsResponse = ListDatasetsResponses[keyof ListDatasetsResponses];
+
+export type GetDatasetData = {
+    body?: never;
+    path: {
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+    };
+    query?: never;
+    url: '/v1/datasets/{dataset_id}';
+};
+
+export type GetDatasetErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+};
+
+export type GetDatasetError = GetDatasetErrors[keyof GetDatasetErrors];
+
+export type GetDatasetResponses = {
+    /**
+     * Successful Response
+     */
+    200: Dataset;
+};
+
+export type GetDatasetResponse = GetDatasetResponses[keyof GetDatasetResponses];
 
 export type GetHealthData = {
     body?: never;

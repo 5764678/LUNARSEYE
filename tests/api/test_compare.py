@@ -165,3 +165,14 @@ def test_compare_rejects_bad_requests_with_the_error_envelope(client: TestClient
     assert capped.status_code == 422 and "sample_cap_exceeded" in capped.text
     assert "request_id" in capped.json()["error"]
 
+
+
+def test_datasets_list_reports_status_and_hashes(client: TestClient) -> None:
+    body = client.get("/v1/datasets").json()
+    by_id = {d["id"]: d for d in body["datasets"]}
+    assert body["count"] == len(by_id) >= 4
+    assert by_id["pgda-lola-20mpp-80s"]["local"]["status"] == "remote_window"
+    ldem = by_id["lola-ldem-75s-240m"]
+    assert all(f["sha256"] and len(f["sha256"]) == 64 for f in ldem["files"] if f["present"])
+    missing = client.get("/v1/datasets/nope")
+    assert missing.status_code == 404 and missing.json()["error"]["code"] == "not_found"

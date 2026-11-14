@@ -6,6 +6,8 @@
 import type {
   BodySeries,
   ErrorEnvelope,
+  Dataset,
+  DatasetList,
   Evidence,
   Health,
   HorizonMaskOut,
@@ -21,6 +23,8 @@ import type {
 
 export type {
   BodySeries,
+  Dataset,
+  DatasetList,
   Evidence,
   Health,
   HorizonMaskOut,
@@ -94,6 +98,7 @@ const windowQuery = (w: AnalysisWindow) =>
 export const api = {
   health: (signal?: AbortSignal) => get<Health>("/health", signal),
   sites: (signal?: AbortSignal) => get<SiteList>("/v1/sites", signal),
+  datasets: (signal?: AbortSignal) => get<DatasetList>("/v1/datasets", signal),
   timeline: (siteId: string, w: AnalysisWindow, signal?: AbortSignal) =>
     get<SiteTimeline>(`/v1/sites/${siteId}/timeline?${windowQuery(w)}`, signal),
   sun: (w: AnalysisWindow, signal?: AbortSignal) =>
@@ -126,6 +131,7 @@ export interface TerrainParams {
 export const keys = {
   health: ["health"] as const,
   sites: ["sites"] as const,
+  datasets: ["datasets"] as const,
   timeline: (siteId: string, w: AnalysisWindow) =>
     ["timeline", siteId, w.startUtc, w.endUtc, w.stepS] as const,
   sun: (w: AnalysisWindow) => ["sun", w.startUtc, w.endUtc, w.stepS] as const,

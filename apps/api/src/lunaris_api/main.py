@@ -4,7 +4,7 @@
 
 Routes: ``GET /health``, ``GET /v1/sites``, ``GET /v1/sites/{id}``,
 ``GET /v1/sites/{id}/timeline``, ``GET /v1/sites/{id}/terrain``, ``GET /v1/terrain/scene``,
-``GET /v1/compare``, ``GET /v1/ephemeris/sun``. No auth (explicit non-goal).
+``GET /v1/compare``, ``GET /v1/datasets``, ``GET /v1/ephemeris/sun``. No auth (explicit non-goal).
 """
 
 from __future__ import annotations
@@ -30,6 +30,7 @@ from lunaris_api import __version__, db
 from lunaris_api.deps import load_site, site_out
 from lunaris_api.errors import ApiError
 from lunaris_api.routers import compare as compare_router
+from lunaris_api.routers import datasets as datasets_router
 from lunaris_api.routers import terrain as terrain_router
 from lunaris_api.schemas import ErrorEnvelope, Health, SiteList, SiteOut, SiteTimeline, SunDirection
 from lunaris_api.services.analysis import AnalysisService
@@ -87,6 +88,7 @@ app.add_middleware(
 
 app.include_router(terrain_router.router)
 app.include_router(compare_router.router)
+app.include_router(datasets_router.router)
 
 
 @app.middleware("http")

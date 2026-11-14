@@ -9,6 +9,9 @@ import { api, keys, type AnalysisWindow, type ProfileId, type TerrainParams } fr
 export const useHealth = () =>
   useQuery({ queryKey: keys.health, queryFn: ({ signal }) => api.health(signal) });
 
+export const useDatasets = () =>
+  useQuery({ queryKey: keys.datasets, queryFn: ({ signal }) => api.datasets(signal) });
+
 export const useSites = () =>
   useQuery({ queryKey: keys.sites, queryFn: ({ signal }) => api.sites(signal) });
 
