@@ -22,7 +22,7 @@ from pathlib import Path
 
 import numpy as np
 
-from lunaris_science.terrain.polar_stereographic import PolarStereographicGrid
+from lunareyes_science.terrain.polar_stereographic import PolarStereographicGrid
 
 BASE_URL = (
     "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/extras/"
@@ -76,7 +76,7 @@ def _sha256(path: Path) -> str:
 
 
 def _sites() -> list[dict[str, object]]:
-    catalog = resources.files("lunaris_data.catalogs") / "south-pole-candidate-sites.json"
+    catalog = resources.files("lunareyes_data.catalogs") / "south-pole-candidate-sites.json"
     payload = json.loads(catalog.read_text(encoding="utf-8"))
     return list(payload["sites"])
 

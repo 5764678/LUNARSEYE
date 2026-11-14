@@ -11,8 +11,8 @@ import numpy as np
 import pytest
 import spiceypy
 
-from lunaris_science.coordinates import CoordinateError, SelenographicCoordinate
-from lunaris_science.geometry import (
+from lunareyes_science.coordinates import CoordinateError, SelenographicCoordinate
+from lunareyes_science.geometry import (
     Body,
     EpochError,
     GeometryError,
@@ -23,8 +23,8 @@ from lunaris_science.geometry import (
     uniform_utc_grid,
     utc_to_et,
 )
-from lunaris_science.geometry.spice import SpiceContext
-from lunaris_science.provenance import EvidenceKind
+from lunareyes_science.geometry.spice import SpiceContext
+from lunareyes_science.provenance import EvidenceKind
 
 ARCSEC = 1.0 / 3600.0
 

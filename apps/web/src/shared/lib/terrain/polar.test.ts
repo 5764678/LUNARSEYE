@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { directionToLocal, latLonToMap, mapToMoonMe, moonMeToLocalKm, sceneHeightAt } from "./polar";
 
-// Reference values from lunaris_science (SouthPolarStereographic(1737400).inverse and
+// Reference values from lunareyes_science (SouthPolarStereographic(1737400).inverse and
 // spherical_to_cartesian), computed with the frozen core on 2026-11-14.
 describe("mapToMoonMe", () => {
   it("matches the science core", () => {

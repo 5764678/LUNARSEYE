@@ -12,14 +12,14 @@ import numpy as np
 import pytest
 import spiceypy
 
-from lunaris_data.kernels import (
+from lunareyes_data.kernels import (
     KERNEL_DATASET_ID,
     KernelSetUnavailableError,
     load_verified_kernel_set,
 )
-from lunaris_data.registry import DatasetRegistry
-from lunaris_data.store import DataLayout
-from lunaris_science.geometry.spice import (
+from lunareyes_data.registry import DatasetRegistry
+from lunareyes_data.store import DataLayout
+from lunareyes_science.geometry.spice import (
     SPICE_LOCK,
     KernelFile,
     KernelRole,
@@ -27,7 +27,7 @@ from lunaris_science.geometry.spice import (
     SpiceContext,
     SpiceKernelError,
 )
-from lunaris_science.provenance import SourceReference
+from lunareyes_science.provenance import SourceReference
 
 SHA = "0" * 64
 ARCSEC_PER_RAD = 180.0 / np.pi * 3600.0
@@ -102,7 +102,7 @@ def test_unknown_kernel_extension_is_rejected() -> None:
 
 def test_missing_kernel_set_is_reported_with_the_acquire_command(tmp_path: Path) -> None:
     manifest = DatasetRegistry.load_builtin().get(KERNEL_DATASET_ID)
-    with pytest.raises(KernelSetUnavailableError, match="lunaris-data acquire") as info:
+    with pytest.raises(KernelSetUnavailableError, match="lunareyes-data acquire") as info:
         load_verified_kernel_set(manifest, DataLayout.from_root(tmp_path))
     assert "no acquisition record" in info.value.problems
 

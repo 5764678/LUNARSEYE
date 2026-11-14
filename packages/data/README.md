@@ -1,15 +1,15 @@
-# lunaris-data
+# lunareyes-data
 
 Dataset manifests, reproducible acquisition, integrity verification and
-preprocessing for the NASA products LUNARIS uses. Large datasets and SPICE kernels
+preprocessing for the NASA products LUNAREYES uses. Large datasets and SPICE kernels
 are **never committed**; this package fetches them and records provenance.
 
 ```bash
-uv run lunaris-data list                      # registry + local status
-uv run lunaris-data show lola-ldem-75s-240m   # full manifest
-uv run lunaris-data acquire naif-generic-kernels-lunar
-uv run lunaris-data verify naif-generic-kernels-lunar
-uv run lunaris-data build-web-texture         # after acquiring nasa-svs-cgi-moon-kit
+uv run lunareyes-data list                      # registry + local status
+uv run lunareyes-data show lola-ldem-75s-240m   # full manifest
+uv run lunareyes-data acquire naif-generic-kernels-lunar
+uv run lunareyes-data verify naif-generic-kernels-lunar
+uv run lunareyes-data build-web-texture         # after acquiring nasa-svs-cgi-moon-kit
 ```
 
 | Subpackage | Responsibility |
@@ -23,5 +23,5 @@ uv run lunaris-data build-web-texture         # after acquiring nasa-svs-cgi-moo
 
 Every acquired dataset directory contains `acquisition.json`: source URL, final
 URL after redirects, HTTP validators, byte size, SHA-256, retrieval time and tool
-version. A file without that record is reported as **untracked** — LUNARIS will not
+version. A file without that record is reported as **untracked** — LUNAREYES will not
 treat data of unknown provenance as acquired.

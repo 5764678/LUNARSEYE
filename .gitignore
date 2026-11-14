@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# LUNARIS — repository ignore rules
+# LUNAREYES — repository ignore rules
 # Scientific datasets, SPICE kernels and generated assets are NEVER committed.
-# They are acquired reproducibly with `uv run lunaris-data acquire <dataset-id>`.
+# They are acquired reproducibly with `uv run lunareyes-data acquire <dataset-id>`.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Acquired / generated data (keep the directory skeleton + READMEs only) ──

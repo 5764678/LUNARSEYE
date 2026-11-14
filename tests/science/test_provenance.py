@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from lunaris_science.provenance import (
+from lunareyes_science.provenance import (
     Evidence,
     EvidenceKind,
     ProvenanceError,

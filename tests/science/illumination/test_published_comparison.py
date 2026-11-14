@@ -1,13 +1,13 @@
-"""T-25 part 2: LUNARIS terrain-horizon results vs the published LOLA maps.
+"""T-25 part 2: LUNAREYES terrain-horizon results vs the published LOLA maps.
 
-LUNARIS computes, at each demo-trio reference point, the share of time any part of the
+LUNAREYES computes, at each demo-trio reference point, the share of time any part of the
 Sun / Earth is visible above the terrain horizon (T-15 mask from LDEM_75S_240M, eye 2 m)
 over the published period 2001-01-01 → 2018-08-08, and compares it with Mazarico et al.
 (2011)'s AVGVISIB maps (data/fixtures/validation/published-illumination.json).
 
 The test steps every 7 h (22 039 samples), which reproduces the hourly result to within
 6e-4 at every site (measured; hourly values in docs/SCIENCE.md §6) at a seventh of the
-cost. Real data: skipped without it unless LUNARIS_REQUIRE_KERNELS=1 (CI acquires both).
+cost. Real data: skipped without it unless LUNAREYES_REQUIRE_KERNELS=1 (CI acquires both).
 """
 
 from __future__ import annotations
@@ -21,16 +21,16 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from lunaris_data.readers.ldem import read_ldem_polar
-from lunaris_data.registry import DatasetRegistry
-from lunaris_data.validation.integrity import verify_dataset
-from lunaris_science.coordinates import SelenographicCoordinate
-from lunaris_science.geometry import Body, ObserverSite, body_geometry, uniform_utc_grid, utc_to_et
-from lunaris_science.geometry.spice import SpiceContext
-from lunaris_science.illumination.analysis import body_timeline
-from lunaris_science.illumination.validation import PublishedReference, compare
-from lunaris_science.terrain.dem import PolarDem
-from lunaris_science.terrain.horizon import compute_horizon_mask
+from lunareyes_data.readers.ldem import read_ldem_polar
+from lunareyes_data.registry import DatasetRegistry
+from lunareyes_data.validation.integrity import verify_dataset
+from lunareyes_science.coordinates import SelenographicCoordinate
+from lunareyes_science.geometry import Body, ObserverSite, body_geometry, uniform_utc_grid, utc_to_et
+from lunareyes_science.geometry.spice import SpiceContext
+from lunareyes_science.illumination.analysis import body_timeline
+from lunareyes_science.illumination.validation import PublishedReference, compare
+from lunareyes_science.terrain.dem import PolarDem
+from lunareyes_science.terrain.horizon import compute_horizon_mask
 from tests.science.geometry.conftest import data_layout
 
 FIXTURE = (
@@ -48,15 +48,15 @@ def dem() -> PolarDem:
     layout = data_layout()
     manifest = DatasetRegistry.load_builtin().get("lola-ldem-75s-240m")
     if not verify_dataset(manifest, layout).ok:
-        message = "LDEM_75S_240M not acquired: run `uv run lunaris-data acquire lola-ldem-75s-240m`"
-        if os.environ.get("LUNARIS_REQUIRE_KERNELS") == "1":
+        message = "LDEM_75S_240M not acquired: run `uv run lunareyes-data acquire lola-ldem-75s-240m`"
+        if os.environ.get("LUNAREYES_REQUIRE_KERNELS") == "1":
             pytest.fail(message)
         pytest.skip(message)
     return read_ldem_polar(layout.dataset_dir(manifest) / "LDEM_75S_240M.LBL", manifest.id)
 
 
 def _catalog_point(site_id: str) -> tuple[float, float]:
-    catalog = resources.files("lunaris_data.catalogs") / "south-pole-candidate-sites.json"
+    catalog = resources.files("lunareyes_data.catalogs") / "south-pole-candidate-sites.json"
     for site in json.loads(catalog.read_text(encoding="utf-8"))["sites"]:
         if site["id"] == site_id:
             return float(site["reference_point"]["latitude_deg"]), float(

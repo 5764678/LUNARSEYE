@@ -11,9 +11,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from lunaris_science.constants import LOLA_REFERENCE_SPHERE_RADIUS
-from lunaris_science.coordinates import CoordinateError, spherical_to_cartesian
-from lunaris_science.terrain.polar_stereographic import (
+from lunareyes_science.constants import LOLA_REFERENCE_SPHERE_RADIUS
+from lunareyes_science.coordinates import CoordinateError, spherical_to_cartesian
+from lunareyes_science.terrain.polar_stereographic import (
     PolarStereographicGrid,
     SouthPolarStereographic,
 )

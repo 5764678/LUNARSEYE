@@ -1,11 +1,11 @@
-# LUNARIS Round 2 — Python workspace root (not a distributable package).
+# LUNAREYES Round 2 — Python workspace root (not a distributable package).
 #   uv sync && uv run pytest
 [project]
-name = "lunaris-workspace"
+name = "lunareyes-workspace"
 version = "0.2.0"
-description = "LUNARIS Round 2 monorepo Python workspace root."
+description = "LUNAREYES Round 2 monorepo Python workspace root."
 requires-python = ">=3.11"
-dependencies = ["lunaris-science", "lunaris-data", "lunaris-api"]
+dependencies = ["lunareyes-science", "lunareyes-data", "lunareyes-api"]
 
 [dependency-groups]
 dev = ["pytest>=8.3", "hypothesis>=6.120", "ruff>=0.8", "httpx2>=2.16"]
@@ -17,9 +17,9 @@ package = false
 members = ["packages/science", "packages/data", "apps/api"]
 
 [tool.uv.sources]
-lunaris-science = { workspace = true }
-lunaris-data = { workspace = true }
-lunaris-api = { workspace = true }
+lunareyes-science = { workspace = true }
+lunareyes-data = { workspace = true }
+lunareyes-api = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

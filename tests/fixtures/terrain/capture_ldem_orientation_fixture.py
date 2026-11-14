@@ -2,7 +2,7 @@
 
 For each reference point, this records:
 
-* the LDEM_75S_240M pixel that LUNARIS's grid convention assigns to the point, and the
+* the LDEM_75S_240M pixel that LUNAREYES's grid convention assigns to the point, and the
   DN there and at the pixels the two alternative conventions would pick (sample axis
   mirrored, as the DSMAP_POLAR.CAT forward equation implies; line axis flipped);
 * the mean height of the co-located 240 m footprint (12 × 12 pixels) in the PGDA
@@ -28,7 +28,7 @@ import numpy as np
 import rasterio
 from rasterio.windows import Window
 
-from lunaris_science.terrain.polar_stereographic import PolarStereographicGrid
+from lunareyes_science.terrain.polar_stereographic import PolarStereographicGrid
 
 PGDA_URL = "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF"
 POINTS = [

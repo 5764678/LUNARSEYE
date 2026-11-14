@@ -8,10 +8,10 @@ resolution-markers = [
 
 [manifest]
 members = [
-    "lunaris-api",
-    "lunaris-data",
-    "lunaris-science",
-    "lunaris-workspace",
+    "lunareyes-api",
+    "lunareyes-data",
+    "lunareyes-science",
+    "lunareyes-workspace",
 ]
 
 [[package]]
@@ -422,13 +422,13 @@ wheels = [
 ]
 
 [[package]]
-name = "lunaris-api"
+name = "lunareyes-api"
 version = "0.2.0"
 source = { editable = "apps/api" }
 dependencies = [
     { name = "fastapi" },
-    { name = "lunaris-data" },
-    { name = "lunaris-science" },
+    { name = "lunareyes-data" },
+    { name = "lunareyes-science" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "sqlalchemy" },
@@ -438,8 +438,8 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
-    { name = "lunaris-data", editable = "packages/data" },
-    { name = "lunaris-science", editable = "packages/science" },
+    { name = "lunareyes-data", editable = "packages/data" },
+    { name = "lunareyes-science", editable = "packages/science" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
     { name = "pydantic", specifier = ">=2.9" },
     { name = "sqlalchemy", specifier = ">=2.0.36" },
@@ -447,12 +447,12 @@ requires-dist = [
 ]
 
 [[package]]
-name = "lunaris-data"
+name = "lunareyes-data"
 version = "0.1.0"
 source = { editable = "packages/data" }
 dependencies = [
     { name = "httpx" },
-    { name = "lunaris-science" },
+    { name = "lunareyes-science" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pydantic" },
@@ -463,14 +463,14 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
-    { name = "lunaris-science", editable = "packages/science" },
+    { name = "lunareyes-science", editable = "packages/science" },
     { name = "numpy", specifier = ">=2.1" },
     { name = "pydantic", specifier = ">=2.9" },
     { name = "rasterio", specifier = ">=1.4.2" },
 ]
 
 [[package]]
-name = "lunaris-science"
+name = "lunareyes-science"
 version = "0.1.0"
 source = { editable = "packages/science" }
 dependencies = [
@@ -489,13 +489,13 @@ requires-dist = [
 ]
 
 [[package]]
-name = "lunaris-workspace"
+name = "lunareyes-workspace"
 version = "0.2.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "lunaris-api" },
-    { name = "lunaris-data" },
-    { name = "lunaris-science" },
+    { name = "lunareyes-api" },
+    { name = "lunareyes-data" },
+    { name = "lunareyes-science" },
 ]
 
 [package.dev-dependencies]
@@ -508,9 +508,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "lunaris-api", editable = "apps/api" },
-    { name = "lunaris-data", editable = "packages/data" },
-    { name = "lunaris-science", editable = "packages/science" },
+    { name = "lunareyes-api", editable = "apps/api" },
+    { name = "lunareyes-data", editable = "packages/data" },
+    { name = "lunareyes-science", editable = "packages/science" },
 ]
 
 [package.metadata.requires-dev]
