@@ -47,7 +47,7 @@ roughest; Malapert massif is smoothest; under the `landing` profile Malapert sco
   built into it): trio 3.0 s cold / 0.02 s repeat; 10 sites cold 6.8 s. Memory: see DEPLOY.md.
 - **Deployed** (free Render plan): https://lunaris-zqih.onrender.com , see `docs/round2/DEPLOY.md`
   for service ids, auto-deploy behaviour and the open collaborator-invite item. Free plan is
-  512 MiB-class: measured worst case ≈ 440 MiB, so watch for restarts under load.
+  512 MiB: it was **OOM-killed once** (27 s of 502s) and fixed, see DEPLOY.md "Memory" (one timeline computation at a time; peak 377 MiB under a 512 MiB limit in Docker, not yet re-verified on Render at the time of writing; check `list_events` for `server_failed`).
 - **Compare**: observer height fixed at 2 m; per-site rows cached in memory (256 max); sample
   cap is 10 000 per request (a year hourly = 8 761).
 - **Ruff**: ~28 style findings in `apps/api/src` from earlier work; no gate exists.
@@ -130,7 +130,7 @@ Quality work (14 Nov progress marked):
    catalogue site to test with (the catalogue has tile centres such as "Shackleton rim").
 4. **Docs:** keep README + this file current; add `docs/round2/disposition.md` only if asked.
 5. Alembic replacing `create_all`; CI (typecheck, vitest, build, pytest with Postgres + data).
-Polish for the submission (in progress, see git log): demo path on `/` (call to action to compare the trio), mobile
+Polish for the submission: **DONE 14 Nov:** landing intro + CTA to the demo comparison; phone layout (overflow 154 px → 0 at 390 px on all 5 routes; verified by screenshots, not on a real phone). **Not done:** copy review, accessibility audit, Safari/Firefox. Original list: demo path on `/` (call to action to compare the trio), mobile
 width, copy review, screenshots. Deploy only when the user says go.
 
 ## 6. Reference material and rules
@@ -164,4 +164,4 @@ width, copy review, screenshots. Deploy only when the user says go.
 | Session | Did |
 | --- | --- |
 | Session A (Fable 5.2, `claude/admiring-hamilton-sp4gwl`, PR 1, merged) | Phase 1 end-to-end path; Illumination page; Terrain page + terrain API |
-| Session B (Sonnet 5.5, `claude/gifted-allen-smvncn`) | Verified Phase 1/2 state; Compare API + page (ported summary logic) with tests; Data API + page; `next build` verified; CLAUDE.md + this file; Docker/Render deploy prep (image built and run locally, prewarm script, runtime API proxy, memory finding + cache fix) |
+| Session B (Sonnet 5.5, `claude/gifted-allen-smvncn`) | Verified Phase 1/2 state; Compare API + page (ported summary logic) with tests; Data API + page; `next build` verified; CLAUDE.md + this file; Docker/Render deploy prep (image built and run locally, prewarm script, runtime API proxy, memory finding + cache fix); Render deploy via connector (live); OOM incident diagnosed and fixed; landing/phone polish; blueprint rename tested and refused (see DEPLOY.md) |

@@ -41,14 +41,39 @@ The image build (≈ 3–10 min depending on network) does the slow work once:
    it is computed lazily at request time instead.
 4. `next build` with `output: "standalone"`.
 
-## Collaborator access (OPEN ITEM)
+## Collaborator access: not possible from here; decided to skip
 
-The user asked for **jinn.newbie.s@gmail.com** to be added as a collaborator on the Render
-workspace so they can deploy. The Render connector has **no member/invite tool**, so this must
-be done by the workspace owner in the dashboard: Dashboard → the workspace → **Settings** →
-**Team members** → **+ Invite members** → email + role. Render's docs say adding members needs
-a **Pro-or-higher workspace**; whether this one qualifies was not checked. Update this section
-when it is done.
+The user asked for **jinn.newbie.s@gmail.com** to be added to the Render workspace. The Render
+connector has no member/invite tool, and Render's docs say adding members needs a Pro-or-higher
+workspace (not checked for this one). **Decision (user, 14 Nov): skip it; the session
+working with the user deploys other people's work instead.** If that changes: Dashboard →
+workspace → Settings → Team members → + Invite members.
+
+## How to deploy someone else's new work
+
+The service **auto-deploys every push to the branch it tracks** (`claude/gifted-allen-smvncn`);
+a build takes ≈ 1–3 min and a failed build leaves the previous deploy running.
+- Work pushed to the tracked branch (or merged into it): nothing to do. Verify, see below.
+- Work on another branch: it is NOT deployed until it is on the tracked branch (merge it there)
+  or the Blueprint is pointed at it: `update_blueprint(blueprintId, branch=…)`, then review the
+  plan with `plan_blueprint`, then `approve_blueprint`. (Plain `trigger_deploy` only redeploys
+  the tracked branch.)
+- Verify every deploy: `list_deploys` shows `live`; `list_events` with `eventTypes:
+  ["server_failed"]` shows no `oomKilled`; then run
+  `BASE_URL=https://lunaris-zqih.onrender.com NODE_PATH=$(npm root -g) node scripts/smoke.mjs`.
+  Do not run heavy load against the free instance (that is how it was OOM-killed once).
+
+## Naming (the user wants the service called "lunarseye")
+
+The live names are `lunaris-zqih` (web) and `lunaris-db-zqih` (Postgres): Render appended a
+random suffix when the Blueprint was created with `existingResources: create_new`.
+Tested with `plan_blueprint` (nothing applied): renaming in `render.yaml` does **not** rename;
+it plans a second free Postgres (the free plan allows one) and a *new* service
+`lunarseye-zqih`, still suffixed. A second Blueprint for the same repo/branch/file is refused
+(409). The Blueprint has `autoSync` turned **off** so a `render.yaml` edit can never apply
+unreviewed; `plan_blueprint` + `approve_blueprint` are needed to change infrastructure.
+Ways to get the exact name are listed in the user-facing summary of the 14 Nov session; see the
+git log / ask the user which was chosen, and record it here.
 
 ## Steps if redeploying from scratch (for a human, in the Render dashboard)
 
