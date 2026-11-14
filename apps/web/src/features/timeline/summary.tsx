@@ -1,84 +1,98 @@
 "use client";
 
-import type { ReactNode } from "react";
-
 import type { Evidence, HorizonSummary, SiteTimeline } from "@/shared/api/client";
 import { deg, duration, pct } from "@/shared/lib/format";
 import { formatLatitude, formatLongitude } from "@/shared/lib/geo/selenographic";
-import { EvidenceBadge } from "@/shared/ui/evidence";
+import { EvidenceBadge, EvidenceValue } from "@/shared/ui/evidence";
 
-function Stat({
+interface Labels {
+  mean: string;
+  any: string;
+  hidden: string;
+  visible: string;
+}
+
+function StatRow({
   label,
-  value,
-  note,
+  title,
   evidence,
+  terrain,
+  flat,
 }: {
   label: string;
-  value: string;
-  note?: ReactNode;
-  evidence: Evidence | null | undefined;
+  title: string;
+  evidence: Evidence;
+  terrain: string | null;
+  flat: string;
 }) {
   return (
-    <div className="stat">
-      <div className="stat-label">{label}</div>
-      <div className="stat-value">
-        {value} <EvidenceBadge title={label} evidence={evidence} value={value} />
-      </div>
-      {note ? <div className="stat-note">{note}</div> : null}
-    </div>
+    <tr>
+      <th scope="row">{label}</th>
+      <td className="num">
+        {terrain === null ? (
+          <span className="dim">not computed</span>
+        ) : (
+          <EvidenceValue title={`${title}: ${label} (terrain horizon)`} evidence={evidence} value={terrain} />
+        )}
+      </td>
+      <td className="num dim">
+        <EvidenceValue title={`${title}: ${label} (flat horizon)`} evidence={evidence} value={flat} />
+      </td>
+    </tr>
   );
 }
 
-const flat = (text: string) => <>flat horizon: {text}</>;
-
+/** One body's four statistics: terrain horizon beside the flat horizon, one row each. The
+ *  evidence kind sits once in the header; each value opens the evidence behind it. */
 function BodyStats({
+  title,
+  tone,
   terrain,
   astronomical,
   evidence,
   labels,
 }: {
+  title: string;
+  tone: "sun-text" | "earth-text";
   terrain: HorizonSummary | null;
   astronomical: HorizonSummary;
   evidence: Evidence;
-  labels: { mean: string; any: string; hidden: string; visible: string };
+  labels: Labels;
 }) {
-  const main = terrain ?? astronomical;
-  const upper = main.any_truncated ? "≤ " : "";
+  const upper = terrain?.any_truncated ? "≤ " : "";
+  const row = (label: string, get: (s: HorizonSummary) => string, bound = false) => (
+    <StatRow
+      label={label}
+      title={title}
+      evidence={evidence}
+      terrain={terrain ? `${bound ? upper : ""}${get(terrain)}` : null}
+      flat={get(astronomical)}
+    />
+  );
   return (
-    <>
-      <Stat
-        label={labels.mean}
-        value={`${upper}${pct(main.mean_visible_disk_fraction)}`}
-        note={terrain ? flat(pct(astronomical.mean_visible_disk_fraction)) : "flat horizon only"}
-        evidence={evidence}
-      />
-      <Stat
-        label={labels.any}
-        value={`${upper}${pct(main.visible_time_fraction)}`}
-        note={terrain ? flat(pct(astronomical.visible_time_fraction)) : "flat horizon only"}
-        evidence={evidence}
-      />
-      <Stat
-        label={labels.hidden}
-        value={duration(main.longest_hidden_s, main.longest_hidden_censored)}
-        note={
-          terrain
-            ? flat(duration(astronomical.longest_hidden_s, astronomical.longest_hidden_censored))
-            : "flat horizon only"
-        }
-        evidence={evidence}
-      />
-      <Stat
-        label={labels.visible}
-        value={duration(main.longest_visible_s, main.longest_visible_censored)}
-        note={
-          main.longest_visible_censored
-            ? "touches the window edge: a lower bound"
-            : `resolution ± ${duration(main.resolution_s)}`
-        }
-        evidence={evidence}
-      />
-    </>
+    <table className="data stats">
+      <caption className="sr-only">{title}: terrain horizon against flat horizon</caption>
+      <thead>
+        <tr>
+          <th scope="col" className="group-th">
+            <span className={tone}>{title}</span>
+            <EvidenceBadge title={title} evidence={evidence} />
+          </th>
+          <th scope="col" className="num">
+            Terrain
+          </th>
+          <th scope="col" className="num">
+            Flat
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {row(labels.mean, (s) => pct(s.mean_visible_disk_fraction), true)}
+        {row(labels.any, (s) => pct(s.visible_time_fraction), true)}
+        {row(labels.hidden, (s) => duration(s.longest_hidden_s, s.longest_hidden_censored))}
+        {row(labels.visible, (s) => duration(s.longest_visible_s, s.longest_visible_censored))}
+      </tbody>
+    </table>
   );
 }
 
@@ -90,12 +104,14 @@ export function SiteSummary({
   coordinateEvidence: Evidence;
 }) {
   const { site, horizon, sun, earth } = timeline;
-  const period = `${timeline.start_utc.slice(0, 10)} → ${timeline.end_utc.slice(0, 10)}, every ${
+  const period = `${timeline.start_utc.slice(0, 10)} → ${timeline.end_utc.slice(0, 10)} · every ${
     timeline.step_s / 3600
-  } h`;
+  } h · ${timeline.sample_count} samples`;
+  const elevationRange = horizon.available ? `${deg(horizon.min_elevation_deg!)} … ${deg(horizon.max_elevation_deg!)}` : null;
+  const surfaceHeight = horizon.available ? `${horizon.surface_height_m!.toFixed(0)} m` : null;
   return (
     <div className="summary">
-      <div className="panel-head">
+      <div className="summary-head">
         <h2>{site.name}</h2>
         <span className="mono dim">
           {formatLatitude(site.latitude_deg)} · {formatLongitude(site.longitude_deg)}{" "}
@@ -105,16 +121,17 @@ export function SiteSummary({
           />
         </span>
       </div>
-      <p className="dim small">
-        Statistics over {period} ({timeline.sample_count} samples).{" "}
+      <p className="summary-caption">
+        {period}. Run lengths are ± {duration(timeline.step_s)}; ≤ and ≥ mark bounds.
         {timeline.terrain_horizon_available
-          ? "Main values use the terrain horizon; the flat (astronomical) horizon is shown for comparison."
-          : `Terrain horizon not available: ${horizon.unavailable_reason ?? "unknown reason"}`}
+          ? ""
+          : ` Terrain horizon not available: ${horizon.unavailable_reason ?? "unknown reason"}`}
       </p>
 
-      <h3 className="group sun-text">Sunlight</h3>
-      <div className="stats">
+      <div className="stat-group">
         <BodyStats
+          title="Sunlight"
+          tone="sun-text"
           terrain={sun.terrain}
           astronomical={sun.astronomical}
           evidence={sun.evidence}
@@ -127,9 +144,10 @@ export function SiteSummary({
         />
       </div>
 
-      <h3 className="group earth-text">Earth line of sight</h3>
-      <div className="stats">
+      <div className="stat-group">
         <BodyStats
+          title="Earth line of sight"
+          tone="earth-text"
           terrain={earth.terrain}
           astronomical={earth.astronomical}
           evidence={earth.evidence}
@@ -140,37 +158,57 @@ export function SiteSummary({
             visible: "Longest Earth pass",
           }}
         />
+        <p className="summary-foot">Geometric line of sight only. It does not imply a radio link.</p>
       </div>
-      <p className="dim small">Geometric line of sight only. It does not imply a radio link.</p>
 
-      <h3 className="group">Terrain horizon</h3>
-      <div className="stats">
-        <Stat
-          label="Horizon elevation, min … max"
-          value={
-            horizon.available
-              ? `${deg(horizon.min_elevation_deg!)} … ${deg(horizon.max_elevation_deg!)}`
-              : "not computed"
-          }
-          note={
-            horizon.available
-              ? `${horizon.azimuth_deg!.length} azimuths, ${horizon.max_range_m! / 1000} km; ${
-                  horizon.truncated_count
-                } truncated`
-              : horizon.unavailable_reason
-          }
-          evidence={horizon.evidence}
-        />
-        <Stat
-          label="Surface height at site"
-          value={horizon.available ? `${horizon.surface_height_m!.toFixed(0)} m` : "not sampled"}
-          note={
-            horizon.available
-              ? `above the 1737.4 km sphere; eye ${horizon.observer_height_m} m above it`
-              : "site placed on the reference sphere"
-          }
-          evidence={horizon.evidence}
-        />
+      <div className="stat-group">
+        <table className="data stats">
+          <caption className="sr-only">Terrain horizon</caption>
+          <thead>
+            <tr>
+              <th scope="col" className="group-th" colSpan={2}>
+                <span>Terrain horizon</span>
+                <EvidenceBadge title="Terrain horizon" evidence={horizon.evidence} />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">
+                Horizon elevation, min … max
+                <span className="row-note">
+                  {horizon.available
+                    ? `${horizon.azimuth_deg!.length} azimuths, ${horizon.max_range_m! / 1000} km; ${horizon.truncated_count} truncated`
+                    : horizon.unavailable_reason}
+                </span>
+              </th>
+              <td className="num">
+                {elevationRange === null ? (
+                  <span className="dim">not computed</span>
+                ) : (
+                  <EvidenceValue title="Horizon elevation, min … max" evidence={horizon.evidence} value={elevationRange} />
+                )}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">
+                Surface height at site
+                <span className="row-note">
+                  {horizon.available
+                    ? `above the 1737.4 km sphere; eye ${horizon.observer_height_m} m above it`
+                    : "site placed on the reference sphere"}
+                </span>
+              </th>
+              <td className="num">
+                {surfaceHeight === null ? (
+                  <span className="dim">not sampled</span>
+                ) : (
+                  <EvidenceValue title="Surface height at site" evidence={horizon.evidence} value={surfaceHeight} />
+                )}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );

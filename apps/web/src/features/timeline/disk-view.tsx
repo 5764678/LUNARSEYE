@@ -50,16 +50,19 @@ export function DiskView({
   }, [horizon, azimuthDeg, scale, centreEl, HALF_SPAN_DEG]); // eslint-disable-line react-hooks/exhaustive-deps
   const zero = y(0);
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="disk-view" role="img" aria-label="Disc against the terrain horizon">
-      <rect width={SIZE} height={SIZE} className="sky" />
-      <circle cx={SIZE / 2} cy={y(elevationDeg)} r={radiusDeg * scale} className={className} />
-      {zero > 0 && zero < SIZE ? <line x1={0} x2={SIZE} y1={zero} y2={zero} className="rule" /> : null}
-      {ground ? <path d={ground} className="ground" /> : null}
-      {/* Outline on top, so a disc hidden behind terrain can still be located. */}
-      <circle cx={SIZE / 2} cy={y(elevationDeg)} r={radiusDeg * scale} className="disc-outline" />
-      <text x={6} y={SIZE - 6} className="svg-note">
+    <figure className="disk-figure">
+      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="disk-view" role="img" aria-label="Disc against the terrain horizon">
+        <rect width={SIZE} height={SIZE} className="sky" />
+        <circle cx={SIZE / 2} cy={y(elevationDeg)} r={radiusDeg * scale} className={className} />
+        {zero > 0 && zero < SIZE ? <line x1={0} x2={SIZE} y1={zero} y2={zero} className="rule" /> : null}
+        {ground ? <path d={ground} className="ground" /> : null}
+        {/* Outline on top, so a disc hidden behind terrain can still be located. */}
+        <circle cx={SIZE / 2} cy={y(elevationDeg)} r={radiusDeg * scale} className="disc-outline" />
+      </svg>
+      {/* HTML, not SVG text: SVG text would shrink with the viewBox to about 6 px. */}
+      <figcaption>
         {2 * HALF_SPAN_DEG}° × {2 * HALF_SPAN_DEG}° · az {azimuthDeg.toFixed(1)}°
-      </text>
-    </svg>
+      </figcaption>
+    </figure>
   );
 }

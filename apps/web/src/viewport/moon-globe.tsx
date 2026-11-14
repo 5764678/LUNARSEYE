@@ -16,6 +16,7 @@ import {
 
 import type { SiteOut } from "@/shared/api/client";
 import { selenographicToScene, type Vec3 } from "@/shared/lib/geo/selenographic";
+import { cssColor } from "@/shared/ui/tokens";
 
 import { MODE_PROCEDURAL, MODE_TEXTURE, moonFragmentShader, moonVertexShader } from "./moon-shader";
 
@@ -59,15 +60,38 @@ function Markers({
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
+  const colors = useMemo(
+    () => ({
+      marker: cssColor("--site-marker"),
+      selected: cssColor("--site-marker-selected"),
+      halo: cssColor("--site-halo"),
+    }),
+    [],
+  );
+  // Each marker lies in the local horizontal plane: its ring normal is the radial direction.
+  const placed = useMemo(
+    () =>
+      sites.map((site) => {
+        const position = selenographicToScene(site.latitude_deg, site.longitude_deg, 1.002) as unknown as [
+          number,
+          number,
+          number,
+        ];
+        const normal = new Vector3(...position).normalize();
+        return {
+          site,
+          position,
+          quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), normal),
+          below: normal.clone().multiplyScalar(-0.0003).toArray() as [number, number, number],
+        };
+      }),
+    [sites],
+  );
   return (
     <>
-      {sites.map((site) => {
+      {placed.map(({ site, position, quaternion, below }) => {
         const selected = site.id === selectedId;
-        const position = selenographicToScene(
-          site.latitude_deg,
-          site.longitude_deg,
-          1.002,
-        ) as unknown as [number, number, number];
+        const radius = selected ? 0.0065 : 0.0045;
         return (
           <group key={site.id} position={position}>
             <mesh
@@ -76,20 +100,25 @@ function Markers({
                 onSelect(site.id);
               }}
             >
-              <sphereGeometry args={[selected ? 0.0065 : 0.0045, 16, 12]} />
-              <meshBasicMaterial color={selected ? "#ffd166" : "#7cb5ff"} toneMapped={false} />
+              <sphereGeometry args={[radius, 16, 12]} />
+              <meshBasicMaterial color={selected ? colors.selected : colors.marker} toneMapped={false} />
+            </mesh>
+            {/* A dark halo, so the dot reads against both the lit surface and the night side. */}
+            <mesh quaternion={quaternion} position={below}>
+              <ringGeometry args={[radius * 1.1, radius * 2.3, 32]} />
+              <meshBasicMaterial color={colors.halo} side={DoubleSide} toneMapped={false} />
             </mesh>
             {selected ? (
-              <mesh
-                // The ring lies in the local horizontal plane: its normal is the radial direction.
-                quaternion={new Quaternion().setFromUnitVectors(
-                  new Vector3(0, 0, 1),
-                  new Vector3(...position).normalize(),
-                )}
-              >
-                <ringGeometry args={[0.014, 0.017, 48]} />
-                <meshBasicMaterial color="#ffd166" side={DoubleSide} toneMapped={false} />
-              </mesh>
+              <>
+                <mesh quaternion={quaternion}>
+                  <ringGeometry args={[0.014, 0.017, 48]} />
+                  <meshBasicMaterial color={colors.selected} side={DoubleSide} toneMapped={false} />
+                </mesh>
+                <mesh quaternion={quaternion} position={below}>
+                  <ringGeometry args={[0.0128, 0.0192, 48]} />
+                  <meshBasicMaterial color={colors.halo} side={DoubleSide} toneMapped={false} />
+                </mesh>
+              </>
             ) : null}
           </group>
         );
@@ -146,9 +175,10 @@ export default function MoonGlobe({
   }, [textureUrl]);
 
   const selected = sites.find((s) => s.id === selectedId) ?? null;
+  const background = useMemo(() => cssColor("--plate"), []);
   return (
     <Canvas camera={{ fov: 32, near: 0.05, far: 50, position: [0.38, -2.17, 0] }} dpr={[1, 2]}>
-      <color attach="background" args={["#020305"]} />
+      <color attach="background" args={[background]} />
       <CameraRig site={selected} />
       <Surface texture={texture} sun={sunScene} />
       <Markers sites={sites} selectedId={selectedId} onSelect={onSelect} />

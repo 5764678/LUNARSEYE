@@ -2,6 +2,7 @@
 
 import { describeError } from "@/shared/api/client";
 import { useDatasets } from "@/shared/api/queries";
+import { BRAND } from "@/shared/brand";
 
 const STATUS_LABEL: Record<string, string> = {
   acquired: "Acquired and verified locally",
@@ -13,7 +14,7 @@ const STATUS_LABEL: Record<string, string> = {
 const mb = (bytes: number | null) =>
   bytes === null ? "size unknown" : bytes >= 1e9 ? `${(bytes / 1e9).toFixed(2)} GB` : `${(bytes / 1e6).toFixed(1)} MB`;
 
-/** What LUNARSEYE computes from: every dataset, who made it, how it is used, its hash. */
+/** What the app computes from: every dataset, who made it, how it is used, its hash. */
 export function Datasets() {
   const { data, isLoading, isError, error } = useDatasets();
   return (
@@ -21,7 +22,7 @@ export function Datasets() {
       <div className="page-head">
         <h1>Data sources</h1>
         <span className="dim">
-          Every number in LUNARSEYE traces to one of these. Acquired files are SHA-256 checked.
+          Every number in {BRAND} traces to one of these. Acquired files are SHA-256 checked.
         </span>
       </div>
       {isLoading ? <p className="dim pad">Loading the registry…</p> : null}

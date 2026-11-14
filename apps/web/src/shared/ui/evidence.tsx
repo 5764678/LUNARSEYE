@@ -1,20 +1,27 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import type { Evidence } from "@/shared/api/client";
+import { BRAND } from "@/shared/brand";
 import { useEvidence } from "@/shared/state/evidence";
+
+import { Icon } from "./icons";
 
 const KIND: Record<Evidence["kind"], { tag: string; label: string }> = {
   observation: { tag: "OBS", label: "Observation" },
   derived_product: { tag: "DERIVED", label: "Derived data product" },
   model: { tag: "MODEL", label: "Model output" },
-  calculation: { tag: "CALC", label: "LUNARSEYE calculation" },
+  calculation: { tag: "CALC", label: `${BRAND} calculation` },
   assumption: { tag: "ASSUMED", label: "Assumption" },
   placeholder: { tag: "PLACEHOLDER", label: "Placeholder (not decision grade)" },
 };
 
-/** Small tag next to a number; opens the source, method and limits behind it. */
+/**
+ * What kind of evidence stands behind a table, card or line. Say it once, in the heading,
+ * rather than beside every number: the individual numbers open the same evidence through
+ * <EvidenceValue>. A missing source is shown as plain "N/C" (not computed), never as a chip.
+ */
 export function EvidenceBadge({
   title,
   evidence,
@@ -25,7 +32,13 @@ export function EvidenceBadge({
   value?: string;
 }) {
   const show = useEvidence((s) => s.show);
-  if (!evidence) return <span className="ev ev-none">N/C</span>;
+  if (!evidence) {
+    return (
+      <abbr className="nc" title="Not computed">
+        N/C
+      </abbr>
+    );
+  }
   const kind = KIND[evidence.kind];
   return (
     <button
@@ -43,134 +56,138 @@ export function EvidenceBadge({
   );
 }
 
-const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+/** A number that opens the evidence behind it. Plain text when nothing backs it. */
+export function EvidenceValue({
+  title,
+  evidence,
+  value,
+  children,
+}: {
+  title: string;
+  evidence: Evidence | null | undefined;
+  value: string;
+  children?: ReactNode;
+}) {
+  const show = useEvidence((s) => s.show);
+  if (!evidence) return <>{children ?? value}</>;
+  return (
+    <button
+      type="button"
+      className="inspect"
+      aria-label={`${title}: ${value}. Show source, method and limits.`}
+      onClick={(event) => {
+        event.stopPropagation();
+        show(title, evidence, value);
+      }}
+    >
+      {children ?? value}
+    </button>
+  );
+}
 
+/** The source, method and limits behind a number. A native modal <dialog>: it traps focus,
+ *  makes the page behind it inert, closes on Escape and returns focus to the control that
+ *  opened it, with no custom code. A click on the backdrop lands on the dialog itself. */
 export function EvidenceDrawer() {
   const open = useEvidence((s) => s.open);
   const close = useEvidence((s) => s.close);
-  const dialog = useRef<HTMLElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
   const isOpen = open !== null;
 
-  // Modal dialog: focus moves in, Tab stays inside, Escape closes, focus returns to the
-  // badge that opened it.
   useEffect(() => {
-    if (!isOpen) return;
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    dialog.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        close();
-        return;
-      }
-      const root = dialog.current;
-      if (event.key !== "Tab" || !root) return;
-      const items = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE));
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (!first || !last) {
-        event.preventDefault();
-        return;
-      }
-      const inside = root.contains(document.activeElement) && document.activeElement !== root;
-      if (event.shiftKey && (!inside || document.activeElement === first)) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && (!inside || document.activeElement === last)) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      if (opener?.isConnected) opener.focus();
-    };
-  }, [isOpen, close]);
+    const node = dialog.current;
+    if (!node) return;
+    if (isOpen && !node.open) {
+      node.showModal();
+      // Land on the content, so a screen reader reads the title first and Tab reaches Close.
+      node.querySelector<HTMLElement>(".drawer-body")?.focus();
+    } else if (!isOpen && node.open) {
+      node.close();
+    }
+  }, [isOpen]);
 
-  if (!open) return null;
-  const { evidence, title, value } = open;
-  const kind = KIND[evidence.kind];
+  const kind = open ? KIND[open.evidence.kind] : null;
   return (
-    <div className="drawer-backdrop" onClick={close}>
-      <aside
-        ref={dialog}
-        className="drawer"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="evidence-eyebrow evidence-title"
-        tabIndex={-1}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <header>
-          <div>
-            <div className="eyebrow" id="evidence-eyebrow">
-              Evidence
+    <dialog
+      ref={dialog}
+      className="drawer"
+      aria-labelledby="evidence-title"
+      onClose={close}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) close();
+      }}
+    >
+      {open && kind ? (
+        <div className="drawer-body" tabIndex={-1}>
+          <header className="drawer-head">
+            <div>
+              <div className="eyebrow">Evidence</div>
+              <h2 id="evidence-title">{open.title}</h2>
+              {open.value ? <div className="drawer-value">{open.value}</div> : null}
             </div>
-            <h2 id="evidence-title">{title}</h2>
-            {value ? <div className="drawer-value">{value}</div> : null}
-          </div>
-          <button type="button" className="btn" onClick={close} aria-label="Close">
-            ✕
-          </button>
-        </header>
-        <p>
-          <span className={`ev ev-${evidence.kind}`}>{kind.tag}</span> <b>{kind.label}</b>
-        </p>
-        <p>{evidence.statement}</p>
+            <button type="button" className="btn icon-only" onClick={close} aria-label="Close evidence">
+              <Icon name="close" />
+            </button>
+          </header>
+          <p>
+            <span className={`ev ev-${open.evidence.kind}`}>{kind.tag}</span> <b>{kind.label}</b>
+          </p>
+          <p>{open.evidence.statement}</p>
 
-        {evidence.method ? (
+          {open.evidence.method ? (
+            <section>
+              <h3>Method</h3>
+              <p>{open.evidence.method}</p>
+            </section>
+          ) : null}
+
           <section>
-            <h3>Method</h3>
-            <p>{evidence.method}</p>
-          </section>
-        ) : null}
-
-        <section>
-          <h3>Sources ({evidence.sources?.length ?? 0})</h3>
-          {(evidence.sources ?? []).length === 0 ? <p className="dim">No external source.</p> : null}
-          <ul className="sources">
-            {(evidence.sources ?? []).map((source) => (
-              <li key={source.source_id}>
-                <div className="source-title">{source.title}</div>
-                <div className="mono dim">{source.source_id}</div>
-                {source.url ? (
-                  <a href={source.url} target="_blank" rel="noreferrer">
-                    {source.url}
-                  </a>
-                ) : null}
-                {source.sha256 ? (
-                  <div className="mono sha" title="SHA-256 of the file actually used">
-                    sha256 {source.sha256}
-                  </div>
-                ) : null}
-                {source.citation ? <div className="dim">{source.citation}</div> : null}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {(evidence.assumptions ?? []).length > 0 ? (
-          <section>
-            <h3>Assumptions</h3>
-            <ul>
-              {(evidence.assumptions ?? []).map((text) => (
-                <li key={text}>{text}</li>
+            <h3>Sources ({open.evidence.sources?.length ?? 0})</h3>
+            {(open.evidence.sources ?? []).length === 0 ? <p className="dim">No external source.</p> : null}
+            <ul className="sources">
+              {(open.evidence.sources ?? []).map((source) => (
+                <li key={source.source_id}>
+                  <div className="source-title">{source.title}</div>
+                  <div className="mono dim">{source.source_id}</div>
+                  {source.url ? (
+                    <a href={source.url} target="_blank" rel="noreferrer">
+                      {source.url}
+                    </a>
+                  ) : null}
+                  {source.sha256 ? (
+                    <div className="mono sha" title="SHA-256 of the file actually used">
+                      sha256 {source.sha256}
+                    </div>
+                  ) : null}
+                  {source.citation ? <div className="dim">{source.citation}</div> : null}
+                </li>
               ))}
             </ul>
           </section>
-        ) : null}
 
-        {(evidence.limitations ?? []).length > 0 ? (
-          <section>
-            <h3>Limits</h3>
-            <ul>
-              {(evidence.limitations ?? []).map((text) => (
-                <li key={text}>{text}</li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-      </aside>
-    </div>
+          {(open.evidence.assumptions ?? []).length > 0 ? (
+            <section>
+              <h3>Assumptions</h3>
+              <ul>
+                {(open.evidence.assumptions ?? []).map((text) => (
+                  <li key={text}>{text}</li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {(open.evidence.limitations ?? []).length > 0 ? (
+            <section>
+              <h3>Limits</h3>
+              <ul>
+                {(open.evidence.limitations ?? []).map((text) => (
+                  <li key={text}>{text}</li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
+      ) : null}
+    </dialog>
   );
 }

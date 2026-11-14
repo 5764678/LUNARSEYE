@@ -1,5 +1,7 @@
 import type { NextRequest } from "next/server";
 
+import { BRAND } from "@/shared/brand";
+
 /**
  * Same-origin proxy to the FastAPI service: `/api/v1/sites` → `${LUNARIS_API_URL}/v1/sites`.
  * The API is read-only (GET), so only GET is forwarded, and only its own two roots.
@@ -37,7 +39,7 @@ export async function GET(
     });
   } catch {
     if (request.signal.aborted) return new Response(null, { status: 499 });
-    return failure(503, "api_unreachable", "The LUNARSEYE API is not reachable.", requestId);
+    return failure(503, "api_unreachable", `The ${BRAND} API is not reachable.`, requestId);
   }
   const out = new Headers();
   for (const name of PASS_HEADERS) {

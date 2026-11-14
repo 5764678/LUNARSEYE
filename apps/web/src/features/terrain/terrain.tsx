@@ -12,6 +12,7 @@ import {
   useTerrainScene,
   useTimeline,
 } from "@/shared/api/queries";
+import { BRAND } from "@/shared/brand";
 import { deg, pct } from "@/shared/lib/format";
 import { formatLatitude, formatLongitude } from "@/shared/lib/geo/selenographic";
 import { globeSunAt, type GlobeSunSeries } from "@/shared/lib/globe/sun";
@@ -19,9 +20,11 @@ import { directionToLocal } from "@/shared/lib/terrain/polar";
 import { clamp } from "@/shared/lib/time/time";
 import { useTime } from "@/shared/state/time";
 import { useMissionUrl } from "@/shared/state/url";
-import { EvidenceBadge } from "@/shared/ui/evidence";
+import { EvidenceBadge, EvidenceValue } from "@/shared/ui/evidence";
+import { HudNote } from "@/shared/ui/hud-note";
+import { Icon } from "@/shared/ui/icons";
 
-import { interpretThresholds, RADIUS_MAX_M, RADIUS_MIN_M } from "./thresholds";
+import { interpretThresholds, RADIUS_DEFAULT_M, RADIUS_MAX_M, RADIUS_MIN_M } from "./thresholds";
 
 const TerrainScene = dynamic(() => import("@/viewport/terrain-scene"), {
   ssr: false,
@@ -30,6 +33,8 @@ const TerrainScene = dynamic(() => import("@/viewport/terrain-scene"), {
 
 const GRID_SIZE = 384;
 const EXAGGERATIONS = [1, 2, 4];
+
+const RADIUS_HINT = `${RADIUS_MIN_M} … ${RADIUS_MAX_M}; sets the roughness baseline (2 × radius)`;
 
 function Row({
   label,
@@ -45,9 +50,12 @@ function Row({
   return (
     <tr>
       <th scope="row">{label}</th>
-      <td>
-        {value ?? "not computed"}{" "}
-        <EvidenceBadge title={label} evidence={value === null ? null : evidence} value={value ?? undefined} />
+      <td className="num">
+        {value === null ? (
+          <span className="dim">not computed</span>
+        ) : (
+          <EvidenceValue title={label} evidence={evidence} value={value} />
+        )}
       </td>
       <td className="dim small">{note}</td>
     </tr>
@@ -71,6 +79,7 @@ function Analysis({ data }: { data: SiteTerrain }) {
   return (
     <>
       <table className="data">
+        <caption className="sr-only">Terrain at the site</caption>
         <tbody>
           <Row label="Height at site" value={num(data.height_m, 1, "m")} note="above the 1737.4 km sphere, bilinear" evidence={e} />
           <Row
@@ -123,15 +132,56 @@ function Analysis({ data }: { data: SiteTerrain }) {
   );
 }
 
+/** A labelled number field. The helper text is replaced by the message once the field has been
+ *  left (validate on blur), and `aria-describedby` ties either one to the input. */
+function Field({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  hint,
+  message,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (text: string) => void;
+  placeholder?: string;
+  hint?: string;
+  message: string | null;
+}) {
+  const [touched, setTouched] = useState(false);
+  const showMessage = touched && message !== null;
+  return (
+    <div className="field">
+      <label htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        inputMode="decimal"
+        placeholder={placeholder}
+        value={value}
+        aria-invalid={showMessage}
+        aria-describedby={`${id}-msg`}
+        onChange={(event) => onChange(event.target.value)}
+        onBlur={() => setTouched(true)}
+      />
+      <span id={`${id}-msg`} className={showMessage ? "field-msg error" : "field-msg"}>
+        {showMessage ? message : hint}
+      </span>
+    </div>
+  );
+}
+
 export function Terrain() {
   const { window, setParams } = useMissionUrl();
   const { sites, siteId, site } = useSelectedSite();
-  const [radiusText, setRadiusText] = useState("50");
+  const [radiusText, setRadiusText] = useState(String(RADIUS_DEFAULT_M));
   const [slopeText, setSlopeText] = useState("");
   const [roughnessText, setRoughnessText] = useState("");
   const [exaggeration, setExaggeration] = useState(1);
 
-  // What is applied can differ from what was typed (clamped, ignored): say so under the field.
+  // What is applied can differ from what was typed (clamped, ignored): the field says so.
   const applied = interpretThresholds(radiusText, slopeText, roughnessText);
   const terrain = useSiteTerrain(siteId, {
     footprintRadiusM: applied.radiusM,
@@ -172,87 +222,108 @@ export function Terrain() {
   const index = t ? clamp(Math.round((epochMs - window.startMs) / (t.step_s * 1000)), 0, t.sample_count - 1) : 0;
   const hazard = terrain.data?.hazard ?? null;
 
+  const flagText = (exceeds: boolean | null) => (exceeds === null ? "not computed" : exceeds ? "exceeds" : "within");
+  const flagClass = (exceeds: boolean | null) => (exceeds === null ? "num dim" : exceeds ? "num flag bad" : "num flag good");
+
   return (
     <div className="terrain-page">
+      <h1 className="sr-only">Terrain{site ? ` · ${site.name}` : ""}</h1>
       <div className="terrain-view">
-        {scene.isError ? (
-          <p className="error pad">
-            {describeError(scene.error)} <RetryButton onClick={() => void scene.refetch()} />
-          </p>
-        ) : null}
-        {grid ? (
-          <TerrainScene
-            grid={grid}
-            sites={sites.data?.sites ?? []}
-            selectedId={siteId}
-            onSelect={(id) => setParams({ site: id })}
-            sunLocal={sunLocal}
-            exaggeration={exaggeration}
-          />
-        ) : !scene.isError ? (
-          <div className="globe-loading">Building the south-pole terrain…</div>
-        ) : null}
-        <div className="hud">
-          <div>
-            <b>South-pole terrain</b> ±125 km, LOLA 240 m{" "}
-            <EvidenceBadge title="South-pole terrain mesh" evidence={scene.data?.evidence} />
-          </div>
-          <div>
-            <b>Light</b>{" "}
-            {sun.isError ? (
-              <>
-                <span className="error">
-                  Sun direction unavailable: {describeError(sun.error)}. The terrain is drawn under flat
-                  ambient light, not the Sun.
-                </span>{" "}
-                <RetryButton onClick={() => void sun.refetch()} />
-              </>
-            ) : sunLocal ? (
-              "SPICE Sun direction"
-            ) : (
-              "computing the SPICE Sun direction…"
-            )}{" "}
-            <EvidenceBadge title="Sun direction lighting the terrain" evidence={sun.data?.evidence} />
-          </div>
-          <div className="dim">
-            Shading and shadows are drawn by the 3D engine: <b>an illustration</b>, not a
-            measurement.{exaggeration > 1 ? ` Relief is exaggerated ${exaggeration}×, which also changes the drawn shadows.` : ""}
-          </div>
-          {site && t ? (
-            <div>
-              <b className="sun-text">◎ {site.name}</b> computed: Sun elevation{" "}
-              {deg(t.sun.elevation_deg[index]!)}{" "}
-              <EvidenceBadge title="Sun azimuth and elevation" evidence={t.sun.geometry_evidence} />, visible
-              Sun disc{" "}
-              {t.sun.terrain_visible_fraction
-                ? `${t.sun.terrain_truncated?.[index] ? "≤ " : ""}${pct(t.sun.terrain_visible_fraction[index]!)}`
-                : "not computed"}{" "}
-              <EvidenceBadge
-                title="Visible Sun disc (terrain horizon)"
-                evidence={t.sun.terrain_visible_fraction ? t.sun.evidence : null}
-              />
-            </div>
-          ) : site && timeline.isError ? (
-            <div className="error">
-              {site.name}: Sun elevation and visible Sun disc not computed ({describeError(timeline.error)}){" "}
-              <RetryButton onClick={() => void timeline.refetch()} />
-            </div>
-          ) : site ? (
-            <div className="dim">Computing the Sun at {site.name}…</div>
+        <div className="viz-fill">
+          {scene.isError ? (
+            <p className="error pad">
+              {describeError(scene.error)} <RetryButton onClick={() => void scene.refetch()} />
+            </p>
+          ) : null}
+          {grid ? (
+            <TerrainScene
+              grid={grid}
+              sites={sites.data?.sites ?? []}
+              selectedId={siteId}
+              onSelect={(id) => setParams({ site: id })}
+              sunLocal={sunLocal}
+              exaggeration={exaggeration}
+            />
+          ) : !scene.isError ? (
+            <div className="globe-loading">Building the south-pole terrain…</div>
           ) : null}
         </div>
-        <div className="scene-tools segmented" role="group" aria-label="Vertical exaggeration">
-          {EXAGGERATIONS.map((value) => (
-            <button
-              key={value}
-              type="button"
-              className={value === exaggeration ? "on" : ""}
-              aria-pressed={value === exaggeration}
-              onClick={() => setExaggeration(value)}
-            >
-              relief {value}×
-            </button>
-          ))}
+        {/* The HUD and the relief toggle share one wrapping row, so on a narrow screen the
+            toggle drops below the HUD instead of sitting on top of it. */}
+        <div className="scene-overlay">
+          <div className="hud">
+            <div>
+              <b>South-pole terrain</b> ±125 km, LOLA 240 m{" "}
+              <EvidenceBadge title="South-pole terrain mesh" evidence={scene.data?.evidence} />
+            </div>
+            <div>
+              <b>Light</b>{" "}
+              {sun.isError ? (
+                <>
+                  <span className="error">
+                    Sun direction unavailable: {describeError(sun.error)}. The terrain is drawn under flat
+                    ambient light, not the Sun.
+                  </span>{" "}
+                  <RetryButton onClick={() => void sun.refetch()} />
+                </>
+              ) : sunLocal ? (
+                "SPICE Sun direction"
+              ) : (
+                "computing the SPICE Sun direction…"
+              )}{" "}
+              <EvidenceBadge title="Sun direction lighting the terrain" evidence={sun.data?.evidence} />
+            </div>
+            {site && t ? (
+              <div>
+                <b>
+                  <Icon name="site" /> {site.name}
+                </b>{" "}
+                computed: Sun elevation{" "}
+                <EvidenceValue
+                  title="Sun azimuth and elevation"
+                  evidence={t.sun.geometry_evidence}
+                  value={deg(t.sun.elevation_deg[index]!)}
+                />
+                , visible Sun disc{" "}
+                {t.sun.terrain_visible_fraction ? (
+                  <EvidenceValue
+                    title="Visible Sun disc (terrain horizon)"
+                    evidence={t.sun.evidence}
+                    value={`${t.sun.terrain_truncated?.[index] ? "≤ " : ""}${pct(t.sun.terrain_visible_fraction[index]!)}`}
+                  />
+                ) : (
+                  <span className="dim">not computed</span>
+                )}
+              </div>
+            ) : site && timeline.isError ? (
+              <div className="error">
+                {site.name}: Sun elevation and visible Sun disc not computed ({describeError(timeline.error)}){" "}
+                <RetryButton onClick={() => void timeline.refetch()} />
+              </div>
+            ) : site ? (
+              <div className="dim">Computing the Sun at {site.name}…</div>
+            ) : null}
+            {exaggeration > 1 ? (
+              <div className="caution-text">
+                Relief is exaggerated {exaggeration}×, which also changes the drawn shadows.
+              </div>
+            ) : null}
+            <HudNote summary="Illustration, not a measurement">
+              <p>Shading and shadows are drawn by the 3D engine: an illustration, not a measurement.</p>
+            </HudNote>
+          </div>
+          <div className="scene-tools segmented" role="group" aria-label="Vertical exaggeration">
+            {EXAGGERATIONS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={value === exaggeration}
+                onClick={() => setExaggeration(value)}
+              >
+                relief {value}×
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -261,7 +332,10 @@ export function Terrain() {
         <div className="cols">
           <div className="card">
             <div className="panel-head">
-              <h2>Terrain at {site?.name ?? "the site"}</h2>
+              <h2>
+                Terrain at {site?.name ?? "the site"}{" "}
+                {terrain.data ? <EvidenceBadge title="Terrain analysis" evidence={terrain.data.evidence} /> : null}
+              </h2>
               {site ? (
                 <span className="mono dim">
                   {formatLatitude(site.latitude_deg)} · {formatLongitude(site.longitude_deg)}
@@ -276,96 +350,75 @@ export function Terrain() {
               <Analysis data={terrain.data} />
             ) : (
               <p className="dim">
-                Reading a window of the PGDA 20 m DEM over HTTP byte ranges. The first read
-                for a site takes about 10–15 s; after that it is cached.
+                Reading a window of the PGDA 20 m DEM over HTTP byte ranges. The first read for a site takes about
+                10–15 s; after that it is cached.
               </p>
             )}
             {terrain.isFetching && terrain.data ? <p className="dim small">Updating…</p> : null}
           </div>
 
           <div className="card">
-            <h2>Your assumptions</h2>
+            <h2>
+              Your assumptions {hazard ? <EvidenceBadge title="Your thresholds" evidence={hazard.evidence} /> : null}
+            </h2>
             <p className="dim small">
-              LUNARSEYE ships no default “safe” slope or roughness. Flags appear only against
-              thresholds you enter, and are labelled as assumptions.
+              {BRAND} ships no default “safe” slope or roughness. Flags appear only against thresholds you enter,
+              and are labelled as assumptions.
             </p>
             <div className="form">
-              <label>
-                Footprint radius (m)
-                <input
-                  inputMode="decimal"
-                  value={radiusText}
-                  aria-invalid={applied.radiusNote !== null}
-                  aria-describedby="radius-help"
-                  onChange={(e) => setRadiusText(e.target.value)}
-                />
-                <span id="radius-help" className="small">
-                  <span className="dim">
-                    {RADIUS_MIN_M} … {RADIUS_MAX_M}; sets the roughness baseline (2 × radius).{" "}
-                  </span>
-                  {applied.radiusNote ? (
-                    <span className="flag bad" role="status">
-                      {applied.radiusNote}
-                    </span>
-                  ) : (
-                    <span className="dim">Using {applied.radiusM} m.</span>
-                  )}
-                </span>
-              </label>
-              <label>
-                Max slope (°)
-                <input
-                  inputMode="decimal"
-                  placeholder="none"
-                  value={slopeText}
-                  aria-invalid={applied.slopeNote !== null}
-                  aria-describedby={applied.slopeNote ? "slope-help" : undefined}
-                  onChange={(e) => setSlopeText(e.target.value)}
-                />
-                {applied.slopeNote ? (
-                  <span id="slope-help" className="flag bad small" role="status">
-                    {applied.slopeNote}
-                  </span>
-                ) : null}
-              </label>
-              <label>
-                Max roughness (m)
-                <input
-                  inputMode="decimal"
-                  placeholder="none"
-                  value={roughnessText}
-                  aria-invalid={applied.roughnessNote !== null}
-                  aria-describedby={applied.roughnessNote ? "roughness-help" : undefined}
-                  onChange={(e) => setRoughnessText(e.target.value)}
-                />
-                {applied.roughnessNote ? (
-                  <span id="roughness-help" className="flag bad small" role="status">
-                    {applied.roughnessNote}
-                  </span>
-                ) : null}
-              </label>
+              <Field
+                id="footprint-radius"
+                label="Footprint radius (m)"
+                value={radiusText}
+                onChange={setRadiusText}
+                hint={RADIUS_HINT}
+                message={applied.radiusNote}
+              />
+              <Field
+                id="max-slope"
+                label="Max slope (°)"
+                placeholder="none"
+                value={slopeText}
+                onChange={setSlopeText}
+                message={applied.slopeNote}
+              />
+              <Field
+                id="max-roughness"
+                label="Max roughness (m)"
+                placeholder="none"
+                value={roughnessText}
+                onChange={setRoughnessText}
+                message={applied.roughnessNote}
+              />
             </div>
             {hazard ? (
               <table className="data">
+                <caption className="sr-only">Flags against your thresholds</caption>
                 <tbody>
                   {hazard.max_slope_deg != null ? (
                     <>
                       <tr>
                         <th scope="row">95th-percentile slope vs {hazard.max_slope_deg}°</th>
-                        <td className={hazard.slope_p95_exceeds ? "flag bad" : "flag good"}>
-                          {hazard.slope_p95_exceeds === null
-                            ? "not computed"
-                            : hazard.slope_p95_exceeds
-                              ? "exceeds"
-                              : "within"}{" "}
-                          <EvidenceBadge title="Slope flag" evidence={hazard.evidence} />
+                        <td className={flagClass(hazard.slope_p95_exceeds)}>
+                          <EvidenceValue
+                            title="Slope flag"
+                            evidence={hazard.evidence}
+                            value={flagText(hazard.slope_p95_exceeds)}
+                          />
                         </td>
                       </tr>
                       <tr>
                         <th scope="row">Footprint cells steeper than {hazard.max_slope_deg}°</th>
-                        <td>
-                          {hazard.slope_fraction_above == null ? "not computed" : pct(hazard.slope_fraction_above)}{" "}
-                          <EvidenceBadge title="Cells above the slope threshold" evidence={hazard.evidence} />
+                        <td className="num">
+                          {hazard.slope_fraction_above == null ? (
+                            <span className="dim">not computed</span>
+                          ) : (
+                            <EvidenceValue
+                              title="Cells above the slope threshold"
+                              evidence={hazard.evidence}
+                              value={pct(hazard.slope_fraction_above)}
+                            />
+                          )}
                         </td>
                       </tr>
                     </>
@@ -373,13 +426,12 @@ export function Terrain() {
                   {hazard.max_roughness_m != null ? (
                     <tr>
                       <th scope="row">Roughness vs {hazard.max_roughness_m} m</th>
-                      <td className={hazard.roughness_exceeds ? "flag bad" : "flag good"}>
-                        {hazard.roughness_exceeds === null
-                          ? "not computed"
-                          : hazard.roughness_exceeds
-                            ? "exceeds"
-                            : "within"}{" "}
-                        <EvidenceBadge title="Roughness flag" evidence={hazard.evidence} />
+                      <td className={flagClass(hazard.roughness_exceeds)}>
+                        <EvidenceValue
+                          title="Roughness flag"
+                          evidence={hazard.evidence}
+                          value={flagText(hazard.roughness_exceeds)}
+                        />
                       </td>
                     </tr>
                   ) : null}

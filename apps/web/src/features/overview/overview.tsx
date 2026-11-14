@@ -8,12 +8,15 @@ import { useMemo } from "react";
 import { SiteSummary } from "@/features/timeline/summary";
 import { TimelinePanel } from "@/features/timeline/timeline-panel";
 import { describeError, type Evidence } from "@/shared/api/client";
+import { BRAND } from "@/shared/brand";
 import { useSelectedSite, useSun, useTimeline } from "@/shared/api/queries";
 import { bodyFixedToScene, formatLatitude, formatLongitude } from "@/shared/lib/geo/selenographic";
 import { globeSunAt, type GlobeSunSeries } from "@/shared/lib/globe/sun";
 import { useTime } from "@/shared/state/time";
 import { useMissionUrl } from "@/shared/state/url";
 import { EvidenceBadge } from "@/shared/ui/evidence";
+import { HudNote } from "@/shared/ui/hud-note";
+import { Icon } from "@/shared/ui/icons";
 
 const MoonGlobe = dynamic(() => import("@/viewport/moon-globe"), {
   ssr: false,
@@ -28,25 +31,25 @@ interface TextureManifest {
   source: { dataset_id: string; dataset_title: string; source_url: string; sha256: string };
 }
 
-/** One paragraph on what this is, and the two shortest paths into the analysis. */
+/** One paragraph on what this is, and the shortest paths into the analysis. */
 function Intro() {
   const { href } = useMissionUrl();
   return (
-    <section className="intro" aria-label="About LUNARSEYE">
+    <section className="intro" aria-label={`About ${BRAND}`}>
       <p>
-        <b>Which lunar south-pole sites get sunlight, and can see Earth?</b> LUNARSEYE answers with
-        SPICE geometry and the LOLA terrain, and shows the source, method and limits behind every
-        number: click any <span className="ev ev-calculation">CALC</span>{" "}
+        <b>Which lunar south-pole sites get sunlight, and can see Earth?</b> {BRAND} answers with SPICE
+        geometry and the LOLA terrain, and shows the source, method and limits behind every number: click
+        any <span className="ev ev-calculation">CALC</span>{" "}
         <span className="ev ev-derived_product">DERIVED</span>{" "}
         <span className="ev ev-assumption">ASSUMED</span> tag.
       </p>
       <p className="dim">
-        <b>1</b> Pick a cited site (list or globe marker) · <b>2</b> press Play or drag the
-        timeline · <b>3</b> open the other pages for the horizon, the terrain and a side-by-side.
+        <b>1</b> Pick a cited site (list or globe marker) · <b>2</b> press Play or drag the timeline ·{" "}
+        <b>3</b> open the other pages for the horizon, the terrain and a side-by-side.
       </p>
       <div className="intro-actions">
         <Link className="btn primary" href={href("/compare")}>
-          Compare the demo trio →
+          Compare the demo trio
         </Link>
         <Link className="btn" href={href("/illumination")}>
           Sky and horizon at this site
@@ -115,20 +118,25 @@ export function Overview() {
 
   return (
     <>
+      <h1 className="sr-only">Overview{site ? ` · ${site.name}` : ""}</h1>
       <Intro />
       <div className="top-row">
         <div className="globe">
-          <MoonGlobe
-            sites={sites.data?.sites ?? []}
-            selectedId={siteId}
-            onSelect={(id) => setParams({ site: id })}
-            sunScene={sunScene}
-            textureUrl={texture.data ? `/textures/moon/${texture.data.file}` : null}
-          />
+          <div className="viz-fill">
+            <MoonGlobe
+              sites={sites.data?.sites ?? []}
+              selectedId={siteId}
+              onSelect={(id) => setParams({ site: id })}
+              sunScene={sunScene}
+              textureUrl={texture.data ? `/textures/moon/${texture.data.file}` : null}
+            />
+          </div>
           <div className="hud">
             {site ? (
               <div>
-                <b className="sun-text">◎ {site.name}</b>{" "}
+                <b>
+                  <Icon name="site" /> {site.name}
+                </b>{" "}
                 <span className="mono dim">
                   {formatLatitude(site.latitude_deg)} · {formatLongitude(site.longitude_deg)}
                 </span>
@@ -157,16 +165,17 @@ export function Overview() {
                 </>
               ) : (
                 <>
-                  procedural placeholder, not lunar data{" "}
-                  <span className="ev ev-placeholder">PLACEHOLDER</span>
+                  procedural placeholder, not lunar data <span className="ev ev-placeholder">PLACEHOLDER</span>
                 </>
               )}
             </div>
-            <div className="dim">
-              Smooth sphere lit from the computed Sun direction: terrain shadows are not drawn,
-              and the night side is lifted for visibility. Sunlight numbers come from the
-              timeline. Drag to rotate, scroll to zoom, click a marker to pick a site.
-            </div>
+            <HudNote summary="Lit sphere, no terrain shadows">
+              <p>
+                Smooth sphere lit from the computed Sun direction: terrain shadows are not drawn, and the
+                night side is lifted for visibility. Sunlight numbers come from the timeline.
+              </p>
+              <p>Drag to rotate, scroll to zoom, click a marker to pick a site.</p>
+            </HudNote>
           </div>
         </div>
 

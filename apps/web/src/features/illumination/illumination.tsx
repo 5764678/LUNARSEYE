@@ -9,7 +9,8 @@ import { formatLatitude, formatLongitude } from "@/shared/lib/geo/selenographic"
 import { clamp, formatUtc } from "@/shared/lib/time/time";
 import { useTime } from "@/shared/state/time";
 import { useMissionUrl } from "@/shared/state/url";
-import { EvidenceBadge } from "@/shared/ui/evidence";
+import { EvidenceBadge, EvidenceValue } from "@/shared/ui/evidence";
+import { Icon } from "@/shared/ui/icons";
 
 import { SkyChart } from "./sky-chart";
 
@@ -33,37 +34,48 @@ function rows(names: { visible: string; hidden: string; any: string }): Row[] {
 function SummaryTable({ title, body, list }: { title: string; body: BodySeries; list: Row[] }) {
   return (
     <div className="card">
-      <h2>{title}</h2>
+      <h2>
+        {title} <EvidenceBadge title={title} evidence={body.evidence} />
+      </h2>
       <table className="data">
         <thead>
           <tr>
             <th scope="col">Measure</th>
-            <th scope="col">Terrain horizon</th>
-            <th scope="col">No hills (0°)</th>
+            <th scope="col" className="num">
+              Terrain horizon
+            </th>
+            <th scope="col" className="num">
+              No hills (0°)
+            </th>
           </tr>
         </thead>
         <tbody>
-          {list.map((row) => (
-            <tr key={row.label}>
-              <th scope="row">{row.label}</th>
-              <td>
-                {body.terrain ? row.value(body.terrain) : "not computed"}{" "}
-                <EvidenceBadge
-                  title={`${title}: ${row.label} (terrain horizon)`}
-                  evidence={body.terrain ? body.evidence : null}
-                  value={body.terrain ? row.value(body.terrain) : undefined}
-                />
-              </td>
-              <td>
-                {row.value(body.astronomical)}{" "}
-                <EvidenceBadge
-                  title={`${title}: ${row.label} (astronomical horizon)`}
-                  evidence={body.evidence}
-                  value={row.value(body.astronomical)}
-                />
-              </td>
-            </tr>
-          ))}
+          {list.map((row) => {
+            const terrain = body.terrain ? row.value(body.terrain) : null;
+            return (
+              <tr key={row.label}>
+                <th scope="row">{row.label}</th>
+                <td className="num">
+                  {terrain === null ? (
+                    <span className="dim">not computed</span>
+                  ) : (
+                    <EvidenceValue
+                      title={`${title}: ${row.label} (terrain horizon)`}
+                      evidence={body.evidence}
+                      value={terrain}
+                    />
+                  )}
+                </td>
+                <td className="num">
+                  <EvidenceValue
+                    title={`${title}: ${row.label} (astronomical horizon)`}
+                    evidence={body.evidence}
+                    value={row.value(body.astronomical)}
+                  />
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -87,30 +99,32 @@ function WindowTable({ title, body, evidence }: { title: string; body: BodySerie
       {windows.length === 0 ? (
         <p className="dim">None in this period.</p>
       ) : (
-        <table className="data mono">
-          <thead>
-            <tr>
-              <th scope="col">Start (UTC)</th>
-              <th scope="col">End (UTC)</th>
-              <th scope="col">Duration</th>
-            </tr>
-          </thead>
-          <tbody>
-            {shown.map((w) => (
-              <tr key={w.start_utc}>
-                <td>
-                  {w.censored_start ? "≤ " : ""}
-                  {formatUtc(Date.parse(w.start_utc), false)}
-                </td>
-                <td>
-                  {w.censored_end ? "≥ " : ""}
-                  {formatUtc(Date.parse(w.end_utc), false)}
-                </td>
-                <td>{duration(w.duration_s, w.censored_start || w.censored_end)}</td>
+        <div className="table-scroll">
+          <table className="data mono">
+            <thead>
+              <tr>
+                <th scope="col">Start (UTC)</th>
+                <th scope="col">End (UTC)</th>
+                <th scope="col">Duration</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {shown.map((w) => (
+                <tr key={w.start_utc}>
+                  <td>
+                    {w.censored_start ? "≤ " : ""}
+                    {formatUtc(Date.parse(w.start_utc), false)}
+                  </td>
+                  <td>
+                    {w.censored_end ? "≥ " : ""}
+                    {formatUtc(Date.parse(w.end_utc), false)}
+                  </td>
+                  <td>{duration(w.duration_s, w.censored_start || w.censored_end)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {windows.length > shown.length ? (
         <p className="dim small">
@@ -148,30 +162,33 @@ function Loaded({ timeline }: { timeline: SiteTimeline }) {
         </div>
         {horizon.available ? (
           <>
-            <div className="chart-scroll">
-              <SkyChart horizon={horizon} sun={sun} earth={earth} index={index} />
-            </div>
-            <p className="dim small chart-hint">Scroll the chart sideways to see every azimuth.</p>
+            <SkyChart horizon={horizon} sun={sun} earth={earth} index={index} />
             <ul className="legend">
               <li>
-                <i style={{ background: "var(--horizon)" }} />
+                <span className="swatch swatch-horizon" />
                 Terrain skyline (LOLA 240 m, {horizon.azimuth_deg!.length} azimuths,{" "}
                 {horizon.max_range_m! / 1000} km)
               </li>
               <li>
-                <i style={{ background: "var(--sun)" }} />
+                <span className="swatch swatch-sun" />
                 Sun, bar = disc height{" "}
                 <EvidenceBadge title="Sun azimuth and elevation" evidence={sun.geometry_evidence} />
               </li>
               <li>
-                <i style={{ background: "var(--earth)" }} />
+                <span className="swatch swatch-earth" />
                 Earth, bar = disc height{" "}
                 <EvidenceBadge title="Earth azimuth and elevation" evidence={earth.geometry_evidence} />
               </li>
               <li>
-                {horizon.truncated_count
-                  ? `▲ ${horizon.truncated_count} azimuths where the ray left DEM coverage: the skyline there is a lower bound`
-                  : "No truncated azimuths: every ray stayed inside DEM coverage"}
+                {horizon.truncated_count ? (
+                  <>
+                    <Icon name="lower-bound" size={12} className="caution-text" />
+                    {horizon.truncated_count} azimuths where the ray left DEM coverage: the skyline there is a
+                    lower bound
+                  </>
+                ) : (
+                  "No truncated azimuths: every ray stayed inside DEM coverage"
+                )}
               </li>
             </ul>
             <p className="dim small">

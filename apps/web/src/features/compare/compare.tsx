@@ -12,7 +12,8 @@ import {
 import { useCompare, useSites } from "@/shared/api/queries";
 import { deg, duration, pct } from "@/shared/lib/format";
 import { useMissionUrl } from "@/shared/state/url";
-import { EvidenceBadge } from "@/shared/ui/evidence";
+import { EvidenceBadge, EvidenceValue } from "@/shared/ui/evidence";
+import { Icon } from "@/shared/ui/icons";
 
 import {
   isDefaultMission,
@@ -137,7 +138,7 @@ function ComparisonTable({ data }: { data: SiteComparison }) {
                   {col.label}
                 </th>
                 <td className="dim small" title={col.better_rationale ?? undefined}>
-                  {col.better === "higher" ? "↑ higher" : col.better === "lower" ? "↓ lower" : "—"}
+                  {col.better === "higher" ? "Higher" : col.better === "lower" ? "Lower" : "—"}
                 </td>
                 {data.rows.map((r) => {
                   const cell = r.cells[col.key];
@@ -146,22 +147,29 @@ function ComparisonTable({ data }: { data: SiteComparison }) {
                   const worst = trails.get(r.site_id)?.has(col.key) ?? false;
                   return (
                     <td key={r.site_id} className={best ? "best" : worst ? "worst" : ""}>
-                      {text ?? (
+                      {text === null ? (
                         <span className="dim" title={cell.reason ?? undefined}>
                           not computed
                         </span>
-                      )}{" "}
-                      <EvidenceBadge
-                        title={`${col.label} · ${r.name}`}
-                        evidence={
-                          text === null || !cell.evidence
-                            ? null
-                            : { ...cell.evidence, limitations: cell.limitations }
-                        }
-                        value={text ?? undefined}
-                      />
-                      {best ? <span className="mark best-mark" title="Best or tied">▲</span> : null}
-                      {worst ? <span className="mark worst-mark" title="Worst">▼</span> : null}
+                      ) : (
+                        <EvidenceValue
+                          title={`${col.label} · ${r.name}`}
+                          evidence={cell.evidence ? { ...cell.evidence, limitations: cell.limitations } : null}
+                          value={text}
+                        />
+                      )}
+                      {best ? (
+                        <span className="mark best-mark" title="Best or tied">
+                          <Icon name="arrow-up" size={14} />
+                          <span className="sr-only">best or tied</span>
+                        </span>
+                      ) : null}
+                      {worst ? (
+                        <span className="mark worst-mark" title="Worst">
+                          <Icon name="arrow-down" size={14} />
+                          <span className="sr-only">worst</span>
+                        </span>
+                      ) : null}
                       {cell.baseline_m ? (
                         <div className="dim small">baseline {cell.baseline_m.toFixed(0)} m</div>
                       ) : null}
@@ -174,8 +182,15 @@ function ComparisonTable({ data }: { data: SiteComparison }) {
         </tbody>
       </table>
       <p className="dim small">
-        ▲ best or tied among the compared sites · ▼ worst. Only measures with a declared direction
-        are ranked; hover “Better” for why. A measure needs values for two or more sites to rank.
+        <span className="best-mark">
+          <Icon name="arrow-up" size={14} />
+        </span>{" "}
+        best or tied among the compared sites ·{" "}
+        <span className="worst-mark">
+          <Icon name="arrow-down" size={14} />
+        </span>{" "}
+        worst. Only measures with a declared direction are ranked; hover “Better” for why. A measure needs
+        values for two or more sites to rank.
       </p>
     </div>
   );
@@ -210,7 +225,7 @@ function LimitInput({
     else onCommit(parsed);
   };
   return (
-    <label>
+    <label className="field">
       {label}
       <span className="limit-field">
         <input
@@ -254,7 +269,6 @@ function MissionQuestions({ mission, setParams }: { mission: MissionAnswers; set
                 <button
                   key={option.id}
                   type="button"
-                  className={mission[q.id] === option.id ? "on" : ""}
                   aria-pressed={mission[q.id] === option.id}
                   onClick={() => setParams({ [q.id]: option.id === "medium" ? null : option.id })}
                 >
@@ -457,7 +471,7 @@ export function Compare() {
             <button
               key={w.id}
               type="button"
-              className={windowId === w.id ? "on" : ""}
+              aria-pressed={windowId === w.id}
               onClick={() => setParams({ window: w.id === "2027" ? null : w.id })}
             >
               {w.label}
