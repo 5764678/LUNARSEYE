@@ -123,6 +123,23 @@ Cost: computations queue. Single visitor, cold, prewarmed image: demo trio 4.1 s
 9–13 s, repeats ≈ 35 ms (was 3.0 s / 6.8–9.8 s with 4 in parallel). The free plan's CPU is far
 smaller than this sandbox's, so expect slower cold numbers on Render (not measured there).
 
+### Second finding: the free plan's CPU (0.1) is the other bottleneck. Fixed by baking.
+
+After the memory fix, a load test on the live `lunarseye` service showed **no OOM** (peak
+251 MiB of 512, no `server_failed` events) but a **502** on one request. Measured on the free
+instance: a cold site costs ≈ 11 s (7 cold sites: 78 s; 10 sites: 175 s), 10× slower than
+the dev sandbox, and requests queue behind each other (one computation at a time). Cached
+trio: 0.7 s. Fix: **`scripts/prewarm.py` now also bakes the timelines the web app asks for by
+default** (year 2027, 90 days, 30 days; hourly) for all 27 sites into
+`data/processed/timelines/` at image build (44 MB, 63 s locally), and
+`AnalysisService.site_timeline` serves them from disk. The key covers coordinates, window, step,
+observer height, the pinned DEM checksum and the scientific component versions, so stale files
+cannot be served. Runtime requests never write there (no disk filling by odd windows). Measured
+locally, cold process: 10-site compare **0.16 s** (was 9–13 s), single timeline 31 ms.
+Custom windows/steps outside the baked set still compute (and on Render's free CPU take ~11 s
+per site). Tests: `tests/api/test_timeline_disk_cache.py`. If the web windows in
+`apps/web/src/features/time/windows.ts` change, change `windows` in `scripts/prewarm.py` too.
+
 **Still true:** the free plan has no headroom for a burst of many simultaneous visitors; if the
 event log shows another `oomKilled`, move up a plan (check Render's plan table first) or lower
 `_CACHE_SIZE`. To check: `list_events` with `eventTypes: ["server_failed"]`.

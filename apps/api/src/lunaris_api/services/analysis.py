@@ -8,24 +8,17 @@ in a small in-process LRU; the content-addressed cache and process pool are Phas
 from __future__ import annotations
 
 import dataclasses
+import hashlib
+import json
 import os
 import threading
 import time
 from collections import OrderedDict
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 import numpy as np
-
-from lunaris_api import __version__
-from lunaris_api.errors import (
-    ApiError,
-    DatasetUnavailableError,
-    InvalidRequestError,
-    KernelsUnavailableError,
-    OutOfCoverageError,
-)
-from lunaris_api.services.horizon import DEFAULT_OBSERVER_HEIGHT_M, HorizonMaskService
 from lunaris_data.kernels import KERNEL_DATASET_ID, KernelSetUnavailableError, get_spice_context
 from lunaris_data.registry import DatasetRegistry
 from lunaris_data.store import DataLayout
@@ -48,6 +41,16 @@ from lunaris_science.illumination.analysis import BodyTimeline, HorizonTimeline,
 from lunaris_science.provenance import Evidence, EvidenceKind
 from lunaris_science.runtime import scientific_runtime
 from lunaris_science.visibility import classify_line_of_sight
+
+from lunaris_api import __version__
+from lunaris_api.errors import (
+    ApiError,
+    DatasetUnavailableError,
+    InvalidRequestError,
+    KernelsUnavailableError,
+    OutOfCoverageError,
+)
+from lunaris_api.services.horizon import DEFAULT_OBSERVER_HEIGHT_M, HorizonMaskService
 
 MAX_SAMPLES = 10_000
 MAX_STEP_S = 30 * 86400.0
@@ -77,6 +80,10 @@ class AnalysisService:
         self._cache: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()
         self._lock = threading.Lock()
         self._heavy = threading.BoundedSemaphore(_MAX_CONCURRENT_TIMELINES)
+        # Timelines computed ahead of time (scripts/prewarm.py, at image build) are served from
+        # here: on a small CPU a cold timeline costs ~11 s, from disk ~20 ms. Runtime requests
+        # never write here, so visitors cannot fill the disk with odd windows.
+        self.timeline_dir: Path = layout.processed / "timelines"
 
     @classmethod
     def from_env(cls) -> AnalysisService:
@@ -129,6 +136,54 @@ class AnalysisService:
                 "outside_kernel_coverage",
             )
         return epochs, ets, end_et
+
+    # ── pre-computed timelines on disk ────────────────────────────────────────────────
+    def _disk_path(
+        self, site: dict[str, Any], start_utc: datetime, end_utc: datetime, step_s: float
+    ) -> Path | None:
+        """File for this exact request, or None when the inputs' identity cannot be fixed.
+        The key covers everything the numbers depend on, so a code or data change never
+        serves a stale file: coordinates, window, step, observer height, the pinned DEM
+        checksum and the versions of the scientific components."""
+        try:
+            dem_sha = self.masks._pinned_sha256()
+        except ApiError:
+            return None
+        identity = json.dumps(
+            [
+                __version__,
+                {c.name: c.version for c in scientific_runtime()},
+                dem_sha,
+                site["latitude_deg"],
+                site["longitude_deg"],
+                start_utc.isoformat(),
+                end_utc.isoformat(),
+                step_s,
+                DEFAULT_OBSERVER_HEIGHT_M,
+            ],
+            sort_keys=True,
+        )
+        return self.timeline_dir / f"{hashlib.sha256(identity.encode()).hexdigest()[:32]}.json"
+
+    def _read_disk(self, path: Path | None, site: dict[str, Any]) -> dict[str, Any] | None:
+        if path is None or not path.is_file():
+            return None
+        try:
+            stored: dict[str, Any] = json.loads(path.read_text())
+        except (OSError, ValueError):
+            return None  # unreadable: fall back to computing
+        stored["site"] = site  # the caller's current site record, never the stored one
+        return stored
+
+    @staticmethod
+    def _write_disk(path: Path | None, result: dict[str, Any]) -> None:
+        if path is None:
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        body = {k: v for k, v in result.items() if k != "site"}
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(body, default=lambda o: o.isoformat(), separators=(",", ":")))
+        tmp.replace(path)
 
     def _cached(self, key: tuple[Any, ...]) -> dict[str, Any] | None:
         with self._lock:
@@ -324,14 +379,23 @@ class AnalysisService:
         step_s: float,
         *,
         cache: bool = True,
+        persist: bool = False,
     ) -> dict[str, Any]:
         key = ("timeline", site["id"], start_utc, end_utc, step_s)
         if (hit := self._cached(key)) is not None:
             return hit
+        path = self._disk_path(site, start_utc, end_utc, step_s)
+        if (stored := self._read_disk(path, site)) is not None:
+            if cache:
+                self._store(key, stored)
+            return stored
         with self._heavy:  # bound peak memory; see _MAX_CONCURRENT_TIMELINES
             if (hit := self._cached(key)) is not None:  # computed while we waited
                 return hit
-            return self._site_timeline(site, start_utc, end_utc, step_s, key, cache)
+            result = self._site_timeline(site, start_utc, end_utc, step_s, key, cache)
+            if persist:
+                self._write_disk(path, result)
+            return result
 
     def _site_timeline(
         self,
@@ -344,7 +408,7 @@ class AnalysisService:
     ) -> dict[str, Any]:
         started = time.perf_counter()
         lat, lon = site["latitude_deg"], site["longitude_deg"]
-        if abs(lat) == 90.0:  # noqa: PLR2004
+        if abs(lat) == 90.0:
             raise InvalidRequestError(
                 "Local north and east are undefined at latitude exactly ±90°: azimuth and "
                 "elevation cannot be reported for this site.",
