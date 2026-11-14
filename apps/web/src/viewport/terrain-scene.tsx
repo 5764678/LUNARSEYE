@@ -3,11 +3,12 @@
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { BufferAttribute, BufferGeometry, DirectionalLight, Object3D } from "three";
+import { BackSide, BufferAttribute, BufferGeometry, DirectionalLight, Object3D } from "three";
 
 import type { SiteOut } from "@/shared/api/client";
 import type { Vec3 } from "@/shared/lib/geo/selenographic";
 import { latLonToMap, mapToMoonMe, moonMeToLocalKm, sceneHeightAt } from "@/shared/lib/terrain/polar";
+import { cssColor } from "@/shared/ui/tokens";
 
 export interface SceneGrid {
   gridSize: number;
@@ -102,16 +103,31 @@ function Markers({
       }),
     [sites, grid, exaggeration],
   );
+  const colors = useMemo(
+    () => ({
+      marker: cssColor("--site-marker"),
+      selected: cssColor("--site-marker-selected"),
+      halo: cssColor("--site-halo"),
+    }),
+    [],
+  );
   return (
     <>
       {placed.map(({ site, position }) => {
         const selected = site.id === selectedId;
+        const color = selected ? colors.selected : colors.marker;
+        const poleHeight = selected ? 7 : 4;
+        const headRadius = selected ? 1.3 : 0.8;
         return (
           <group key={site.id} position={position}>
             {/* A pole from the surface, so the marker reads against relief. */}
-            <mesh position={[0, selected ? 3.5 : 2, 0]}>
-              <cylinderGeometry args={[0.12, 0.12, selected ? 7 : 4, 6]} />
-              <meshBasicMaterial color={selected ? "#ffd166" : "#7cb5ff"} toneMapped={false} />
+            <mesh position={[0, poleHeight / 2, 0]}>
+              <cylinderGeometry args={[0.12, 0.12, poleHeight, 6]} />
+              <meshBasicMaterial color={color} toneMapped={false} />
+            </mesh>
+            <mesh position={[0, poleHeight / 2, 0]}>
+              <cylinderGeometry args={[0.26, 0.26, poleHeight, 6]} />
+              <meshBasicMaterial color={colors.halo} side={BackSide} toneMapped={false} />
             </mesh>
             <mesh
               position={[0, selected ? 7.6 : 4.4, 0]}
@@ -120,8 +136,14 @@ function Markers({
                 onSelect(site.id);
               }}
             >
-              <sphereGeometry args={[selected ? 1.3 : 0.8, 14, 10]} />
-              <meshBasicMaterial color={selected ? "#ffd166" : "#7cb5ff"} toneMapped={false} />
+              <sphereGeometry args={[headRadius, 14, 10]} />
+              <meshBasicMaterial color={color} toneMapped={false} />
+            </mesh>
+            {/* A dark halo around the head: a larger sphere seen from inside. The head floats
+                above the ground, so the halo is not hidden by the terrain. */}
+            <mesh position={[0, selected ? 7.6 : 4.4, 0]}>
+              <sphereGeometry args={[headRadius * 1.45, 14, 10]} />
+              <meshBasicMaterial color={colors.halo} side={BackSide} toneMapped={false} />
             </mesh>
           </group>
         );
@@ -171,14 +193,15 @@ export default function TerrainScene({
     return [x, y, z];
   }, [selected, grid, exaggeration]);
 
+  const colors = useMemo(() => ({ background: cssColor("--plate"), ground: cssColor("--scene-terrain") }), []);
   return (
     <Canvas shadows camera={{ fov: 35, near: 1, far: 2000, position: [60, 110, 170] }} dpr={[1, 2]}>
-      <color attach="background" args={["#020305"]} />
+      <color attach="background" args={[colors.background]} />
       {/* Fill light so shadowed ground is dark, not black: a display choice. */}
       <ambientLight intensity={0.09} />
       {sunLocal ? <Sun direction={sunLocal} reach={reach} /> : <ambientLight intensity={0.6} />}
       <mesh geometry={geometry} castShadow receiveShadow>
-        <meshStandardMaterial color="#9a958d" roughness={1} metalness={0} />
+        <meshStandardMaterial color={colors.ground} roughness={1} metalness={0} />
       </mesh>
       <Markers sites={sites} selectedId={selectedId} onSelect={onSelect} grid={grid} exaggeration={exaggeration} />
       <OrbitControls makeDefault maxPolarAngle={Math.PI * 0.49} minDistance={8} maxDistance={600} />

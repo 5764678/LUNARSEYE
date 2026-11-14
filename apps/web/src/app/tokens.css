@@ -1,0 +1,90 @@
+/* LUNAREYES design tokens.
+ *
+ * Three rules hold the palette together:
+ *   1. Chrome is neutral. Surfaces, lines, buttons, selection and focus use greys only, so
+ *      no interface colour can be mistaken for data.
+ *   2. Colour is data. Every hue below means exactly one thing and is never reused for
+ *      another: Sun gold is not "selected", Earth blue is not "primary", caution orange is
+ *      not Sun. Evidence kinds are told apart by text, outline style and fill as well as hue.
+ *   3. Anything you can operate has a boundary of at least 3:1 (--control-line). Decorative
+ *      hairlines (--line, --line-strong) may stay faint.
+ *
+ * Nothing outside this file writes a colour. Components use var(--token); WebGL reads the
+ * same tokens at runtime through shared/ui/tokens.ts.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces. Higher means lighter. */
+  --bg: #05070a;
+  --panel: #0b0f14;
+  --panel-raised: #10151c;
+  --hover: #161d27;
+  --plate: #020305; /* chart and canvas plates: the darkest surface */
+  --hud: rgb(8 11 15 / 0.88); /* overlay on a canvas */
+  --scrim: rgb(2 3 5 / 0.64); /* modal backdrop */
+
+  /* Ink */
+  --fg: #e6eaef;
+  --muted: #8d97a6; /* 6.5:1 on --panel */
+  --fg-hot: #f4f7fa; /* primary fill on hover; selected 3D marker */
+  --fg-press: #c3cbd6; /* primary fill pressed; DERIVED chip; unselected 3D marker */
+  --on-fg: #05070a; /* text on an --fg fill */
+
+  /* Lines */
+  --line: #1c232d; /* decorative hairline */
+  --line-strong: #2a3441; /* decorative, a step firmer */
+  --control-line: #667180; /* boundary of anything operable: 3.9:1 on --panel */
+  --control-line-hover: #8d97a6;
+  --focus: #e6eaef; /* 2px ring, 2px offset, never animated */
+
+  /* Data hues: one meaning each. */
+  --sun: #ffd166; /* the Sun */
+  --earth: #6cc3ff; /* the Earth */
+  --horizon: #b08968; /* terrain, skyline, and "blocked by terrain" */
+  --terrain-fill: #2b2622; /* ground behind the skyline */
+  --ok: #46d19f; /* clear, within a threshold, API ready */
+  --critical: #f0695d; /* error, exceeds a threshold, API degraded */
+  --caution: #ff9a52; /* not measured: assumed, placeholder, lower bound */
+  --on-caution: #1a0e05;
+
+  /* Evidence kinds: ordered from most to least trustworthy, calm to warm. */
+  --ev-observation: var(--fg);
+  --ev-derived_product: var(--fg-press);
+  --ev-model: #b9a3ff;
+  --ev-calculation: var(--muted);
+  --ev-assumption: var(--caution);
+  --ev-placeholder: var(--caution);
+
+  /* 3D scenes (read by shared/ui/tokens.ts). */
+  --scene-terrain: #9a958d;
+  --site-marker: var(--fg-press);
+  --site-marker-selected: var(--fg-hot);
+  --site-halo: var(--plate);
+
+  /* Type. Plex Sans for text, Plex Mono for numbers, coordinates, times and chips. */
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --fs-1: 0.6875rem; /* 11px chips and chart ticks only */
+  --fs-2: 0.75rem; /* 12px notes, table heads, labels */
+  --fs-3: 0.8125rem; /* 13px body */
+  --fs-4: 0.9375rem; /* 15px card titles */
+  --fs-5: 1.125rem; /* 18px page titles */
+  --fs-6: 1.375rem; /* 22px drawer value */
+
+  /* Space: a 4px scale. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-pill: 999px;
+
+  --topbar-h: 44px;
+  --sidebar-w: 288px;
+  --side-w: 400px;
+}

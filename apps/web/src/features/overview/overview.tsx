@@ -13,6 +13,8 @@ import { globeSunAt, type GlobeSunSeries } from "@/shared/lib/globe/sun";
 import { useTime } from "@/shared/state/time";
 import { useMissionUrl } from "@/shared/state/url";
 import { EvidenceBadge } from "@/shared/ui/evidence";
+import { HudNote } from "@/shared/ui/hud-note";
+import { Icon } from "@/shared/ui/icons";
 
 const MoonGlobe = dynamic(() => import("@/viewport/moon-globe"), {
   ssr: false,
@@ -83,19 +85,24 @@ export function Overview() {
 
   return (
     <>
+      <h1 className="sr-only">Overview{site ? ` · ${site.name}` : ""}</h1>
       <div className="top-row">
         <div className="globe">
-          <MoonGlobe
-            sites={sites.data?.sites ?? []}
-            selectedId={siteId}
-            onSelect={(id) => setParams({ site: id })}
-            sunScene={sunScene}
-            textureUrl={texture.data ? `/textures/moon/${texture.data.file}` : null}
-          />
+          <div className="viz-fill">
+            <MoonGlobe
+              sites={sites.data?.sites ?? []}
+              selectedId={siteId}
+              onSelect={(id) => setParams({ site: id })}
+              sunScene={sunScene}
+              textureUrl={texture.data ? `/textures/moon/${texture.data.file}` : null}
+            />
+          </div>
           <div className="hud">
             {site ? (
               <div>
-                <b className="sun-text">◎ {site.name}</b>{" "}
+                <b>
+                  <Icon name="site" /> {site.name}
+                </b>{" "}
                 <span className="mono dim">
                   {formatLatitude(site.latitude_deg)} · {formatLongitude(site.longitude_deg)}
                 </span>
@@ -124,16 +131,17 @@ export function Overview() {
                 </>
               ) : (
                 <>
-                  procedural placeholder, not lunar data{" "}
-                  <span className="ev ev-placeholder">PLACEHOLDER</span>
+                  procedural placeholder, not lunar data <span className="ev ev-placeholder">PLACEHOLDER</span>
                 </>
               )}
             </div>
-            <div className="dim">
-              Smooth sphere lit from the computed Sun direction: terrain shadows are not drawn,
-              and the night side is lifted for visibility. Sunlight numbers come from the
-              timeline. Drag to rotate, scroll to zoom, click a marker to pick a site.
-            </div>
+            <HudNote summary="Lit sphere, no terrain shadows">
+              <p>
+                Smooth sphere lit from the computed Sun direction: terrain shadows are not drawn, and the
+                night side is lifted for visibility. Sunlight numbers come from the timeline.
+              </p>
+              <p>Drag to rotate, scroll to zoom, click a marker to pick a site.</p>
+            </HudNote>
           </div>
         </div>
 
