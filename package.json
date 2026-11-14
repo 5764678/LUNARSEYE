@@ -1,0 +1,20 @@
+{
+  "name": "lunaris-round2",
+  "version": "0.2.0",
+  "private": true,
+  "description": "LUNARIS Round 2 — lunar south-pole site analysis (monorepo root)",
+  "license": "UNLICENSED",
+  "workspaces": ["apps/web"],
+  "engines": { "node": ">=20.9.0" },
+  "scripts": {
+    "dev:api": "uv run uvicorn lunaris_api.main:app --reload --reload-dir apps/api/src --host 127.0.0.1 --port 8000",
+    "dev:web": "npm run dev -w @lunaris/web",
+    "build": "npm run build -w @lunaris/web",
+    "start:web": "npm run start -w @lunaris/web",
+    "data": "uv run lunaris-data acquire naif-generic-kernels-lunar && uv run lunaris-data acquire lola-ldem-75s-240m && uv run lunaris-data acquire nasa-svs-cgi-moon-kit && uv run lunaris-data build-web-texture",
+    "contracts:generate": "curl -fsS http://127.0.0.1:8000/openapi.json -o apps/web/src/shared/api/openapi.json && npm run generate -w @lunaris/web",
+    "typecheck": "npm run typecheck -w @lunaris/web",
+    "test:web": "npm run test -w @lunaris/web",
+    "test:py": "uv run pytest"
+  }
+}
