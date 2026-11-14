@@ -1,6 +1,6 @@
 """Phase 1 end-to-end checks through ASGI: catalogue → timeline → evidence → errors.
 
-Needs Postgres (``LUNARIS_DATABASE_URL``) and the acquired kernels + LDEM_75S_240M;
+Needs Postgres (``LUNAREYES_DATABASE_URL``) and the acquired kernels + LDEM_75S_240M;
 skipped when either is missing.
 """
 
@@ -11,8 +11,8 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
-from lunaris_api import db
-from lunaris_api.main import app
+from lunareyes_api import db
+from lunareyes_api.main import app
 
 PEAK = str(db.catalog_site_uuid("pgda78-site07"))
 YEAR_2027 = {"start_utc": "2027-01-01T00:00:00Z", "end_utc": "2028-01-01T00:00:00Z", "step_s": 3600}
@@ -125,5 +125,5 @@ def test_site_terrain_values_carry_baselines_and_user_thresholds(client: TestCli
     hazard = body["hazard"]
     assert hazard["slope_p95_exceeds"] is True and hazard["roughness_exceeds"] is None
     assert hazard["evidence"]["kind"] == "assumption"
-    # No thresholds, no flag: LUNARIS ships no default "safe" slope.
+    # No thresholds, no flag: LUNAREYES ships no default "safe" slope.
     assert client.get(f"/v1/sites/{PEAK}/terrain").json()["hazard"] is None

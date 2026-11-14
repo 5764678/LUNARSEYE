@@ -1,4 +1,4 @@
-# LUNARSEYE
+# LUNAREYES
 
 Lunar south-pole site analysis. Pick a cited candidate site, see the Moon lit from the
 SPICE Sun direction, and see that site's Sun and Earth elevation, terrain-aware sunlight
@@ -13,7 +13,7 @@ submission for 14–15 Nov; the Illumination, Terrain and Compare pages are Phas
 Needs Python ≥ 3.11 with [uv](https://docs.astral.sh/uv/), Node ≥ 20 and Postgres 16.
 
 ```bash
-docker compose up -d db      # or any Postgres 16 with role/db/password "lunaris"
+docker compose up -d db      # or any Postgres 16 with role/db/password "lunareyes"
 uv sync
 npm install
 npm run data                 # ≈ 87 MB from NASA/NAIF/PDS, SHA-256 verified
@@ -25,7 +25,7 @@ Open <http://localhost:3000>. The browser only talks to port 3000; `/api/*` is r
 to the API. Settings are in `.env.example` (all optional).
 
 Without Docker: create the database by hand, e.g.
-`psql -c "CREATE ROLE lunaris LOGIN PASSWORD 'lunaris'" -c "CREATE DATABASE lunaris OWNER lunaris"`.
+`psql -c "CREATE ROLE lunareyes LOGIN PASSWORD 'lunareyes'" -c "CREATE DATABASE lunareyes OWNER lunareyes"`.
 The compose file has not been run in the build environment (no Docker daemon there);
 Postgres 16 was run directly.
 
@@ -45,8 +45,8 @@ npm run contracts:generate   # API running: regenerates the TypeScript contract 
 ## What is here
 
 ```
-packages/science   FROZEN  lunaris_science, unchanged from the prototype at 8edfb32
-packages/data      FROZEN  lunaris_data, unchanged from 8edfb32
+packages/science   FROZEN  lunareyes_science, unchanged from the prototype at 8edfb32
+packages/data      FROZEN  lunareyes_data, unchanged from 8edfb32
 tests/science      copied unchanged (acceptance gate for the frozen core)
 apps/api           FastAPI: /health, /v1/sites, /v1/sites/{id}/timeline, /v1/ephemeris/sun
 apps/web           Next.js 16 / React 19 / R3F / TanStack Query, one page
@@ -86,7 +86,7 @@ Deliberate, per the Phase 1 brief. Each is Phase 2 work unless noted.
 Known wrinkles:
 
 - `tests/science/illumination/test_terrain_physics.py` imports
-  `lunaris_api.services.horizon.HorizonMaskService`, so the horizon service keeps that
+  `lunareyes_api.services.horizon.HorizonMaskService`, so the horizon service keeps that
   module path and constructor to leave the frozen tests untouched.
 - One science test is skipped where the `gdaldem` binary is not installed.
 - Measured locally: a year of hourly samples for one site takes 1.2 s cold (first request

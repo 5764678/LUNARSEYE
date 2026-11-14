@@ -4,7 +4,7 @@
  * Two surface modes, always disclosed in the viewport HUD:
  *
  *  - MODE_TEXTURE (1): a real NASA color map (SVS CGI Moon Kit, acquired and built by
- *    `lunaris-data`), sampled per fragment from body-fixed MOON_ME longitude/latitude
+ *    `lunareyes-data`), sampled per fragment from body-fixed MOON_ME longitude/latitude
  *    (equirectangular, −180…180° centred on 0°). No relief is added: real topography
  *    arrives with LOLA ingestion (Milestone 02).
  *  - MODE_PROCEDURAL (0): a PLACEHOLDER surface generated from noise and a synthetic

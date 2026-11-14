@@ -7,10 +7,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from lunaris_data.readers.ldem import read_ldem_polar
-from lunaris_science.coordinates import spherical_to_cartesian
-from lunaris_science.terrain.dem import PolarDem
-from lunaris_science.terrain.scene import SceneError, build_terrain_scene
+from lunareyes_data.readers.ldem import read_ldem_polar
+from lunareyes_science.coordinates import spherical_to_cartesian
+from lunareyes_science.terrain.dem import PolarDem
+from lunareyes_science.terrain.scene import SceneError, build_terrain_scene
 from tests.fixtures.terrain.synthetic_ldem import planar_height_at_map, write_planar_ldem
 
 R = 1_737_400.0
@@ -24,7 +24,7 @@ def dem(tmp_path: Path) -> PolarDem:
 
 
 def _independent_vertex(row: int, col: int, grid: int, half: float) -> np.ndarray:
-    """Expected MOON_ME position from first principles (no LUNARIS projection code)."""
+    """Expected MOON_ME position from first principles (no LUNAREYES projection code)."""
     spacing = 2 * half / (grid - 1)
     x = -half + col * spacing
     y = half - row * spacing

@@ -1,11 +1,11 @@
-"""Cross-check LUNARIS Horn slope against ``gdaldem slope`` on a real PGDA 20 m window.
+"""Cross-check LUNAREYES Horn slope against ``gdaldem slope`` on a real PGDA 20 m window.
 
 Run by hand (needs network access to pgda.gsfc.nasa.gov and ``gdaldem`` on PATH)::
 
     uv run python tests/fixtures/terrain/crosscheck_gdaldem_slope.py -89.45 222.69 1000
 
 Prints the agreement of the uncorrected operator (projected spacing, as gdaldem uses)
-and of the scale-corrected operator LUNARIS reports, plus the site analysis.
+and of the scale-corrected operator LUNAREYES reports, plus the site analysis.
 """
 
 from __future__ import annotations
@@ -19,9 +19,9 @@ import numpy as np
 import rasterio
 from rasterio.transform import Affine
 
-from lunaris_data.registry import DatasetRegistry
-from lunaris_data.remote.window import read_window, remote_source
-from lunaris_science.terrain.analysis import HazardThresholds, analyze_site, horn_slope_deg
+from lunareyes_data.registry import DatasetRegistry
+from lunareyes_data.remote.window import read_window, remote_source
+from lunareyes_science.terrain.analysis import HazardThresholds, analyze_site, horn_slope_deg
 
 
 def main(lat: float, lon: float, side: int) -> None:

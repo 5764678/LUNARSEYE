@@ -11,8 +11,8 @@ from datetime import UTC, datetime, timedelta
 import numpy as np
 import pytest
 
-from lunaris_science.coordinates import SelenographicCoordinate
-from lunaris_science.geometry import (
+from lunareyes_science.coordinates import SelenographicCoordinate
+from lunareyes_science.geometry import (
     Body,
     BodyGeometrySeries,
     ObserverSite,
@@ -20,12 +20,12 @@ from lunaris_science.geometry import (
     uniform_utc_grid,
     utc_to_et,
 )
-from lunaris_science.geometry.spice import SpiceContext
-from lunaris_science.horizon_mask import HorizonMask
-from lunaris_science.illumination.analysis import HorizonKind, body_timeline
-from lunaris_science.illumination.disk_fraction import straight_horizon_fraction
-from lunaris_science.provenance import Evidence, EvidenceKind, SourceReference
-from lunaris_science.visibility import (
+from lunareyes_science.geometry.spice import SpiceContext
+from lunareyes_science.horizon_mask import HorizonMask
+from lunareyes_science.illumination.analysis import HorizonKind, body_timeline
+from lunareyes_science.illumination.disk_fraction import straight_horizon_fraction
+from lunareyes_science.provenance import Evidence, EvidenceKind, SourceReference
+from lunareyes_science.visibility import (
     RADIO_LINK_DISCLAIMER,
     EarthLineOfSight,
     classify_line_of_sight,

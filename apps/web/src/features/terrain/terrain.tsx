@@ -255,7 +255,7 @@ export function Terrain() {
           <div className="card">
             <h2>Your assumptions</h2>
             <p className="dim small">
-              LUNARIS ships no default “safe” slope or roughness. Flags appear only against
+              LUNAREYES ships no default “safe” slope or roughness. Flags appear only against
               thresholds you enter, and are labelled as assumptions.
             </p>
             <div className="form">

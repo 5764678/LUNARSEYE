@@ -3,12 +3,12 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_USER: lunaris
-      POSTGRES_PASSWORD: lunaris
-      POSTGRES_DB: lunaris
+      POSTGRES_USER: lunareyes
+      POSTGRES_PASSWORD: lunareyes
+      POSTGRES_DB: lunareyes
     ports:
       - "5432:5432"
     volumes:
-      - lunaris-pg:/var/lib/postgresql/data
+      - lunareyes-pg:/var/lib/postgresql/data
 volumes:
-  lunaris-pg:
+  lunareyes-pg:

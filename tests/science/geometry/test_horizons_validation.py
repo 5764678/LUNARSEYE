@@ -17,9 +17,9 @@ from urllib.parse import parse_qsl, urlsplit
 import numpy as np
 import pytest
 
-from lunaris_science.coordinates import SelenographicCoordinate
-from lunaris_science.geometry import Body, ObserverSite, body_geometry, utc_to_et
-from lunaris_science.geometry.spice import SpiceContext
+from lunareyes_science.coordinates import SelenographicCoordinate
+from lunareyes_science.geometry import Body, ObserverSite, body_geometry, utc_to_et
+from lunareyes_science.geometry.spice import SpiceContext
 
 FIXTURES = Path(__file__).resolve().parents[3] / "data" / "fixtures" / "validation"
 TOLERANCE_ARCSEC = 0.01

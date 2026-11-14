@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -27,7 +28,10 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className={singleSite ? "app" : "app no-sidebar"}>
       <header className="topbar">
-        <div className="brand">LUNARIS</div>
+        <div className="brand">
+          <Image src="/logo.png" alt="" width={26} height={26} priority />
+          LUNAREYES
+        </div>
         <nav aria-label="Pages">
           {NAV.map((item) => (
             <Link

@@ -23,7 +23,7 @@
       "EXTRA_PREC": "'YES'"
     },
     "retrieved_on": "2026-11-05",
-    "retrieved_by": "LUNARIS S-GEOMETRY development session, direct HTTPS request to ssd.jpl.nasa.gov.",
+    "retrieved_by": "LUNAREYES S-GEOMETRY development session, direct HTTPS request to ssd.jpl.nasa.gov.",
     "ephemeris_reported": "DE441",
     "body_frame_reported": "MOON_ME"
   },
@@ -91,7 +91,7 @@
     }
   ],
   "comparison": {
-    "definitional_difference": "Horizons evaluates the Moon as seen by the geocentric observer, i.e. at t − (Earth–Moon light time ≈ 1.3 s); LUNARIS's Moon-centred direction is at t. The Moon's rotation (≈ 0.55 arcsec/s) makes the longitudes differ by ≈ 0.64 arcsec.",
+    "definitional_difference": "Horizons evaluates the Moon as seen by the geocentric observer, i.e. at t − (Earth–Moon light time ≈ 1.3 s); LUNAREYES's Moon-centred direction is at t. The Moon's rotation (≈ 0.55 arcsec/s) makes the longitudes differ by ≈ 0.64 arcsec.",
     "tolerance_arcsec_same_definition": 0.05,
     "tolerance_arcsec_at_t": 1.0,
     "test": "tests/science/geometry/test_moon_centred.py"

@@ -10,9 +10,9 @@ import time
 import numpy as np
 import pytest
 
-from lunaris_science.coordinates import SelenographicCoordinate
-from lunaris_science.horizon_mask import HorizonMask
-from lunaris_science.illumination import (
+from lunareyes_science.coordinates import SelenographicCoordinate
+from lunareyes_science.horizon_mask import HorizonMask
+from lunareyes_science.illumination import (
     ASTRONOMICAL_HORIZON,
     DiskFractionError,
     FlatHorizon,

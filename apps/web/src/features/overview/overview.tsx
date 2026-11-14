@@ -75,7 +75,7 @@ export function Overview() {
           sha256: m.source.sha256,
         },
       ],
-      method: "Resampled to a web texture by lunaris-data build-web-texture.",
+      method: "Resampled to a web texture by lunareyes-data build-web-texture.",
       assumptions: m.assumptions,
       limitations: ["The colour map is a picture of the surface, never an analysis input."],
     };

@@ -10,15 +10,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from lunaris_science.terrain.analysis import (
+from lunareyes_science.terrain.analysis import (
     HazardThresholds,
     TerrainAnalysisError,
     analyze_site,
     horn_slope_deg,
     plane_residual_rms,
 )
-from lunaris_science.terrain.dem import PolarDem
-from lunaris_science.terrain.polar_stereographic import (
+from lunareyes_science.terrain.dem import PolarDem
+from lunareyes_science.terrain.polar_stereographic import (
     PolarStereographicGrid,
     SouthPolarStereographic,
 )
@@ -155,7 +155,7 @@ def test_errors() -> None:
 @pytest.mark.skipif(shutil.which("gdaldem") is None, reason="gdaldem not installed")
 def test_uncorrected_horn_matches_gdaldem(tmp_path: Path) -> None:
     """With projected spacing, our Horn operator equals ``gdaldem slope`` (Horn default)."""
-    import rasterio  # noqa: PLC0415 - optional cross-check dependency (lunaris-data has it)
+    import rasterio  # noqa: PLC0415 - optional cross-check dependency (lunareyes-data has it)
     from rasterio.transform import Affine  # noqa: PLC0415
 
     rng = np.random.default_rng(3)
