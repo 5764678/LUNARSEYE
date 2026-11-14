@@ -10,6 +10,7 @@ import type {
   Health,
   HorizonMaskOut,
   HorizonSummary,
+  SiteComparison,
   SiteList,
   SiteOut,
   SiteTerrain,
@@ -24,6 +25,7 @@ export type {
   Health,
   HorizonMaskOut,
   HorizonSummary,
+  SiteComparison,
   SiteList,
   SiteOut,
   SiteTerrain,
@@ -104,7 +106,14 @@ export const api = {
   },
   scene: (gridSize: number, signal?: AbortSignal) =>
     get<TerrainScene>(`/v1/terrain/scene?grid_size=${gridSize}`, signal),
+  compare: (siteIds: string[], w: AnalysisWindow, profile: ProfileId | null, signal?: AbortSignal) =>
+    get<SiteComparison>(
+      `/v1/compare?site_ids=${siteIds.join(",")}&${windowQuery(w)}${profile ? `&profile=${profile}` : ""}`,
+      signal,
+    ),
 };
+
+export type ProfileId = "power" | "comms" | "landing";
 
 export interface TerrainParams {
   footprintRadiusM: number;
@@ -123,6 +132,8 @@ export const keys = {
   terrain: (siteId: string, p: TerrainParams) =>
     ["terrain", siteId, p.footprintRadiusM, p.maxSlopeDeg, p.maxRoughnessM] as const,
   scene: (gridSize: number) => ["scene", gridSize] as const,
+  compare: (siteIds: string[], w: AnalysisWindow, profile: ProfileId | null) =>
+    ["compare", [...siteIds].sort().join(","), w.startUtc, w.endUtc, w.stepS, profile] as const,
 };
 
 export function describeError(error: unknown): string {

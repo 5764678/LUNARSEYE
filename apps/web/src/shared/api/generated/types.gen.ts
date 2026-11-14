@@ -77,6 +77,147 @@ export type CatalogInfo = {
 };
 
 /**
+ * ColumnLeaders
+ */
+export type ColumnLeaders = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Better
+     */
+    better: 'higher' | 'lower';
+    /**
+     * Site Ids
+     */
+    site_ids: Array<string>;
+    /**
+     * Value
+     */
+    value: number | null;
+    /**
+     * Compared Sites
+     */
+    compared_sites: number;
+};
+
+/**
+ * CompareCell
+ *
+ * One number with its evidence. ``value`` is null (with ``reason``) when it cannot be
+ * computed: never 0.
+ */
+export type CompareCell = {
+    /**
+     * Value
+     */
+    value: number | null;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Reason
+     */
+    reason?: string | null;
+    /**
+     * Baseline M
+     */
+    baseline_m?: number | null;
+    evidence?: Evidence | null;
+    /**
+     * Limitations
+     */
+    limitations?: Array<string>;
+};
+
+/**
+ * CompareColumn
+ */
+export type CompareColumn = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Better
+     */
+    better?: 'higher' | 'lower' | null;
+    /**
+     * Better Rationale
+     */
+    better_rationale?: string | null;
+};
+
+/**
+ * CompareRow
+ */
+export type CompareRow = {
+    /**
+     * Site Id
+     */
+    site_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Origin
+     */
+    origin: string;
+    /**
+     * Latitude Deg
+     */
+    latitude_deg: number;
+    /**
+     * Longitude Deg
+     */
+    longitude_deg: number;
+    /**
+     * Cells
+     */
+    cells: {
+        [key: string]: CompareCell;
+    };
+};
+
+/**
+ * ComparisonSummary
+ */
+export type ComparisonSummary = {
+    /**
+     * Leaders
+     */
+    leaders: Array<ColumnLeaders>;
+    /**
+     * Sites
+     */
+    sites: Array<SiteStanding>;
+    /**
+     * Verdict
+     */
+    verdict: string;
+    /**
+     * Method
+     */
+    method: string;
+    score?: ProfileScore | null;
+};
+
+/**
  * DemWindow
  */
 export type DemWindow = {
@@ -472,6 +613,92 @@ export type Observer = {
 };
 
 /**
+ * ProfileScore
+ */
+export type ProfileScore = {
+    /**
+     * Profile
+     */
+    profile: 'power' | 'comms' | 'landing';
+    /**
+     * Weights
+     */
+    weights: {
+        [key: string]: number;
+    };
+    /**
+     * Normalisation
+     */
+    normalisation: string;
+    /**
+     * Scores
+     */
+    scores: Array<ScoreEntry>;
+    evidence: Evidence;
+};
+
+/**
+ * ScoreEntry
+ */
+export type ScoreEntry = {
+    /**
+     * Site Id
+     */
+    site_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Score
+     */
+    score: number | null;
+    /**
+     * Reason
+     */
+    reason?: string | null;
+};
+
+/**
+ * SiteComparison
+ */
+export type SiteComparison = {
+    /**
+     * Start Utc
+     */
+    start_utc: string;
+    /**
+     * End Utc
+     */
+    end_utc: string;
+    /**
+     * Step S
+     */
+    step_s: number;
+    /**
+     * Sample Count
+     */
+    sample_count: number;
+    /**
+     * Footprint Radius M
+     */
+    footprint_radius_m: number;
+    /**
+     * Columns
+     */
+    columns: Array<CompareColumn>;
+    /**
+     * Rows
+     */
+    rows: Array<CompareRow>;
+    /**
+     * Assumptions
+     */
+    assumptions: Array<string>;
+    summary: ComparisonSummary;
+};
+
+/**
  * SiteList
  */
 export type SiteList = {
@@ -531,6 +758,40 @@ export type SiteOut = {
      */
     created_at_utc: string;
     catalog: CatalogInfo | null;
+};
+
+/**
+ * SiteStanding
+ */
+export type SiteStanding = {
+    /**
+     * Site Id
+     */
+    site_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Leads
+     */
+    leads: Array<string>;
+    /**
+     * Trails
+     */
+    trails: Array<string>;
+    /**
+     * Directed Compared
+     */
+    directed_compared: number;
+    /**
+     * Dominated By
+     */
+    dominated_by: Array<string>;
+    /**
+     * Dominance
+     */
+    dominance: string;
 };
 
 /**
@@ -893,6 +1154,76 @@ export type GetTerrainSceneResponses = {
 };
 
 export type GetTerrainSceneResponse = GetTerrainSceneResponses[keyof GetTerrainSceneResponses];
+
+export type CompareSitesData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Site Ids
+         *
+         * Comma-separated site ids, 1 to 10 distinct.
+         */
+        site_ids: string;
+        /**
+         * Start Utc
+         *
+         * Window start, ISO 8601 with UTC offset
+         */
+        start_utc: string;
+        /**
+         * End Utc
+         *
+         * Window end, ISO 8601 UTC
+         */
+        end_utc: string;
+        /**
+         * Step S
+         */
+        step_s?: number;
+        /**
+         * Footprint Radius M
+         */
+        footprint_radius_m?: number;
+        /**
+         * Profile
+         *
+         * Optional mission profile: fixed, labelled weights (an assumption).
+         */
+        profile?: 'power' | 'comms' | 'landing' | null;
+    };
+    url: '/v1/compare';
+};
+
+export type CompareSitesErrors = {
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type CompareSitesError = CompareSitesErrors[keyof CompareSitesErrors];
+
+export type CompareSitesResponses = {
+    /**
+     * Successful Response
+     */
+    200: SiteComparison;
+};
+
+export type CompareSitesResponse = CompareSitesResponses[keyof CompareSitesResponses];
 
 export type GetHealthData = {
     body?: never;
