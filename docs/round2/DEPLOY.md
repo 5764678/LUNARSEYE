@@ -1,20 +1,29 @@
 # Deploying LUNARIS on Render
 
-**Status: LIVE on Render (free plan), deployed 14 Nov 2026 via the Render connector with the
-user's go-ahead.**
+**Status: LIVE on Render (free plan).** Deployed 14 Nov 2026 via the Render connector with the
+user's go-ahead; the user chose to move to a service named exactly `lunarseye` (option 2 below).
 
 | | |
 | --- | --- |
-| URL | https://lunaris-zqih.onrender.com |
-| Web service | `lunaris-zqih`, id `srv-dbrufgbrjlhs73cl0bv0`, Docker, free plan, Oregon |
-| Postgres | `lunaris-db-zqih`, free plan, version 16 (pinned in `render.yaml`) |
-| Blueprint | `exs-dbruel2fngtc73b6u7jg`, auto-sync ON, tracks branch `claude/gifted-allen-smvncn` |
+| **Primary URL** | **https://lunarseye.onrender.com** |
+| Web service (primary) | `lunarseye`, id `srv-dbrupou1egvs73cbr050`, Docker, free, Oregon. Created directly with `create_web_service` (NOT Blueprint-managed), tracks branch `claude/gifted-allen-smvncn`, auto-deploys on push |
+| Postgres | `lunaris-db-zqih`, id `dpg-dbruf23rjlhs73ckum6g-a`, free, version 16, expires 2026-12-14 (free plan: 30 days). Not Blueprint-independent: it was created by the Blueprint below |
+| Old web service | `lunaris-zqih`, id `srv-dbrufgbrjlhs73cl0bv0`, https://lunaris-zqih.onrender.com , **to be deleted by the user in the dashboard** (the connector has no delete tool) once `lunarseye` is confirmed |
+| Blueprint | `exs-dbruel2fngtc73b6u7jg` (manages the OLD service and the database), **auto-sync OFF** |
 | Workspace | "Matthew's workspace" `tea-dbnavfgu01pc73c87osg` |
-| First build | ≈ 3 min; smoke test (`scripts/smoke.mjs`) passed against the live URL |
 
-**Every push to `claude/gifted-allen-smvncn` triggers a rebuild and redeploy (~3 min).** If the
-branch is later merged to `main`, point the service/blueprint at `main` in the dashboard.
-A failed build leaves the previous deploy running. Check with `list_deploys` / the smoke test.
+**Database wiring on `lunarseye`:** the connector cannot read the database password, so
+`LUNARIS_DATABASE_URL` on `lunarseye` has to be added by the user in the dashboard
+(Environment → Add Environment Variable → "Add from Database" → `lunaris-db-zqih` → Internal
+Database URL). Without it the API cannot start. Whoever reads this: check `get_service` /
+`/api/health` before assuming it is done, and record here when it was.
+
+**`lunarseye` has no health-check path** (the connector's `create_web_service` cannot set one;
+the Blueprint set `/api/health` on the old service). Render falls back to a port check. Set
+Health Check Path to `/api/health` in the dashboard (Settings) if zero-downtime deploys matter.
+
+**Every push to `claude/gifted-allen-smvncn` triggers a rebuild and redeploy (~1–3 min) of each
+auto-deploying service.** A failed build leaves the previous deploy running.
 
 The user said hosting will be a new Render service. The registry is read-only and nothing is written by
 visitors, so the original "publicly writable registry" concern does not apply (confirmed with
@@ -54,26 +63,25 @@ workspace → Settings → Team members → + Invite members.
 The service **auto-deploys every push to the branch it tracks** (`claude/gifted-allen-smvncn`);
 a build takes ≈ 1–3 min and a failed build leaves the previous deploy running.
 - Work pushed to the tracked branch (or merged into it): nothing to do. Verify, see below.
-- Work on another branch: it is NOT deployed until it is on the tracked branch (merge it there)
-  or the Blueprint is pointed at it: `update_blueprint(blueprintId, branch=…)`, then review the
-  plan with `plan_blueprint`, then `approve_blueprint`. (Plain `trigger_deploy` only redeploys
-  the tracked branch.)
+- Work on another branch: it is NOT deployed until it is on the tracked branch (merge it there).
+  `lunarseye` is not Blueprint-managed, so the connector cannot change its branch; changing it
+  is a dashboard action (Settings → Branch) for the user. `trigger_deploy` only redeploys the
+  tracked branch. (The Blueprint's `update_blueprint(branch=…)` would only move the OLD service.)
 - Verify every deploy: `list_deploys` shows `live`; `list_events` with `eventTypes:
   ["server_failed"]` shows no `oomKilled`; then run
-  `BASE_URL=https://lunaris-zqih.onrender.com NODE_PATH=$(npm root -g) node scripts/smoke.mjs`.
+  `BASE_URL=https://lunarseye.onrender.com NODE_PATH=$(npm root -g) node scripts/smoke.mjs`.
   Do not run heavy load against the free instance (that is how it was OOM-killed once).
 
-## Naming (the user wants the service called "lunarseye")
+## Naming: why `lunarseye` is a separately created service
 
-The live names are `lunaris-zqih` (web) and `lunaris-db-zqih` (Postgres): Render appended a
-random suffix when the Blueprint was created with `existingResources: create_new`.
-Tested with `plan_blueprint` (nothing applied): renaming in `render.yaml` does **not** rename;
-it plans a second free Postgres (the free plan allows one) and a *new* service
-`lunarseye-zqih`, still suffixed. A second Blueprint for the same repo/branch/file is refused
-(409). The Blueprint has `autoSync` turned **off** so a `render.yaml` edit can never apply
-unreviewed; `plan_blueprint` + `approve_blueprint` are needed to change infrastructure.
-Ways to get the exact name are listed in the user-facing summary of the 14 Nov session; see the
-git log / ask the user which was chosen, and record it here.
+Blueprint-created resources get a random suffix (`lunaris-zqih`). Tested with `plan_blueprint`
+(nothing applied): renaming in `render.yaml` does not rename; it plans a second free Postgres
+(the free plan allows one) and a new `lunarseye-zqih`. A second Blueprint for the same
+repo/branch/file is refused (409). So the user chose option 2: create `lunarseye` directly with
+`create_web_service` (exact name → `lunarseye.onrender.com`), reuse the database, delete the old
+service. The Blueprint's auto-sync is OFF so a `render.yaml` edit cannot apply unreviewed.
+`render.yaml` is now documentation for a from-scratch Blueprint deploy; it still names the old
+resources (`lunaris`, `lunaris-db`).
 
 ## Steps if redeploying from scratch (for a human, in the Render dashboard)
 
