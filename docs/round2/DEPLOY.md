@@ -1,7 +1,22 @@
 # Deploying LUNARIS on Render
 
-**Status:** prepared and tested locally in Docker; **nothing has been deployed.** The user
-said hosting will be a new Render service. The registry is read-only and nothing is written by
+**Status: LIVE on Render (free plan), deployed 14 Nov 2026 via the Render connector with the
+user's go-ahead.**
+
+| | |
+| --- | --- |
+| URL | https://lunaris-zqih.onrender.com |
+| Web service | `lunaris-zqih`, id `srv-dbrufgbrjlhs73cl0bv0`, Docker, free plan, Oregon |
+| Postgres | `lunaris-db-zqih`, free plan, version 16 (pinned in `render.yaml`) |
+| Blueprint | `exs-dbruel2fngtc73b6u7jg`, auto-sync ON, tracks branch `claude/gifted-allen-smvncn` |
+| Workspace | "Matthew's workspace" `tea-dbnavfgu01pc73c87osg` |
+| First build | ≈ 3 min; smoke test (`scripts/smoke.mjs`) passed against the live URL |
+
+**Every push to `claude/gifted-allen-smvncn` triggers a rebuild and redeploy (~3 min).** If the
+branch is later merged to `main`, point the service/blueprint at `main` in the dashboard.
+A failed build leaves the previous deploy running. Check with `list_deploys` / the smoke test.
+
+The user said hosting will be a new Render service. The registry is read-only and nothing is written by
 visitors, so the original "publicly writable registry" concern does not apply (confirmed with
 the user, 14 Nov). Still: do not click-deploy on someone's behalf without asking.
 
@@ -26,7 +41,16 @@ The image build (≈ 3–10 min depending on network) does the slow work once:
    it is computed lazily at request time instead.
 4. `next build` with `output: "standalone"`.
 
-## Steps (for a human, in the Render dashboard)
+## Collaborator access (OPEN ITEM)
+
+The user asked for **jinn.newbie.s@gmail.com** to be added as a collaborator on the Render
+workspace so they can deploy. The Render connector has **no member/invite tool**, so this must
+be done by the workspace owner in the dashboard: Dashboard → the workspace → **Settings** →
+**Team members** → **+ Invite members** → email + role. Render's docs say adding members needs
+a **Pro-or-higher workspace**; whether this one qualifies was not checked. Update this section
+when it is done.
+
+## Steps if redeploying from scratch (for a human, in the Render dashboard)
 
 1. Push this repo's default branch to GitHub (done by merging PRs).
 2. Render → **New → Blueprint** → select `5764678/LUNARSEYE` → it reads `render.yaml`.

@@ -45,9 +45,9 @@ roughest; Malapert massif is smoothest; under the `landing` profile Malapert sco
   Measured: in a fresh sandbox with nothing cached, the first demo-trio compare for 2027 took
   5.5 s end to end. In the prewarmed Docker image (all 27 sites' masks and terrain windows
   built into it): trio 3.0 s cold / 0.02 s repeat; 10 sites cold 6.8 s. Memory: see DEPLOY.md.
-- **Not deployed.** Docker image, `render.yaml` and `docs/round2/DEPLOY.md` exist and were
-  tested locally (image built, run against `postgres:16`, all five pages smoke-tested through
-  the container). Render itself was not touched. Memory sizing is in `DEPLOY.md`.
+- **Deployed** (free Render plan): https://lunaris-zqih.onrender.com , see `docs/round2/DEPLOY.md`
+  for service ids, auto-deploy behaviour and the open collaborator-invite item. Free plan is
+  512 MiB-class: measured worst case ≈ 440 MiB, so watch for restarts under load.
 - **Compare**: observer height fixed at 2 m; per-site rows cached in memory (256 max); sample
   cap is 10 000 per request (a year hourly = 8 761).
 - **Ruff**: ~28 style findings in `apps/api/src` from earlier work; no gate exists.
@@ -130,7 +130,7 @@ Quality work (14 Nov progress marked):
    catalogue site to test with (the catalogue has tile centres such as "Shackleton rim").
 4. **Docs:** keep README + this file current; add `docs/round2/disposition.md` only if asked.
 5. Alembic replacing `create_all`; CI (typecheck, vitest, build, pytest with Postgres + data).
-Polish for the submission: demo path on `/` (call to action to compare the trio), mobile
+Polish for the submission (in progress, see git log): demo path on `/` (call to action to compare the trio), mobile
 width, copy review, screenshots. Deploy only when the user says go.
 
 ## 6. Reference material and rules
