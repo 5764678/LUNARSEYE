@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import type { Evidence } from "@/shared/api/client";
 import { useEvidence } from "@/shared/state/evidence";
@@ -43,29 +43,70 @@ export function EvidenceBadge({
   );
 }
 
+const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function EvidenceDrawer() {
   const open = useEvidence((s) => s.open);
   const close = useEvidence((s) => s.close);
+  const dialog = useRef<HTMLElement>(null);
+  const isOpen = open !== null;
+
+  // Modal dialog: focus moves in, Tab stays inside, Escape closes, focus returns to the
+  // badge that opened it.
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && close();
+    if (!isOpen) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialog.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        close();
+        return;
+      }
+      const root = dialog.current;
+      if (event.key !== "Tab" || !root) return;
+      const items = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE));
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!first || !last) {
+        event.preventDefault();
+        return;
+      }
+      const inside = root.contains(document.activeElement) && document.activeElement !== root;
+      if (event.shiftKey && (!inside || document.activeElement === first)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (!inside || document.activeElement === last)) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [close]);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (opener?.isConnected) opener.focus();
+    };
+  }, [isOpen, close]);
+
   if (!open) return null;
   const { evidence, title, value } = open;
   const kind = KIND[evidence.kind];
   return (
     <div className="drawer-backdrop" onClick={close}>
       <aside
+        ref={dialog}
         className="drawer"
         role="dialog"
-        aria-label={`Evidence: ${title}`}
+        aria-modal="true"
+        aria-labelledby="evidence-eyebrow evidence-title"
+        tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
       >
         <header>
           <div>
-            <div className="eyebrow">Evidence</div>
-            <h2>{title}</h2>
+            <div className="eyebrow" id="evidence-eyebrow">
+              Evidence
+            </div>
+            <h2 id="evidence-title">{title}</h2>
             {value ? <div className="drawer-value">{value}</div> : null}
           </div>
           <button type="button" className="btn" onClick={close} aria-label="Close">

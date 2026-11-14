@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { resolveSiteSelection } from "@/features/sites/selection";
 import { useMissionUrl } from "@/shared/state/url";
 
 import { api, keys, type AnalysisWindow, type MissionAnswers, type TerrainParams } from "./client";
@@ -15,13 +16,17 @@ export const useDatasets = () =>
 export const useSites = () =>
   useQuery({ queryKey: keys.sites, queryFn: ({ signal }) => api.sites(signal) });
 
-/** The site named in the URL, or the first catalogue site while none is named. */
+/**
+ * The site named in the URL, or the first catalogue site while none is named. A named
+ * site that is not in the catalogue yields `siteId: null` (so nothing is requested for it)
+ * and `unknownSiteParam`, which the shell turns into a "site not found" message.
+ */
 export function useSelectedSite() {
   const { siteParam } = useMissionUrl();
   const sites = useSites();
-  const siteId = siteParam ?? sites.data?.sites[0]?.id ?? null;
+  const { siteId, unknownParam } = resolveSiteSelection(sites.data?.sites, siteParam, sites.isError);
   const site = sites.data?.sites.find((s) => s.id === siteId) ?? null;
-  return { sites, siteId, site };
+  return { sites, siteId, site, unknownSiteParam: unknownParam };
 }
 
 export const useTimeline = (siteId: string | null, window: AnalysisWindow) =>
@@ -34,13 +39,19 @@ export const useTimeline = (siteId: string | null, window: AnalysisWindow) =>
 export const useSun = (window: AnalysisWindow) =>
   useQuery({ queryKey: keys.sun(window), queryFn: ({ signal }) => api.sun(window, signal) });
 
-/** The first read of a site's 20 m window goes to PGDA over HTTP ranges (≈ 10–15 s). */
+/**
+ * The first read of a site's 20 m window goes to PGDA over HTTP ranges (≈ 10–15 s).
+ * While new thresholds load for the SAME site the last result stays on screen (every row
+ * names its own baseline and limits). It is never carried over to a different site: the
+ * panel would show one site's measurements under another site's name.
+ */
 export const useSiteTerrain = (siteId: string | null, params: TerrainParams) =>
   useQuery({
     queryKey: keys.terrain(siteId ?? "", params),
     queryFn: ({ signal }) => api.terrain(siteId!, params, signal),
     enabled: siteId !== null,
-    placeholderData: (previous) => previous,
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[1] === (siteId ?? "") ? previous : undefined,
   });
 
 export const useTerrainScene = (gridSize: number) =>

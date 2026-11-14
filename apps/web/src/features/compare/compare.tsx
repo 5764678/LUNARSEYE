@@ -233,7 +233,9 @@ function MissionQuestions({ mission, setParams }: { mission: MissionAnswers; set
       <div className="panel-head">
         <h2>What does this mission need?</h2>
         {isDefaultMission(mission) ? (
-          <span className="dim small">Unanswered: every need counts as important, no limits</span>
+          <span className="dim small">
+            Starting point: every need counts as Important, no limits. Change any answer to override.
+          </span>
         ) : (
           <button type="button" className="btn" onClick={() => setParams(RESET_MISSION)}>
             Reset answers

@@ -44,42 +44,53 @@ export function Datasets() {
             </a>
           </p>
           {d.usage ? <p className="small">{d.usage}</p> : null}
-          {d.citation ? <p className="dim small">Cite: {d.citation}</p> : null}
-          {d.required_by.length ? (
-            <p className="dim small">Required by: {d.required_by.join(", ")}</p>
-          ) : null}
-          <table className="data">
-            <thead>
-              <tr>
-                <th>File</th>
-                <th>Role</th>
-                <th>Size</th>
-                <th>SHA-256</th>
-              </tr>
-            </thead>
-            <tbody>
-              {d.files.map((f) => (
-                <tr key={f.name}>
-                  <th scope="row" className="mono">
-                    {f.name}
-                  </th>
-                  <td>{f.role}</td>
-                  <td>{mb(f.size_bytes)}</td>
-                  <td className="mono sha">{f.sha256 ?? "not hashed (remote file; HTTP validators used)"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {d.acquire_command && d.local.status !== "acquired" ? (
-            <p className="mono small">{d.acquire_command}</p>
-          ) : null}
-          {d.notes.length ? (
-            <ul className="small dim">
-              {d.notes.map((n) => (
-                <li key={n}>{n}</li>
-              ))}
-            </ul>
-          ) : null}
+          <details className="more">
+            <summary>
+              Files, SHA-256 hashes, citation and notes ({d.files.length} file{d.files.length === 1 ? "" : "s"})
+            </summary>
+            {d.citation ? <p className="dim small">Cite: {d.citation}</p> : null}
+            {d.required_by.length ? (
+              <p className="dim small">Required by: {d.required_by.join(", ")}</p>
+            ) : null}
+            <div className="table-scroll">
+              <table className="data files">
+                <thead>
+                  <tr>
+                    <th>File</th>
+                    <th>Role</th>
+                    <th>Size</th>
+                  </tr>
+                </thead>
+                {d.files.map((f) => (
+                  <tbody key={f.name}>
+                    <tr>
+                      <th scope="row" className="mono">
+                        {f.name}
+                      </th>
+                      <td>{f.role}</td>
+                      <td>{mb(f.size_bytes)}</td>
+                    </tr>
+                    <tr className="hash-row">
+                      <td colSpan={3} className="mono sha">
+                        <span className="dim">SHA-256 </span>
+                        {f.sha256 ?? "not hashed (remote file; HTTP validators used)"}
+                      </td>
+                    </tr>
+                  </tbody>
+                ))}
+              </table>
+            </div>
+            {d.acquire_command && d.local.status !== "acquired" ? (
+              <p className="mono small">{d.acquire_command}</p>
+            ) : null}
+            {d.notes.length ? (
+              <ul className="small dim">
+                {d.notes.map((n) => (
+                  <li key={n}>{n}</li>
+                ))}
+              </ul>
+            ) : null}
+          </details>
         </section>
       ))}
     </div>

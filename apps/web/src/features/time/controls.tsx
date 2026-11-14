@@ -65,6 +65,7 @@ export function TimeControls() {
             key={r.value}
             type="button"
             className={r.value === rate ? "on" : ""}
+            aria-pressed={r.value === rate}
             onClick={() => setRate(r.value)}
           >
             {r.label}
@@ -79,6 +80,7 @@ export function TimeControls() {
             key={w.id}
             type="button"
             className={w.id === windowId ? "on" : ""}
+            aria-pressed={w.id === windowId}
             onClick={() => setParams({ window: w.id })}
           >
             {w.label}

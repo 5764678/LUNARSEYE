@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { SitePicker } from "@/features/sites/site-list";
+import { SiteNotFound } from "@/features/sites/site-not-found";
 import { usePlayback } from "@/features/time/controls";
 import { describeError } from "@/shared/api/client";
 import { useHealth, useSelectedSite } from "@/shared/api/queries";
@@ -12,7 +13,7 @@ import { EvidenceDrawer } from "@/shared/ui/evidence";
 
 const NAV = [
   { path: "/", label: "Overview" },
-  { path: "/illumination", label: "Illumination & Earth" },
+  { path: "/illumination", label: "Illumination", extra: " & Earth" },
   { path: "/terrain", label: "Terrain" },
   { path: "/compare", label: "Compare" },
   { path: "/data", label: "Data" },
@@ -21,7 +22,7 @@ const NAV = [
 export function Shell({ children }: { children: ReactNode }) {
   const { pathname, href, window, setParams } = useMissionUrl();
   const health = useHealth();
-  const { sites, siteId } = useSelectedSite();
+  const { sites, siteId, unknownSiteParam } = useSelectedSite();
   usePlayback(window.startMs, window.endMs);
   const singleSite = pathname !== "/compare" && pathname !== "/data";
 
@@ -38,6 +39,7 @@ export function Shell({ children }: { children: ReactNode }) {
               aria-current={pathname === item.path ? "page" : undefined}
             >
               {item.label}
+              {item.extra ? <span className="nav-extra">{item.extra}</span> : null}
             </Link>
           ))}
         </nav>
@@ -70,7 +72,18 @@ export function Shell({ children }: { children: ReactNode }) {
         </aside>
       ) : null}
 
-      <main className="main">{children}</main>
+      <main className="main">
+        {singleSite && unknownSiteParam !== null ? (
+          <SiteNotFound
+            requested={unknownSiteParam}
+            count={sites.data?.count ?? null}
+            fallbackName={sites.data?.sites[0]?.name ?? null}
+            onUseFallback={() => setParams({ site: null })}
+          />
+        ) : (
+          children
+        )}
+      </main>
       <EvidenceDrawer />
     </div>
   );

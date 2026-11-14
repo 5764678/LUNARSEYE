@@ -172,7 +172,7 @@ export default function TerrainScene({
   }, [selected, grid, exaggeration]);
 
   return (
-    <Canvas shadows camera={{ fov: 35, near: 1, far: 2000, position: [60, 110, 170] }} dpr={[1, 2]}>
+    <Canvas shadows="percentage" camera={{ fov: 35, near: 1, far: 2000, position: [60, 110, 170] }} dpr={[1, 2]}>
       <color attach="background" args={["#020305"]} />
       {/* Fill light so shadowed ground is dark, not black: a display choice. */}
       <ambientLight intensity={0.09} />

@@ -148,7 +148,10 @@ function Loaded({ timeline }: { timeline: SiteTimeline }) {
         </div>
         {horizon.available ? (
           <>
-            <SkyChart horizon={horizon} sun={sun} earth={earth} index={index} />
+            <div className="chart-scroll">
+              <SkyChart horizon={horizon} sun={sun} earth={earth} index={index} />
+            </div>
+            <p className="dim small chart-hint">Scroll the chart sideways to see every azimuth.</p>
             <ul className="legend">
               <li>
                 <i style={{ background: "var(--horizon)" }} />

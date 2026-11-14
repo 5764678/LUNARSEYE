@@ -10,6 +10,7 @@ import { useTime } from "@/shared/state/time";
 import { EvidenceBadge } from "@/shared/ui/evidence";
 
 import { DiskView } from "./disk-view";
+import { nextEpoch } from "./keyboard";
 import { ElevationLane, FractionLane } from "./lanes";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -160,6 +161,29 @@ export function TimelinePanel({
         <div
           className="track"
           ref={track}
+          // A slider for keyboard and screen-reader users; the readout below carries the values.
+          role="slider"
+          tabIndex={0}
+          aria-label="Time cursor"
+          aria-orientation="horizontal"
+          aria-valuemin={startMs}
+          aria-valuemax={endMs}
+          aria-valuenow={epochMs}
+          aria-valuetext={`${formatUtc(epochMs, false)} UTC`}
+          onKeyDown={(event) => {
+            const next = nextEpoch(
+              event.key,
+              epochMs,
+              startMs,
+              endMs,
+              (timeline?.step_s ?? 3600) * 1000,
+              event.shiftKey,
+            );
+            if (next === null) return;
+            event.preventDefault();
+            setPlaying(false);
+            setEpoch(next);
+          }}
           onPointerDown={(event) => {
             event.currentTarget.setPointerCapture(event.pointerId);
             setPlaying(false);

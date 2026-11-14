@@ -21,6 +21,8 @@ import { useTime } from "@/shared/state/time";
 import { useMissionUrl } from "@/shared/state/url";
 import { EvidenceBadge } from "@/shared/ui/evidence";
 
+import { interpretThresholds, RADIUS_MAX_M, RADIUS_MIN_M } from "./thresholds";
+
 const TerrainScene = dynamic(() => import("@/viewport/terrain-scene"), {
   ssr: false,
   loading: () => <div className="globe-loading">Loading the terrain scene…</div>,
@@ -55,9 +57,12 @@ function Row({
 const num = (value: number | null | undefined, digits: number, unit: string) =>
   value == null ? null : `${value.toFixed(digits)} ${unit}`;
 
-function parseThreshold(text: string): number | null {
-  const value = Number(text);
-  return text.trim() !== "" && Number.isFinite(value) && value > 0 ? value : null;
+function RetryButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button type="button" className="btn small" onClick={onClick}>
+      Retry
+    </button>
+  );
 }
 
 function Analysis({ data }: { data: SiteTerrain }) {
@@ -126,13 +131,12 @@ export function Terrain() {
   const [roughnessText, setRoughnessText] = useState("");
   const [exaggeration, setExaggeration] = useState(1);
 
-  const radius = clamp(parseThreshold(radiusText) ?? 50, 20, 2000);
-  const maxSlope = parseThreshold(slopeText);
-  const maxRoughness = parseThreshold(roughnessText);
+  // What is applied can differ from what was typed (clamped, ignored): say so under the field.
+  const applied = interpretThresholds(radiusText, slopeText, roughnessText);
   const terrain = useSiteTerrain(siteId, {
-    footprintRadiusM: radius,
-    maxSlopeDeg: maxSlope !== null && maxSlope < 90 ? maxSlope : null,
-    maxRoughnessM: maxRoughness,
+    footprintRadiusM: applied.radiusM,
+    maxSlopeDeg: applied.maxSlopeDeg,
+    maxRoughnessM: applied.maxRoughnessM,
   });
   const scene = useTerrainScene(GRID_SIZE);
   const sun = useSun(window);
@@ -171,7 +175,11 @@ export function Terrain() {
   return (
     <div className="terrain-page">
       <div className="terrain-view">
-        {scene.isError ? <p className="error pad">{describeError(scene.error)}</p> : null}
+        {scene.isError ? (
+          <p className="error pad">
+            {describeError(scene.error)} <RetryButton onClick={() => void scene.refetch()} />
+          </p>
+        ) : null}
         {grid ? (
           <TerrainScene
             grid={grid}
@@ -190,7 +198,20 @@ export function Terrain() {
             <EvidenceBadge title="South-pole terrain mesh" evidence={scene.data?.evidence} />
           </div>
           <div>
-            <b>Light</b> SPICE Sun direction{" "}
+            <b>Light</b>{" "}
+            {sun.isError ? (
+              <>
+                <span className="error">
+                  Sun direction unavailable: {describeError(sun.error)}. The terrain is drawn under flat
+                  ambient light, not the Sun.
+                </span>{" "}
+                <RetryButton onClick={() => void sun.refetch()} />
+              </>
+            ) : sunLocal ? (
+              "SPICE Sun direction"
+            ) : (
+              "computing the SPICE Sun direction…"
+            )}{" "}
             <EvidenceBadge title="Sun direction lighting the terrain" evidence={sun.data?.evidence} />
           </div>
           <div className="dim">
@@ -211,6 +232,13 @@ export function Terrain() {
                 evidence={t.sun.terrain_visible_fraction ? t.sun.evidence : null}
               />
             </div>
+          ) : site && timeline.isError ? (
+            <div className="error">
+              {site.name}: Sun elevation and visible Sun disc not computed ({describeError(timeline.error)}){" "}
+              <RetryButton onClick={() => void timeline.refetch()} />
+            </div>
+          ) : site ? (
+            <div className="dim">Computing the Sun at {site.name}…</div>
           ) : null}
         </div>
         <div className="scene-tools segmented" role="group" aria-label="Vertical exaggeration">
@@ -219,6 +247,7 @@ export function Terrain() {
               key={value}
               type="button"
               className={value === exaggeration ? "on" : ""}
+              aria-pressed={value === exaggeration}
               onClick={() => setExaggeration(value)}
             >
               relief {value}×
@@ -240,7 +269,9 @@ export function Terrain() {
               ) : null}
             </div>
             {terrain.isError ? (
-              <p className="error">N/C · {describeError(terrain.error)}</p>
+              <p className="error">
+                N/C · {describeError(terrain.error)} <RetryButton onClick={() => void terrain.refetch()} />
+              </p>
             ) : terrain.data ? (
               <Analysis data={terrain.data} />
             ) : (
@@ -261,16 +292,57 @@ export function Terrain() {
             <div className="form">
               <label>
                 Footprint radius (m)
-                <input inputMode="decimal" value={radiusText} onChange={(e) => setRadiusText(e.target.value)} />
-                <span className="dim small">20 … 2000; sets the roughness baseline (2 × radius)</span>
+                <input
+                  inputMode="decimal"
+                  value={radiusText}
+                  aria-invalid={applied.radiusNote !== null}
+                  aria-describedby="radius-help"
+                  onChange={(e) => setRadiusText(e.target.value)}
+                />
+                <span id="radius-help" className="small">
+                  <span className="dim">
+                    {RADIUS_MIN_M} … {RADIUS_MAX_M}; sets the roughness baseline (2 × radius).{" "}
+                  </span>
+                  {applied.radiusNote ? (
+                    <span className="flag bad" role="status">
+                      {applied.radiusNote}
+                    </span>
+                  ) : (
+                    <span className="dim">Using {applied.radiusM} m.</span>
+                  )}
+                </span>
               </label>
               <label>
                 Max slope (°)
-                <input inputMode="decimal" placeholder="none" value={slopeText} onChange={(e) => setSlopeText(e.target.value)} />
+                <input
+                  inputMode="decimal"
+                  placeholder="none"
+                  value={slopeText}
+                  aria-invalid={applied.slopeNote !== null}
+                  aria-describedby={applied.slopeNote ? "slope-help" : undefined}
+                  onChange={(e) => setSlopeText(e.target.value)}
+                />
+                {applied.slopeNote ? (
+                  <span id="slope-help" className="flag bad small" role="status">
+                    {applied.slopeNote}
+                  </span>
+                ) : null}
               </label>
               <label>
                 Max roughness (m)
-                <input inputMode="decimal" placeholder="none" value={roughnessText} onChange={(e) => setRoughnessText(e.target.value)} />
+                <input
+                  inputMode="decimal"
+                  placeholder="none"
+                  value={roughnessText}
+                  aria-invalid={applied.roughnessNote !== null}
+                  aria-describedby={applied.roughnessNote ? "roughness-help" : undefined}
+                  onChange={(e) => setRoughnessText(e.target.value)}
+                />
+                {applied.roughnessNote ? (
+                  <span id="roughness-help" className="flag bad small" role="status">
+                    {applied.roughnessNote}
+                  </span>
+                ) : null}
               </label>
             </div>
             {hazard ? (
