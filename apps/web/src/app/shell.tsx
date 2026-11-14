@@ -71,8 +71,10 @@ export function Shell({ children }: { children: ReactNode }) {
               href={href(item.path)}
               aria-current={pathname === item.path ? "page" : undefined}
             >
-              {item.label}
-              {item.extra ? <span className="nav-extra">{item.extra}</span> : null}
+              <span>
+                {item.label}
+                {item.extra ? <span className="nav-extra">{item.extra}</span> : null}
+              </span>
             </Link>
           ))}
         </nav>

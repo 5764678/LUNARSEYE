@@ -218,7 +218,17 @@ table.stats .group-th { color: var(--fg); font-size: var(--fs-3); font-weight: 6
 table.stats .group-th > span { margin-right: var(--space-2); }
 .stat-group + .stat-group { margin-top: var(--space-3); }
 table.stats td.num:nth-child(2) { font-weight: 600; }
-.table-scroll { overflow-x: auto; }
+/* A scroll box clips its own hidden text (position: relative) and shows a faint edge where more
+   content is cut off, so a wide table never scrolls sideways without a cue. */
+.table-scroll {
+  position: relative; overflow-x: auto;
+  background:
+    linear-gradient(to right, var(--panel), var(--panel)) left center / 20px 100% no-repeat local,
+    linear-gradient(to left, var(--panel), var(--panel)) right center / 20px 100% no-repeat local,
+    linear-gradient(to right, color-mix(in srgb, var(--fg) 16%, transparent), transparent) left center / 12px 100% no-repeat scroll,
+    linear-gradient(to left, color-mix(in srgb, var(--fg) 16%, transparent), transparent) right center / 12px 100% no-repeat scroll,
+    var(--panel);
+}
 table.data.mono td, table.data.mono th { white-space: nowrap; }
 .legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin: var(--space-2) 0 0; padding: 0; list-style: none; color: var(--muted); font-size: var(--fs-2); }
 .legend li { display: block; }
@@ -232,6 +242,7 @@ table.data.mono td, table.data.mono th { white-space: nowrap; }
 
 /* ── timeline ───────────────────────────────────────────────────────────────────────── */
 .timeline { padding: var(--space-3) var(--space-4) var(--space-4); }
+.page-head + .controls { margin-top: var(--space-2); }
 .controls { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); flex-wrap: wrap; }
 .card .controls { margin: var(--space-3) 0 0; }
 .page > .controls { margin-bottom: 0; }
@@ -316,7 +327,11 @@ table.data.mono td, table.data.mono th { white-space: nowrap; }
   display: inline-flex; align-items: center; gap: var(--space-2); min-block-size: 28px; padding: 0 var(--space-3);
   border: 1px solid var(--control-line); border-radius: var(--radius-pill); color: var(--muted); cursor: pointer;
 }
-.chip input { margin: 0; accent-color: var(--fg); }
+.chip { position: relative; }
+/* The native checkbox stretches over the whole chip (invisible), so the target is the chip. */
+.chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
+.chip-box { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; border: 1px solid var(--control-line); border-radius: var(--radius-sm); color: var(--on-fg); }
+.chip.on .chip-box { background: var(--fg); border-color: var(--fg); }
 .chip.on { background: var(--panel-raised); color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); }
 .chip:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
 .chip:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
@@ -325,6 +340,7 @@ table.data.mono td, table.data.mono th { white-space: nowrap; }
 
 .verdict-text { margin: var(--space-1) 0 var(--space-2); font-size: var(--fs-4); line-height: 1.5; }
 .standings { margin: var(--space-2) 0 0; padding-left: var(--space-4); color: var(--muted); }
+table.compare th:first-child { position: sticky; left: 0; z-index: 1; background: var(--panel); }
 table.compare th.site-col { min-inline-size: 150px; color: var(--fg); font-weight: 600; vertical-align: bottom; }
 table.compare td.best { background: color-mix(in srgb, var(--ok) 10%, transparent); }
 table.compare td.worst { background: color-mix(in srgb, var(--critical) 9%, transparent); }
@@ -416,6 +432,13 @@ dialog.drawer::backdrop { background: var(--scrim); }
   .cols, .at-cursor-body { grid-template-columns: minmax(0, 1fr); }
 }
 
+@media (max-width: 960px) {
+  .health-detail { display: none; }
+}
+@media (max-width: 800px) {
+  .nav-extra { display: none; }
+}
+
 @media (max-width: 720px) {
   .topbar {
     display: grid; grid-template: "brand health" auto "nav nav" auto / auto minmax(0, 1fr);
@@ -423,7 +446,6 @@ dialog.drawer::backdrop { background: var(--scrim); }
   }
   .brand { grid-area: brand; }
   .health { grid-area: health; justify-self: end; margin-left: 0; min-width: 0; text-align: right; white-space: normal; }
-  .health-detail { display: none; }
   .topbar nav { grid-area: nav; margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-2); gap: 0; overflow-x: auto; border-top: 1px solid var(--line); }
   .topbar nav a { flex: 1 0 auto; justify-content: center; min-block-size: 44px; border-radius: 0; box-shadow: none; }
   .topbar nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--fg); }
@@ -443,7 +465,6 @@ dialog.drawer::backdrop { background: var(--scrim); }
   .readout dt { margin-top: var(--space-2); }
   .body-block { flex-direction: column; }
 
-  .nav-extra { display: none; }
   .intro { padding-inline: var(--space-3); }
   .form.limits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rec-why { grid-template-columns: minmax(0, 1fr); }
@@ -451,4 +472,11 @@ dialog.drawer::backdrop { background: var(--scrim); }
   .question .segmented { width: 100%; }
   .question .segmented button { flex: 1; padding-inline: var(--space-1); }
   .fit-bar { width: 56px; }
+}
+
+/* The smallest phones: five tabs and four-way answers must still fit. */
+@media (max-width: 380px) {
+  .topbar nav { padding: 0; }
+  .topbar nav a { padding: 0 var(--space-2); font-size: var(--fs-2); }
+  .question .segmented { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

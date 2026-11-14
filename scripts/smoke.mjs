@@ -1,4 +1,4 @@
-// End-to-end smoke test of the demo path against any running LUNARIS (local or deployed).
+// End-to-end smoke test of the demo path against any running LUNARSEYE (local or deployed).
 //
 //   BASE_URL=http://localhost:3000 NODE_PATH=$(npm root -g) node scripts/smoke.mjs
 //
@@ -7,7 +7,7 @@
 // pages renders with no console errors; the compare verdict states the known demo-trio
 // result (Peak near Shackleton leads on slope/sunlight/Earth, worst on roughness); the mission
 // recommendation names Malapert, narrowly, when only landing safety matters, and Peak near
-// Shackleton once sunlight is marked critical; an evidence badge opens its drawer with a source.
+// Shackleton once sunlight is marked critical; a compare value opens its evidence drawer with a source.
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -66,9 +66,9 @@ for (const [route, selector] of pages) {
       })
       .then(() => true, () => false);
     check(changed, `answering "sunlight: critical" changes the pick to Peak near Shackleton (got ${await pick()})`);
-    await page.locator("table.compare .ev").first().click();
+    await page.locator("table.compare button.inspect").first().click();
     const drawer = await page.locator(".drawer").textContent();
-    check(/Sources/.test(drawer) && /Method/.test(drawer), "evidence badge opens source + method");
+    check(/Sources/.test(drawer) && /Method/.test(drawer), "evidence value opens source + method");
   }
   await page.close();
 }

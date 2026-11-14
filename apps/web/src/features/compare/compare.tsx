@@ -93,6 +93,9 @@ function Picker({
                   disabled={full}
                   onChange={() => toggle(s.id)}
                 />
+                <span className="chip-box" aria-hidden="true">
+                  {on ? <Icon name="check" size={12} /> : null}
+                </span>
                 {s.name}
                 {s.catalog?.demo_trio ? <span className="tag">demo</span> : null}
               </label>
@@ -160,13 +163,13 @@ function ComparisonTable({ data }: { data: SiteComparison }) {
                       )}
                       {best ? (
                         <span className="mark best-mark" title="Best or tied">
-                          <Icon name="arrow-up" size={14} />
+                          <Icon name="check" size={14} />
                           <span className="sr-only">best or tied</span>
                         </span>
                       ) : null}
                       {worst ? (
                         <span className="mark worst-mark" title="Worst">
-                          <Icon name="arrow-down" size={14} />
+                          <Icon name="close" size={14} />
                           <span className="sr-only">worst</span>
                         </span>
                       ) : null}
@@ -183,11 +186,11 @@ function ComparisonTable({ data }: { data: SiteComparison }) {
       </table>
       <p className="dim small">
         <span className="best-mark">
-          <Icon name="arrow-up" size={14} />
+          <Icon name="check" size={14} />
         </span>{" "}
         best or tied among the compared sites ·{" "}
         <span className="worst-mark">
-          <Icon name="arrow-down" size={14} />
+          <Icon name="close" size={14} />
         </span>{" "}
         worst. Only measures with a declared direction are ranked; hover “Better” for why. A measure needs
         values for two or more sites to rank.

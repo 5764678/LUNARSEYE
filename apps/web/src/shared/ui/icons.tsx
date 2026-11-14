@@ -13,8 +13,7 @@ export type IconName =
   | "chevron"
   | "info"
   | "lower-bound"
-  | "arrow-up"
-  | "arrow-down";
+  | "check";
 
 const SHAPES: Record<IconName, ReactNode> = {
   play: <path d="M5 3.2v9.6L12.8 8z" fill="currentColor" stroke="none" />,
@@ -40,8 +39,7 @@ const SHAPES: Record<IconName, ReactNode> = {
     </>
   ),
   "lower-bound": <path d="M8 3.2l5.2 9.2H2.8z" fill="currentColor" stroke="none" />,
-  "arrow-up": <path d="M8 13V3.5M4 7.5l4-4 4 4" />,
-  "arrow-down": <path d="M8 3v9.5M4 8.5l4 4 4-4" />,
+  check: <path d="M3.5 8.5l3 3 6-7" />,
 };
 
 export function Icon({ name, size = 16, className }: { name: IconName; size?: number; className?: string }) {
