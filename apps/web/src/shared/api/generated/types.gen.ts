@@ -214,7 +214,7 @@ export type ComparisonSummary = {
      * Method
      */
     method: string;
-    score?: ProfileScore | null;
+    recommendation: Recommendation;
 };
 
 /**
@@ -714,6 +714,73 @@ export type HorizonSummary = {
 };
 
 /**
+ * Mission
+ *
+ * The answers to the mission questions: how much each need matters, and the limits.
+ */
+export type Mission = {
+    /**
+     * Power
+     */
+    power?: 'none' | 'low' | 'medium' | 'high';
+    /**
+     * Comms
+     */
+    comms?: 'none' | 'low' | 'medium' | 'high';
+    /**
+     * Landing
+     */
+    landing?: 'none' | 'low' | 'medium' | 'high';
+    limits?: MissionLimits;
+};
+
+/**
+ * MissionLimits
+ *
+ * Hard requirements. A site that breaks one is excluded, never down-weighted.
+ */
+export type MissionLimits = {
+    /**
+     * Max Slope Deg
+     */
+    max_slope_deg?: number | null;
+    /**
+     * Max Darkness D
+     */
+    max_darkness_d?: number | null;
+    /**
+     * Max Earth Outage D
+     */
+    max_earth_outage_d?: number | null;
+    /**
+     * Min Sunlit D
+     */
+    min_sunlit_d?: number | null;
+};
+
+/**
+ * NeedInfo
+ */
+export type NeedInfo = {
+    /**
+     * Need
+     */
+    need: 'power' | 'comms' | 'landing';
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Priority
+     */
+    priority: 'none' | 'low' | 'medium' | 'high';
+    /**
+     * Weight
+     */
+    weight: number;
+};
+
+/**
  * Observer
  */
 export type Observer = {
@@ -748,34 +815,9 @@ export type Observer = {
 };
 
 /**
- * ProfileScore
+ * RankedSite
  */
-export type ProfileScore = {
-    /**
-     * Profile
-     */
-    profile: 'power' | 'comms' | 'landing';
-    /**
-     * Weights
-     */
-    weights: {
-        [key: string]: number;
-    };
-    /**
-     * Normalisation
-     */
-    normalisation: string;
-    /**
-     * Scores
-     */
-    scores: Array<ScoreEntry>;
-    evidence: Evidence;
-};
-
-/**
- * ScoreEntry
- */
-export type ScoreEntry = {
+export type RankedSite = {
     /**
      * Site Id
      */
@@ -785,13 +827,168 @@ export type ScoreEntry = {
      */
     name: string;
     /**
+     * Status
+     */
+    status: 'recommended' | 'ranked' | 'excluded' | 'unscored';
+    /**
+     * Rank
+     */
+    rank?: number | null;
+    /**
      * Score
      */
-    score: number | null;
+    score?: number | null;
     /**
-     * Reason
+     * Need Scores
      */
-    reason?: string | null;
+    need_scores?: {
+        [key: string]: number;
+    };
+    /**
+     * Reasons
+     */
+    reasons?: Array<string>;
+};
+
+/**
+ * Recommendation
+ */
+export type Recommendation = {
+    mission: Mission;
+    /**
+     * Site Id
+     */
+    site_id: string | null;
+    /**
+     * Name
+     */
+    name: string | null;
+    /**
+     * Runner Up Site Id
+     */
+    runner_up_site_id?: string | null;
+    /**
+     * Margin
+     */
+    margin?: number | null;
+    /**
+     * Confidence
+     */
+    confidence: 'clear' | 'moderate' | 'narrow' | 'tie' | 'only_option' | 'none';
+    /**
+     * Headline
+     */
+    headline: string;
+    /**
+     * Reasons
+     */
+    reasons: Array<string>;
+    /**
+     * Tradeoffs
+     */
+    tradeoffs: Array<string>;
+    /**
+     * Caveats
+     */
+    caveats: Array<string>;
+    robustness?: Robustness | null;
+    /**
+     * Needs
+     */
+    needs: Array<NeedInfo>;
+    /**
+     * Scales
+     */
+    scales: Array<ScaleInfo>;
+    /**
+     * Ranking
+     */
+    ranking: Array<RankedSite>;
+    /**
+     * Method
+     */
+    method: string;
+    evidence: Evidence;
+};
+
+/**
+ * Robustness
+ */
+export type Robustness = {
+    /**
+     * Tested
+     */
+    tested: number;
+    /**
+     * Held
+     */
+    held: number;
+    /**
+     * Flips
+     */
+    flips: Array<RobustnessFlip>;
+    /**
+     * Statement
+     */
+    statement: string;
+};
+
+/**
+ * RobustnessFlip
+ */
+export type RobustnessFlip = {
+    /**
+     * Change
+     */
+    change: string;
+    /**
+     * Site Id
+     */
+    site_id: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * ScaleInfo
+ *
+ * Fixed reference scale of one scored measure: ``worst`` scores 0, ``best`` scores 1.
+ */
+export type ScaleInfo = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Need
+     */
+    need: 'power' | 'comms' | 'landing';
+    /**
+     * Weight
+     */
+    weight: number;
+    /**
+     * Worst
+     */
+    worst: number;
+    /**
+     * Best
+     */
+    best: number;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Rationale
+     */
+    rationale: string;
 };
 
 /**
@@ -1321,11 +1518,47 @@ export type CompareSitesData = {
          */
         footprint_radius_m?: number;
         /**
-         * Profile
+         * Power
          *
-         * Optional mission profile: fixed, labelled weights (an assumption).
+         * How much the mission depends on sunlight (none = e.g. nuclear).
          */
-        profile?: 'power' | 'comms' | 'landing' | null;
+        power?: 'none' | 'low' | 'medium' | 'high';
+        /**
+         * Comms
+         *
+         * How much it depends on direct line of sight to Earth (none = relay).
+         */
+        comms?: 'none' | 'low' | 'medium' | 'high';
+        /**
+         * Landing
+         *
+         * How much it needs gentle, smooth terrain.
+         */
+        landing?: 'none' | 'low' | 'medium' | 'high';
+        /**
+         * Max Slope Deg
+         *
+         * Limit: steepest slope (at the site and footprint p95).
+         */
+        max_slope_deg?: number | null;
+        /**
+         * Max Darkness D
+         *
+         * Limit: longest darkness survivable, days.
+         */
+        max_darkness_d?: number | null;
+        /**
+         * Max Earth Outage D
+         *
+         * Limit: longest gap without Earth in view, days.
+         */
+        max_earth_outage_d?: number | null;
+        /**
+         * Min Sunlit D
+         *
+         * Limit: continuous sunlight required, days.
+         */
+        min_sunlit_d?: number | null;
     };
     url: '/v1/compare';
 };

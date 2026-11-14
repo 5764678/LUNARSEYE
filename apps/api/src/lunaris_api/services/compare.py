@@ -9,7 +9,7 @@ Cells come from services that already exist:
 
 A cell that cannot be computed is ``null`` with a reason, never 0. Rows are computed in
 parallel (the unit of work and of caching is one site); the summary is a pure function of
-the rows and never touches the profile before scoring. A row (a few kB of cells) is cached
+the rows and the mission answers, which never touch a row. A row (a few kB of cells) is cached
 in a small LRU; the 30 MiB timeline it was computed from is not.
 """
 
@@ -26,8 +26,9 @@ from typing import Any
 from lunaris_science.geometry import sample_count
 
 from lunaris_api.errors import ApiError, InvalidRequestError
-from lunaris_api.schemas_compare import CompareCell, CompareColumn, CompareRow, Profile
+from lunaris_api.schemas_compare import CompareCell, CompareColumn, CompareRow, Mission
 from lunaris_api.services.analysis import MAX_SAMPLES, AnalysisService
+from lunaris_api.services.compare_recommend import CENSORED_NOTE
 from lunaris_api.services.compare_summary import summarize, with_directions
 from lunaris_api.services.terrain import DEFAULT_FOOTPRINT_RADIUS_M, TerrainService
 
@@ -98,6 +99,12 @@ COLUMNS = [
         description="Longest continuous period with the solar disk hidden.",
     ),
     CompareColumn(
+        key="sun_longest_visible_s",
+        label="Sun: longest sunlit period",
+        unit="s",
+        description="Longest continuous period with any part of the solar disk visible.",
+    ),
+    CompareColumn(
         key="earth_visible_fraction",
         label="Earth: visible",
         unit="fraction",
@@ -143,6 +150,7 @@ def _timeline_cells(tl: dict[str, Any], start: datetime, end: datetime, step_s: 
         "sun_mean_visible_disk_fraction",
         "sun_illuminated_fraction",
         "sun_longest_hidden_s",
+        "sun_longest_visible_s",
         "earth_visible_fraction",
         "earth_longest_outage_s",
     ]
@@ -172,12 +180,13 @@ def _timeline_cells(tl: dict[str, Any], start: datetime, end: datetime, step_s: 
         ("sun_mean_visible_disk_fraction", s_t["mean_visible_disk_fraction"], sun, False),
         ("sun_illuminated_fraction", s_t["visible_time_fraction"], sun, False),
         ("sun_longest_hidden_s", s_t["longest_hidden_s"], sun, s_t["longest_hidden_censored"]),
+        ("sun_longest_visible_s", s_t["longest_visible_s"], sun, s_t["longest_visible_censored"]),
         ("earth_visible_fraction", e_t["visible_time_fraction"], earth, False),
         ("earth_longest_outage_s", e_t["longest_hidden_s"], earth, e_t["longest_hidden_censored"]),
     ):
         limits = [period, *body["evidence"]["limitations"]]
         if cens:
-            limits.append("Longest run touches the window edge: a lower bound.")
+            limits.append(CENSORED_NOTE)
         out[key] = CompareCell(
             value=value, unit=UNITS[key], evidence=_evidence(body["evidence"]), limitations=limits
         )
@@ -237,7 +246,7 @@ class CompareService:
         step_s: float,
         *,
         footprint_radius_m: float = DEFAULT_FOOTPRINT_RADIUS_M,
-        profile: Profile | None = None,
+        mission: Mission | None = None,
     ) -> dict[str, Any]:
         if not 1 <= len(sites) <= MAX_COMPARE_SITES:
             raise InvalidRequestError(
@@ -267,7 +276,7 @@ class CompareService:
         with ThreadPoolExecutor(max_workers=min(MAX_WORKERS, len(sites))) as pool:
             rows = list(pool.map(row, sites))
         typed = [CompareRow.model_validate(r) for r in rows]
-        summary = summarize(typed, DIRECTED_COLUMNS, profile=profile)
+        summary = summarize(typed, DIRECTED_COLUMNS, mission=mission)
         return {
             "start_utc": start_utc,
             "end_utc": end_utc,

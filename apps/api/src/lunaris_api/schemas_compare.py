@@ -1,4 +1,4 @@
-"""Wire contract v1: site comparison (table, leaders, dominance, verdict, profile score)."""
+"""Wire contract v1: site comparison (table, leaders, dominance, verdict, mission recommendation)."""
 
 from __future__ import annotations
 
@@ -8,7 +8,10 @@ from typing import Literal
 from lunaris_api.schemas import Evidence, Model
 
 Better = Literal["higher", "lower"]
-Profile = Literal["power", "comms", "landing"]
+Need = Literal["power", "comms", "landing"]
+Priority = Literal["none", "low", "medium", "high"]
+SiteStatus = Literal["recommended", "ranked", "excluded", "unscored"]
+Confidence = Literal["clear", "moderate", "narrow", "tie", "only_option", "none"]
 
 
 class CompareColumn(Model):
@@ -59,18 +62,83 @@ class SiteStanding(Model):
     dominance: str
 
 
-class ScoreEntry(Model):
+class MissionLimits(Model):
+    """Hard requirements. A site that breaks one is excluded, never down-weighted."""
+
+    max_slope_deg: float | None = None
+    max_darkness_d: float | None = None
+    max_earth_outage_d: float | None = None
+    min_sunlit_d: float | None = None
+
+
+class Mission(Model):
+    """The answers to the mission questions: how much each need matters, and the limits."""
+
+    power: Priority = "medium"
+    comms: Priority = "medium"
+    landing: Priority = "medium"
+    limits: MissionLimits = MissionLimits()
+
+
+class NeedInfo(Model):
+    need: Need
+    label: str
+    priority: Priority
+    weight: float  # share of the score, 0..1; the shares sum to 1
+
+
+class ScaleInfo(Model):
+    """Fixed reference scale of one scored measure: ``worst`` scores 0, ``best`` scores 1."""
+
+    key: str
+    label: str
+    need: Need
+    weight: float  # share of the score, 0..1
+    worst: float
+    best: float
+    unit: str
+    rationale: str
+
+
+class RankedSite(Model):
     site_id: str
     name: str
-    score: float | None
-    reason: str | None = None
+    status: SiteStatus
+    rank: int | None = None
+    score: float | None = None
+    need_scores: dict[str, float] = {}  # 0..1 per need, where every measure has a value
+    reasons: list[str] = []  # why the site is excluded or has no score
 
 
-class ProfileScore(Model):
-    profile: Profile
-    weights: dict[str, float]
-    normalisation: str
-    scores: list[ScoreEntry]
+class RobustnessFlip(Model):
+    change: str
+    site_id: str
+    name: str
+
+
+class Robustness(Model):
+    tested: int
+    held: int
+    flips: list[RobustnessFlip]
+    statement: str
+
+
+class Recommendation(Model):
+    mission: Mission
+    site_id: str | None
+    name: str | None
+    runner_up_site_id: str | None = None
+    margin: float | None = None
+    confidence: Confidence
+    headline: str
+    reasons: list[str]
+    tradeoffs: list[str]
+    caveats: list[str]
+    robustness: Robustness | None = None
+    needs: list[NeedInfo]
+    scales: list[ScaleInfo]
+    ranking: list[RankedSite]
+    method: str
     evidence: Evidence
 
 
@@ -79,7 +147,7 @@ class ComparisonSummary(Model):
     sites: list[SiteStanding]
     verdict: str
     method: str
-    score: ProfileScore | None = None
+    recommendation: Recommendation
 
 
 class SiteComparison(Model):

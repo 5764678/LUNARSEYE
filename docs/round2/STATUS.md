@@ -1,6 +1,6 @@
 # LUNARIS Round 2 — status and handoff
 
-**Last updated:** 14 Nov 2026, by the session that built Compare and Data (Claude Sonnet 5.5).
+**Last updated:** 14 Nov 2026, by the session that added the mission recommendation to Compare (session C).
 **Update this file before you stop.** A new session has no other context than this repo.
 
 Hackathon: 14–15 Nov 2026. **Working beats well-architected.** The demo is: pick a cited
@@ -14,7 +14,7 @@ sites with an evidence badge on every number.
 | `/` Overview | Globe lit from SPICE Sun, site picker, timeline lanes + playback, values at cursor, evidence drawer | headless Chromium, no console errors |
 | `/illumination` | Sky chart (terrain skyline, Sun/Earth tracks), terrain-vs-flat tables, sunlit/Earth-visible windows (censored shown as "≥") | headless Chromium |
 | `/terrain` | South-pole 3D scene lit by SPICE Sun; slope/roughness/footprint from PGDA 20 m DEM (HTTP range reads) | headless Chromium |
-| `/compare` | Up to 10 sites; leaders, Pareto dominance, generated verdict, optional profile score with visible weights; badge on every cell | headless Chromium + API tests |
+| `/compare` | Up to 10 sites; **mission questions → one recommended site** (score, lead, reasons, robustness, excluded sites); leaders, Pareto dominance and trade-off verdict; badge on every cell | headless Chromium + API tests |
 | `/data` | Dataset registry: provider, citation, usage, files, SHA-256, acquisition status | headless Chromium + API test |
 
 API (`apps/api`, FastAPI + Postgres): `GET /health`, `/v1/sites`, `/v1/sites/{id}`,
@@ -23,14 +23,39 @@ API (`apps/api`, FastAPI + Postgres): `GET /health`, `/v1/sites`, `/v1/sites/{id
 every non-2xx. Interactive docs at `/docs`.
 
 Checks that passed at the end of this session:
-`uv run pytest` → 282 passed, 1 skipped (`gdaldem` binary absent) · `npm run test:web` → 38
-passed · `npm run typecheck` clean · `npm run build` succeeds (all 5 routes static).
+`uv run pytest` → 299 passed, 1 skipped (`gdaldem` binary absent) · `npm run test:web` → 44
+passed · `npm run typecheck` clean · `npm run build` succeeds (all 5 routes static) ·
+`scripts/smoke.mjs` → all checks passed against the local dev servers (not against Render).
 
 **Known fixture (matches the original handoff §2):** demo trio over 2027
 (`/v1/compare?site_ids=<trio>&start_utc=2027-01-01T00:00:00Z&end_utc=2028-01-01T00:00:00Z`):
 Peak near Shackleton leads on slope, sunlight, darkness and Earth visibility but is the
-roughest; Malapert massif is smoothest; under the `landing` profile Malapert scores first
-(0.739 vs 0.700 vs 0.156). Pinned in `tests/api/test_compare.py`.
+roughest; Malapert massif is smoothest. Mission recommendation: with nothing answered
+(every need "important") Peak near Shackleton is picked with a clear lead (0.713 vs Connecting
+ridge 0.582 vs Malapert 0.504); with only landing safety counted (`power=none&comms=none&
+landing=high`) Malapert is first, narrowly (0.705 vs 0.692 vs 0.638); `max_slope_deg=5`
+excludes the other two. Pinned in `tests/api/test_compare.py`.
+
+**Mission recommendation (session C, at the user's request: "too indecisive, constantly no
+site is the best; add questions about what the mission prioritises/needs").** The Pareto
+verdict says "no single site is best" whenever two sites trade off, which is nearly always. It
+is kept as the "Trade-offs" card; above it, `summary.recommendation` now always names a site
+when one qualifies. Logic in `apps/api/.../services/compare_recommend.py` (pure, tested):
+- **Questions** (query params of `/v1/compare`, kept in the page URL): `power`, `comms`,
+  `landing` = `none|low|medium|high` (weights 0/1/2/4, normalised; default `medium`), and
+  optional hard limits `max_slope_deg`, `max_darkness_d`, `max_earth_outage_d`, `min_sunlit_d`.
+- **Limits first:** a site over a limit (or with no value to check) is `excluded` with the
+  reason, never down-weighted. If all are excluded the nearest miss is named.
+- **Fixed reference scales** (`SCALES`) instead of min-max within the compared set: a site's
+  score no longer changes when sites are added or removed, and a tiny spread is not blown up
+  to the full weight. Scales and all weights are returned as `assumption` evidence.
+- **Confidence:** lead over the runner-up → clear (≥ 5 of 100) / moderate (≥ 2) / narrow / tie;
+  **robustness:** the pick is recomputed with each priority one step up and down and the
+  changes that flip it are listed.
+- New directed column `sun_longest_visible_s` (longest sunlit period), used by `min_sunlit_d`.
+- **Replaced:** the `profile` query parameter and `summary.score` (min-max profile score) are
+  gone; `power=…&comms=none&landing=none` etc. cover the old profiles.
+- Also fixed: `useMissionUrl().setParams` lost the first of two back-to-back URL changes.
 
 ## 2. NOT done / not verified (be honest about these in any demo or write-up)
 
@@ -48,6 +73,10 @@ roughest; Malapert massif is smoothest; under the `landing` profile Malapert sco
 - **Deployed** (free Render plan): **https://lunarseye.onrender.com** , see `docs/round2/DEPLOY.md`
   for service ids, auto-deploy behaviour and the open collaborator-invite item. Free plan is
   512 MiB and 0.1 CPU: it was OOM-killed twice before fixes (502s). Fixed and **verified on Render** (memory ≈ 206 MiB under load; cold 10-site compare 2.2 s): one timeline computation at a time + default timelines baked at image build. See DEPLOY.md "Memory".
+- **Recommendation scales are LUNARIS assumptions**, not sourced requirements: slope 0 at 20°,
+  roughness 0 at 1 m RMS (default 50 m footprint only), darkness/outage 0 at one synodic month.
+  They were chosen by looking at the 27 catalogue sites' 2027 values; nobody has reviewed
+  them against a real lander. Thermal, dust, resources and trajectory are not scored.
 - **Compare**: observer height fixed at 2 m; per-site rows cached in memory (256 max); sample
   cap is 10 000 per request (a year hourly = 8 761).
 - **Ruff**: ~28 style findings in `apps/api/src` from earlier work; no gate exists.
@@ -90,21 +119,23 @@ apps/api/src/lunaris_api/
   main.py            app, lifespan, error envelope, sites/timeline/ephemeris routes
   routers/           terrain.py, compare.py, datasets.py  (add new routers here, include in main.py)
   services/          analysis.py (timeline), horizon.py, terrain.py, compare.py,
-                     compare_summary.py (pure; ported from prototype, tested)
+                     compare_summary.py (pure; ported from prototype, tested),
+                     compare_recommend.py (pure; mission questions → recommended site)
   schemas*.py        Pydantic contract v1 (schemas.py, schemas_terrain/compare/datasets.py)
   db.py deps.py errors.py
 apps/web/src/
   app/               thin routes; shell.tsx has the nav
-  features/          overview, illumination, terrain, compare, data, sites, time, timeline
+  features/          overview, illumination, terrain, compare (mission.ts = the questions),
+                     data, sites, time, timeline
   shared/api/        client.ts (hand-written fetch + key factory), queries.ts, generated/ (OpenAPI types)
-  shared/state/      url.ts (site/window/sites/profile live in the URL), time.ts, evidence.ts
+  shared/state/      url.ts (site/window/sites/mission answers live in the URL), time.ts, evidence.ts
   shared/lib/        carried, tested display math (geo, globe, terrain, time)
   viewport/          R3F globe and terrain scene
 tests/api/           ASGI tests (need Postgres + data; skip cleanly without)
 ```
 Rules the code follows: evidence on every number (`EvidenceBadge`); a value that cannot be
-computed is `null` with a reason, never 0; thresholds and profile weights are labelled
-assumptions; Sun/Earth numbers use the **terrain** horizon (flat horizon is reported
+computed is `null` with a reason, never 0; thresholds, mission weights and scales are
+labelled assumptions; Sun/Earth numbers use the **terrain** horizon (flat horizon is reported
 separately); latitude exactly ±90° is rejected explicitly (timeline) and becomes null cells
 with a reason (compare).
 
@@ -123,8 +154,9 @@ Quality work (14 Nov progress marked):
    ETag/`Cache-Control` on compare. Only if measurements justify.
 3. **Tests:** API tests cover compare/datasets/timeline/terrain/contract; web has only carried
    display-math tests. **E2E smoke DONE:** `scripts/smoke.mjs` (any `BASE_URL`; see header)
-   checks health, all 5 pages for console errors, the compare verdict + landing-profile
-   ranking, and the evidence drawer; passes against the production container; exits non-zero
+   checks health, all 5 pages for console errors, the compare verdict, the mission
+   recommendation (landing-only → Malapert; answering "sunlight: critical" → Peak near
+   Shackleton), and the evidence drawer; passes against the production container; exits non-zero
    when the site is down. Run it against Render after deploying. Not done: golden-master
    capture vs the prototype (needs the prototype run); "Shackleton floor 0 % sunlit" has no
    catalogue site to test with (the catalogue has tile centres such as "Shackleton rim").
@@ -165,3 +197,4 @@ width, copy review, screenshots. Deploy only when the user says go.
 | --- | --- |
 | Session A (Fable 5.2, `claude/admiring-hamilton-sp4gwl`, PR 1, merged) | Phase 1 end-to-end path; Illumination page; Terrain page + terrain API |
 | Session B (Sonnet 5.5, `claude/gifted-allen-smvncn`) | Verified Phase 1/2 state; Compare API + page (ported summary logic) with tests; Data API + page; `next build` verified; CLAUDE.md + this file; Docker/Render deploy prep (image built and run locally, prewarm script, runtime API proxy, memory finding + cache fix); Render deploy via connector (live); OOM incident diagnosed and fixed; landing/phone polish; blueprint rename tested and refused (see DEPLOY.md) |
+| Session C (Fable 5.2, `claude/eloquent-turing-uvkzfn`, built on session B's branch) | Mission questions and recommendation on Compare (replaces the profile score); `sun_longest_visible_s` column; URL double-update fix; tests, smoke script and contract regenerated. **Not deployed** (Render auto-deploy state not checked; ask the user). |

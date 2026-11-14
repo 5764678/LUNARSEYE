@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { WINDOWS } from "@/features/time/windows";
 import {
   describeError,
-  type ProfileId,
+  type MissionAnswers,
   type SiteComparison,
   type SiteList,
 } from "@/shared/api/client";
@@ -14,13 +14,17 @@ import { deg, duration, pct } from "@/shared/lib/format";
 import { useMissionUrl } from "@/shared/state/url";
 import { EvidenceBadge } from "@/shared/ui/evidence";
 
+import {
+  isDefaultMission,
+  LIMIT_QUESTIONS,
+  NEED_QUESTIONS,
+  parseLimit,
+  parseMission,
+  PRIORITY_OPTIONS,
+  RESET_MISSION,
+} from "./mission";
+
 const MAX_SITES = 10;
-const PROFILES: Array<{ id: ProfileId | null; label: string }> = [
-  { id: null, label: "No profile" },
-  { id: "power", label: "Power" },
-  { id: "comms", label: "Comms" },
-  { id: "landing", label: "Landing" },
-];
 
 type Cell = SiteComparison["rows"][number]["cells"][string];
 
@@ -104,6 +108,7 @@ function ComparisonTable({ data }: { data: SiteComparison }) {
   const trails = new Map(
     data.summary.sites.map((s) => [s.site_id, new Set(s.trails)] as const),
   );
+  const recommended = data.summary.recommendation.site_id;
   return (
     <div className="card table-scroll">
       <h2>Measures</h2>
@@ -115,6 +120,7 @@ function ComparisonTable({ data }: { data: SiteComparison }) {
             {data.rows.map((r) => (
               <th key={r.site_id} className="site-col">
                 {r.name}
+                {r.site_id === recommended ? <span className="tag pick-tag">recommended</span> : null}
                 <div className="dim small">
                   {deg(r.latitude_deg)} / {r.longitude_deg.toFixed(2)}°E
                 </div>
@@ -175,11 +181,240 @@ function ComparisonTable({ data }: { data: SiteComparison }) {
   );
 }
 
+type SetParams = (changes: Record<string, string | null>) => void;
+
+/** A limit is committed on blur or Enter, so a half-typed number does not refetch. */
+function LimitInput({
+  label,
+  unit,
+  placeholder,
+  value,
+  onCommit,
+}: {
+  label: string;
+  unit: string;
+  placeholder: string;
+  value: number | null;
+  onCommit: (value: number | null) => void;
+}) {
+  const text = value === null ? "" : String(value);
+  const [draft, setDraft] = useState(text);
+  const [seen, setSeen] = useState(value);
+  if (seen !== value) {
+    setSeen(value);
+    setDraft(text);
+  }
+  const commit = () => {
+    const parsed = parseLimit(draft);
+    if (parsed === value) setDraft(text);
+    else onCommit(parsed);
+  };
+  return (
+    <label>
+      {label}
+      <span className="limit-field">
+        <input
+          inputMode="decimal"
+          value={draft}
+          placeholder={placeholder}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={commit}
+          onKeyDown={(event) => event.key === "Enter" && commit()}
+        />
+        <span className="dim">{unit}</span>
+      </span>
+    </label>
+  );
+}
+
+function MissionQuestions({ mission, setParams }: { mission: MissionAnswers; setParams: SetParams }) {
+  return (
+    <div className="card mission">
+      <div className="panel-head">
+        <h2>What does this mission need?</h2>
+        {isDefaultMission(mission) ? (
+          <span className="dim small">Unanswered: every need counts as important, no limits</span>
+        ) : (
+          <button type="button" className="btn" onClick={() => setParams(RESET_MISSION)}>
+            Reset answers
+          </button>
+        )}
+      </div>
+      <div className="questions">
+        {NEED_QUESTIONS.map((q) => (
+          <div className="question" key={q.id}>
+            <div>
+              <div className="question-text">{q.question}</div>
+              <div className="dim small">{q.hint}</div>
+            </div>
+            <div className="segmented" role="group" aria-label={q.question}>
+              {PRIORITY_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={mission[q.id] === option.id ? "on" : ""}
+                  aria-pressed={mission[q.id] === option.id}
+                  onClick={() => setParams({ [q.id]: option.id === "medium" ? null : option.id })}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <h3>Hard limits (optional)</h3>
+      <p className="dim small">
+        A site that breaks a limit is excluded and listed with the reason. It is never just scored
+        lower. Leave a field empty for no limit.
+      </p>
+      <div className="form limits">
+        {LIMIT_QUESTIONS.map((limit) => (
+          <LimitInput
+            key={limit.id}
+            label={limit.question}
+            unit={limit.unit}
+            placeholder={limit.placeholder}
+            value={mission[limit.id]}
+            onCommit={(value) => setParams({ [limit.param]: value === null ? null : String(value) })}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type Rec = SiteComparison["summary"]["recommendation"];
+
+const CONFIDENCE: Record<Rec["confidence"], string> = {
+  clear: "Clear lead",
+  moderate: "Moderate lead",
+  narrow: "Narrow lead",
+  tie: "Tie",
+  only_option: "Only option",
+  none: "No pick",
+};
+
+const points = (score: number | null | undefined) =>
+  score === null || score === undefined ? "–" : (score * 100).toFixed(1);
+
+function Recommendation({ data }: { data: SiteComparison }) {
+  const rec = data.summary.recommendation;
+  const top = rec.ranking.find((e) => e.site_id === rec.site_id);
+  return (
+    <div className={`card recommendation conf-${rec.confidence}`}>
+      <div className="panel-head">
+        <div className="eyebrow">Recommended site for this mission</div>
+        <span className="dim small">
+          weights and scales are assumptions{" "}
+          <EvidenceBadge
+            title="Mission-fit score"
+            evidence={rec.evidence}
+            value={top ? `${points(top.score)} / 100` : undefined}
+          />
+        </span>
+      </div>
+      <div className="rec-pick">
+        <span className="rec-name">{rec.name ?? "No site qualifies"}</span>
+        {top ? <span className="rec-score">{points(top.score)} / 100</span> : null}
+        <span className="conf-chip">{CONFIDENCE[rec.confidence]}</span>
+      </div>
+      <p className="rec-headline">{rec.headline}</p>
+      {rec.reasons.length + rec.tradeoffs.length > 0 ? (
+        <div className="rec-why">
+          <div>
+            <h3>Why</h3>
+            <ul>
+              {rec.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3>What it gives up</h3>
+            {rec.tradeoffs.length > 0 ? (
+              <ul>
+                {rec.tradeoffs.map((tradeoff) => (
+                  <li key={tradeoff}>{tradeoff}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="dim">Nothing among the needs this mission weights.</p>
+            )}
+          </div>
+        </div>
+      ) : null}
+      {rec.robustness ? (
+        <p className={rec.robustness.flips.length > 0 ? "rec-robust shaky" : "rec-robust"}>
+          {rec.robustness.statement}
+        </p>
+      ) : null}
+      {rec.caveats.map((caveat) => (
+        <p key={caveat} className="caveat">
+          {caveat}
+        </p>
+      ))}
+      <h3>All compared sites</h3>
+      <div className="table-scroll">
+        <table className="data ranking">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Site</th>
+              <th>Mission fit (0–100)</th>
+              {rec.needs.map((need) => (
+                <th key={need.need} className={need.weight === 0 ? "off" : ""}>
+                  {need.label}
+                  <div className="dim small">
+                    {need.weight === 0 ? "not counted" : `${(need.weight * 100).toFixed(0)} % of the score`}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rec.ranking.map((entry) => (
+              <tr key={entry.site_id} className={`status-${entry.status}`}>
+                <td>{entry.rank ?? "–"}</td>
+                <th scope="row">{entry.name}</th>
+                <td>
+                  {entry.score === null || entry.score === undefined ? (
+                    <span className="dim">
+                      {entry.status === "excluded" ? "Excluded: " : "No score: "}
+                      {(entry.reasons ?? []).join("; ")}
+                    </span>
+                  ) : (
+                    <span className="fit">
+                      <span className="fit-bar">
+                        <i style={{ width: `${entry.score * 100}%` }} />
+                      </span>
+                      {points(entry.score)}
+                    </span>
+                  )}
+                </td>
+                {rec.needs.map((need) => (
+                  <td key={need.need} className={need.weight === 0 ? "off" : ""}>
+                    {points(entry.need_scores?.[need.need])}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="dim small">
+        Each need is scored on fixed scales, so a site's score does not change when other sites are
+        added or removed. Open the ASSUMED tag for every weight, scale and limit. {rec.method}
+      </p>
+    </div>
+  );
+}
+
 function Verdict({ data }: { data: SiteComparison }) {
   const { summary } = data;
   return (
     <div className="card verdict">
-      <div className="eyebrow">Verdict</div>
+      <div className="eyebrow">Trade-offs, measure by measure</div>
       <p className="verdict-text">{summary.verdict}</p>
       <p className="dim small">
         Built only from per-measure leads, trails and Pareto dominance. No weights are involved.{" "}
@@ -196,63 +431,13 @@ function Verdict({ data }: { data: SiteComparison }) {
   );
 }
 
-function Score({ data }: { data: SiteComparison }) {
-  const score = data.summary.score;
-  if (!score) return null;
-  return (
-    <div className="card">
-      <div className="panel-head">
-        <h2>
-          {score.profile[0].toUpperCase() + score.profile.slice(1)} profile score{" "}
-          <EvidenceBadge title={`${score.profile} profile score`} evidence={score.evidence} />
-        </h2>
-        <span className="dim small">weights are assumptions chosen by LUNARIS, not requirements</span>
-      </div>
-      <table className="data">
-        <thead>
-          <tr>
-            <th>Site</th>
-            <th>Score (0–1)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {score.scores.map((s) => (
-            <tr key={s.site_id}>
-              <th scope="row">{s.name}</th>
-              <td>
-                {s.score === null ? (
-                  <span className="dim">no score: {s.reason}</span>
-                ) : (
-                  s.score.toFixed(3)
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <h3>Weights</h3>
-      <ul className="legend">
-        {Object.entries(score.weights).map(([key, weight]) => (
-          <li key={key}>
-            {data.columns.find((c) => c.key === key)?.label ?? key}: <b>{weight}</b>
-          </li>
-        ))}
-      </ul>
-      <p className="dim small">{score.normalisation}</p>
-    </div>
-  );
-}
-
 export function Compare() {
   const { windowId, window, params, setParams } = useMissionUrl();
   const sites = useSites();
   const { ids, toggle } = useSelection(sites.data);
-  const profileParam = params.get("profile");
-  const profile: ProfileId | null =
-    profileParam === "power" || profileParam === "comms" || profileParam === "landing"
-      ? profileParam
-      : null;
-  const compare = useCompare(ids, window, profile);
+  const query = params.toString();
+  const mission = useMemo(() => parseMission(new URLSearchParams(query)), [query]);
+  const compare = useCompare(ids, window, mission);
   const data = compare.data;
 
   return (
@@ -260,7 +445,8 @@ export function Compare() {
       <div className="page-head">
         <h1>Compare sites</h1>
         <span className="dim">
-          Up to {MAX_SITES} cited sites, same window, a number and its evidence in every cell.
+          Up to {MAX_SITES} cited sites, same window. Say what the mission needs and get one
+          recommended site, with a number and its evidence in every cell.
         </span>
       </div>
       <div className="controls">
@@ -276,18 +462,6 @@ export function Compare() {
             </button>
           ))}
         </div>
-        <div className="segmented" role="group" aria-label="Mission profile">
-          {PROFILES.map((p) => (
-            <button
-              key={p.label}
-              type="button"
-              className={profile === p.id ? "on" : ""}
-              onClick={() => setParams({ profile: p.id })}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
         {compare.isFetching ? (
           <span className="dim small">
             Computing… the first read of each site's 20 m terrain and horizon takes a while.
@@ -296,6 +470,7 @@ export function Compare() {
       </div>
 
       {sites.isError ? <p className="error">{describeError(sites.error)}</p> : null}
+      <MissionQuestions mission={mission} setParams={setParams} />
       {sites.data ? <Picker sites={sites.data} ids={ids} toggle={toggle} /> : null}
       {ids.length === 0 && sites.data ? (
         <p className="dim pad">Choose at least one site.</p>
@@ -307,8 +482,8 @@ export function Compare() {
 
       {data ? (
         <>
+          <Recommendation data={data} />
           <Verdict data={data} />
-          <Score data={data} />
           <ComparisonTable data={data} />
           <div className="card">
             <h3>Assumptions</h3>

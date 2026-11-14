@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { useMissionUrl } from "@/shared/state/url";
 
-import { api, keys, type AnalysisWindow, type ProfileId, type TerrainParams } from "./client";
+import { api, keys, type AnalysisWindow, type MissionAnswers, type TerrainParams } from "./client";
 
 export const useHealth = () =>
   useQuery({ queryKey: keys.health, queryFn: ({ signal }) => api.health(signal) });
@@ -48,10 +48,10 @@ export const useTerrainScene = (gridSize: number) =>
 
 /** Rows are slow on a cold cache (PGDA window reads + horizon masks), so keep the last
  *  result on screen while the next one loads. */
-export const useCompare = (siteIds: string[], window: AnalysisWindow, profile: ProfileId | null) =>
+export const useCompare = (siteIds: string[], window: AnalysisWindow, mission: MissionAnswers) =>
   useQuery({
-    queryKey: keys.compare(siteIds, window, profile),
-    queryFn: ({ signal }) => api.compare(siteIds, window, profile, signal),
+    queryKey: keys.compare(siteIds, window, mission),
+    queryFn: ({ signal }) => api.compare(siteIds, window, mission, signal),
     enabled: siteIds.length > 0,
     placeholderData: (previous) => previous,
   });

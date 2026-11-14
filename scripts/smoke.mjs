@@ -5,8 +5,9 @@
 // Needs `playwright` resolvable (preinstalled in the Claude cloud container). Exits non-zero
 // on the first failed check. Checks: API health through the web proxy; each of the five
 // pages renders with no console errors; the compare verdict states the known demo-trio
-// result (Peak near Shackleton leads on slope/sunlight/Earth, worst on roughness; Malapert
-// first under the landing profile); an evidence badge opens its drawer with a source.
+// result (Peak near Shackleton leads on slope/sunlight/Earth, worst on roughness); the mission
+// recommendation names Malapert, narrowly, when only landing safety matters, and Peak near
+// Shackleton once sunlight is marked critical; an evidence badge opens its drawer with a source.
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
@@ -26,7 +27,7 @@ const pages = [
   ["/", ".lanes-grid, .lanes-placeholder"],
   ["/illumination", ".sky-chart"],
   ["/terrain", "table.data"],
-  ["/compare?profile=landing", ".verdict-text"],
+  ["/compare?power=none&comms=none&landing=high", ".verdict-text"],
   ["/data", "section.card"],
 ];
 for (const [route, selector] of pages) {
@@ -49,8 +50,22 @@ for (const [route, selector] of pages) {
       /Peak near Shackleton leads on slope, sunlight and darkness and Earth visibility; trade-off: worst on roughness/.test(verdict),
       "compare verdict matches the known demo-trio result",
     );
-    const scores = await page.locator(".card:has(h2:has-text('profile score')) tbody th").allTextContents();
-    check(scores[0] === "Malapert massif", `landing profile ranks Malapert first (got ${scores[0]})`);
+    const pick = async () =>
+      `${await page.textContent(".rec-name")} / ${await page.textContent(".conf-chip")}`;
+    check(
+      (await pick()) === "Malapert massif / Narrow lead",
+      `landing-only mission recommends Malapert, narrowly (got ${await pick()})`,
+    );
+    await page
+      .getByRole("group", { name: /depend on sunlight/ })
+      .getByRole("button", { name: "Critical" })
+      .click();
+    const changed = await page
+      .waitForFunction(() => document.querySelector(".rec-name")?.textContent === "Peak near Shackleton", null, {
+        timeout: 60_000,
+      })
+      .then(() => true, () => false);
+    check(changed, `answering "sunlight: critical" changes the pick to Peak near Shackleton (got ${await pick()})`);
     await page.locator("table.compare .ev").first().click();
     const drawer = await page.locator(".drawer").textContent();
     check(/Sources/.test(drawer) && /Method/.test(drawer), "evidence badge opens source + method");

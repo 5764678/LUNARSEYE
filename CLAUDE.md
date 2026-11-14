@@ -16,8 +16,8 @@ verify). Update it before you stop; the next session has no other context.
 - `5764678/lunaris` (the old prototype) is **read-only** reference: branch
   `snapshot/pre-education-pivot-2026-11-11`, code identical to `8edfb32`. Never push to it.
   Clone it read-only outside this repo (e.g. `/home/user/lunaris`) when you need to port logic.
-- Evidence (OBS/DERIVED/MODEL/CALC/ASSUMED/PLACEHOLDER/N/C) on every number; thresholds and
-  profile weights are labelled assumptions; never hidden weights.
+- Evidence (OBS/DERIVED/MODEL/CALC/ASSUMED/PLACEHOLDER/N/C) on every number; thresholds,
+  mission weights and scales are labelled assumptions; never hidden weights.
 - Develop on the branch the session is told to use; push there. The user has said: **merge
   any open and future pull requests** in `5764678/LUNARSEYE` (they authorised merging; do not
   open a PR unless the user asks).

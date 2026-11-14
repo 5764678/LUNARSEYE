@@ -9,7 +9,7 @@ from fastapi import APIRouter, Query, Request
 from lunaris_api.deps import load_site
 from lunaris_api.errors import InvalidRequestError
 from lunaris_api.schemas import ErrorEnvelope
-from lunaris_api.schemas_compare import Profile, SiteComparison
+from lunaris_api.schemas_compare import Mission, MissionLimits, Priority, SiteComparison
 from lunaris_api.services.compare import MAX_COMPARE_SITES, CompareService
 from lunaris_api.services.terrain import DEFAULT_FOOTPRINT_RADIUS_M
 
@@ -31,13 +31,34 @@ def compare_sites(
     end_utc: Annotated[datetime, Query(description="Window end, ISO 8601 UTC")],
     step_s: Annotated[float, Query(ge=1, le=2_592_000)] = 3600.0,
     footprint_radius_m: Annotated[float, Query(gt=0, le=2000)] = DEFAULT_FOOTPRINT_RADIUS_M,
-    profile: Annotated[
-        Profile | None,
-        Query(description="Optional mission profile: fixed, labelled weights (an assumption)."),
+    power: Annotated[
+        Priority,
+        Query(description="How much the mission depends on sunlight (none = e.g. nuclear)."),
+    ] = "medium",
+    comms: Annotated[
+        Priority,
+        Query(description="How much it depends on direct line of sight to Earth (none = relay)."),
+    ] = "medium",
+    landing: Annotated[
+        Priority, Query(description="How much it needs gentle, smooth terrain.")
+    ] = "medium",
+    max_slope_deg: Annotated[
+        float | None,
+        Query(gt=0, le=90, description="Limit: steepest slope (at the site and footprint p95)."),
+    ] = None,
+    max_darkness_d: Annotated[
+        float | None, Query(gt=0, description="Limit: longest darkness survivable, days.")
+    ] = None,
+    max_earth_outage_d: Annotated[
+        float | None, Query(gt=0, description="Limit: longest gap without Earth in view, days.")
+    ] = None,
+    min_sunlit_d: Annotated[
+        float | None, Query(gt=0, description="Limit: continuous sunlight required, days.")
     ] = None,
 ) -> dict[str, Any]:
-    """Compare up to 10 sites: per-measure leaders, Pareto dominance and a verdict built
-    from them (never from hidden weights). A profile adds a score with its weights shown."""
+    """Compare up to 10 sites: per-measure leaders, Pareto dominance, a verdict built from
+    them, and a recommendation for the stated mission (priorities and limits; every weight
+    and scale is returned as an assumption). Sites that break a limit are excluded."""
     ids: list[uuid.UUID] = []
     for raw in site_ids.split(","):
         raw = raw.strip()
@@ -53,6 +74,17 @@ def compare_sites(
             ids.append(value)
     sites = [load_site(request, i) for i in ids]  # 404 for unknown ids
     service: CompareService = request.app.state.compare
+    mission = Mission(
+        power=power,
+        comms=comms,
+        landing=landing,
+        limits=MissionLimits(
+            max_slope_deg=max_slope_deg,
+            max_darkness_d=max_darkness_d,
+            max_earth_outage_d=max_earth_outage_d,
+            min_sunlit_d=min_sunlit_d,
+        ),
+    )
     return service.compare(
-        sites, start_utc, end_utc, step_s, footprint_radius_m=footprint_radius_m, profile=profile
+        sites, start_utc, end_utc, step_s, footprint_radius_m=footprint_radius_m, mission=mission
     )

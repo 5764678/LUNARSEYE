@@ -45,8 +45,8 @@ measured memory and latency: [`docs/round2/DEPLOY.md`](docs/round2/DEPLOY.md). N
 ## Checks
 
 ```bash
-uv run pytest                # 285 pass, 1 skipped: frozen science tests + API tests
-npm run test:web             # 38 pass: carried display math
+uv run pytest                # 299 pass, 1 skipped: frozen science tests + API tests
+npm run test:web             # 44 pass: carried display math, mission answers in the URL
 npm run typecheck
 npm run contracts:generate   # API running: regenerates the TypeScript contract types
 ```
@@ -72,6 +72,13 @@ apps/web           Next.js 16 / React 19 / R3F / TanStack Query: /, /illuminatio
 - **Sunlight / Earth**: visible disc fraction above the terrain horizon and, separately,
   the flat (astronomical) horizon. Runs that touch the window edge are shown as "≥".
   Earth visibility is geometric line of sight only, not a radio link.
+- **Best site for a mission** (Compare): answer what the mission needs (how much it depends
+  on sunlight, on direct line of sight to Earth, on gentle ground; optional hard limits on
+  slope, darkness, Earth outage and continuous sunlight). Sites that break a limit are
+  excluded with the reason; the rest are scored 0–100 on fixed reference scales and the best
+  fit is named with its lead over the runner-up, the reasons, what it gives up, and whether
+  the pick survives a one-step change of each priority. The weights and scales are
+  assumptions chosen by LUNARIS and are shown behind the ASSUMED tag.
 - **Globe**: a smooth sphere lit from the SPICE Sun direction. It draws no terrain
   shadows and says so; sunlight numbers come only from the timeline.
 
