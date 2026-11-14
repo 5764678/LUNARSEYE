@@ -1,4 +1,4 @@
-# LUNARIS — Round 2
+# LUNARSEYE
 
 Lunar south-pole site analysis. Pick a cited candidate site, see the Moon lit from the
 SPICE Sun direction, and see that site's Sun and Earth elevation, terrain-aware sunlight
