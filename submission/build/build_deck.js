@@ -97,6 +97,10 @@ function box(s, x, y, w, h, o = {}) {
     line: { color: o.line ?? LINE2, width: 1, dashType: o.dashed ? "dash" : "solid" }, objectName: o.name,
   });
 }
+function photo(s, file, x, y, size, alt) {
+  s.addImage({ path: path.join(ROOT, "assets/team", file), x, y, w: size, h: size, altText: alt });
+  frame(s, x, y, size, size);
+}
 function frame(s, x, y, w, h) { s.addShape(SH.RECTANGLE, { x, y, w, h, line: { color: LINE2, width: 1 } }); }
 function addNotes(s, n) {
   const e = narr.slides.find((x) => x.n === n);
@@ -464,12 +468,15 @@ pres.addSection({ title: "Team and process" });
     ["14 NOV", "Interface audit", "One palette, accessible states, phone layout"],
   ];
   log.forEach((l, i) => {
-    const col = i % 3, row = Math.floor(i / 3), x = MX + col * 4.1, y = 1.55 + row * 2.05;
-    box(s, x, y, 3.95, 1.85, { name: `log-${i}` });
-    mono(s, l[0], { x: x + 0.28, y: y + 0.22, w: 2, h: 0.26, color: MUTED });
-    T(s, l[1], { x: x + 0.28, y: y + 0.55, w: 3.4, h: 0.4, fontSize: 21, bold: true });
-    T(s, l[2], { x: x + 0.28, y: y + 0.98, w: 3.4, h: 0.8, fontSize: 15.5, color: MUTED });
+    const col = i % 3, row = Math.floor(i / 3), x = MX + col * 4.1, y = 1.5 + row * 1.7;
+    box(s, x, y, 3.95, 1.55, { name: `log-${i}` });
+    mono(s, l[0], { x: x + 0.28, y: y + 0.16, w: 2, h: 0.26, color: MUTED });
+    T(s, l[1], { x: x + 0.28, y: y + 0.45, w: 3.4, h: 0.4, fontSize: 21, bold: true });
+    T(s, l[2], { x: x + 0.28, y: y + 0.85, w: 3.4, h: 0.65, fontSize: 15.5, color: MUTED });
   });
+  mono(s, "THE TEAM AT WORK", { x: MX, y: 5.0, w: 4, h: 0.26 });
+  photo(s, "work-1.jpg", MX, 5.35, 1.45, "Our planning board on a tablet: data verification, the Compare page and the scoring idea");
+  photo(s, "work-2.jpg", MX + 1.6, 5.35, 1.45, "One of us at the desk with the monitor and the planning board on a tablet");
   addNotes(s, 12);
 }
 
@@ -479,7 +486,7 @@ pres.addSection({ title: "Team and process" });
 pres.addSection({ title: "Close" });
 {
   const s = slide("CONTENT", "Close", "What it is, and what it is not yet");
-  box(s, MX, 1.5, 6.1, 3.55, { name: "limits-panel" });
+  box(s, MX, 1.5, 6.1, 3.3, { name: "limits-panel" });
   mono(s, "HONEST LIMITS", { x: MX + 0.3, y: 1.72, w: 4, h: 0.26, color: CAUTION, bold: true });
   const lim = [
     "Decision support, not a mission decision",
@@ -489,11 +496,14 @@ pres.addSection({ title: "Close" });
     "Site list is NASA’s 2022 set; NASA updated it to nine regions in Oct 2024 and has named no landing site",
   ];
   T(s, lim.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < lim.length - 1, paraSpaceAfter: 6 } })), { x: MX + 0.3, y: 2.15, w: 5.55, h: 3.2, fontSize: 18 });
-  box(s, 6.95, 1.5, 5.78, 3.55, { name: "next-panel" });
+  box(s, 6.95, 1.5, 5.78, 3.3, { name: "next-panel" });
   mono(s, "NEXT", { x: 7.25, y: 1.72, w: 4, h: 0.26, color: OK, bold: true });
   const nxt = ["Expert review of the weights and scales", "Update to NASA’s current candidate regions", "10 m and 5 m terrain for every site", "Solar-energy and thermal estimates"];
   T(s, nxt.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < nxt.length - 1, paraSpaceAfter: 6 } })), { x: 7.25, y: 2.15, w: 5.2, h: 3.2, fontSize: 18 });
-  T(s, "Built to make a landing-site screening transparent: every number, source and assumption in view.", { x: MX, y: 5.35, w: 8.9, h: 0.9, fontSize: 20.5 });
+  T(s, "Built to make a landing-site screening transparent: every number, source and assumption in view.", { x: MX, y: 5.2, w: 6.1, h: 1.4, fontSize: 20 });
+  mono(s, "THE TEAM AT WORK", { x: 7.0, y: 4.95, w: 2.7, h: 0.26 });
+  photo(s, "work-3.jpg", 7.0, 5.25, 1.3, "A desk with a laptop, a monitor and a tablet showing code");
+  photo(s, "work-4.jpg", 8.4, 5.25, 1.3, "A teammate at his desk giving a thumbs up, laptop and monitor behind him");
   addNotes(s, 13);
 }
 
