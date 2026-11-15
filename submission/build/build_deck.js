@@ -64,6 +64,13 @@ pres.defineSlideMaster({
   objects: [{ placeholder: { options: titleOpts({ x: MX, y: 6.62, w: 8.6, h: 0.6, fontSize: 25.5, bold: true }), text: "" } }],
 });
 pres.defineSlideMaster({
+  title: "SPLIT", background: { color: BG },
+  objects: [
+    { text: { text: "LUNARSEYE  ·  NASA Space Apps Challenge 2026", options: { x: MX, y: 7.05, w: 6.2, h: 0.26, fontFace: MONO, fontSize: 10, color: "8D97A6", margin: 0, charSpacing: 1 } } },
+    { placeholder: { options: titleOpts({ x: MX, y: 0.42, w: 6.9, h: 1.25, fontSize: 30, bold: true }), text: "" } },
+  ],
+});
+pres.defineSlideMaster({
   title: "CONTENT", background: { color: BG },
   objects: [
     { text: { text: "LUNARSEYE  ·  NASA Space Apps Challenge 2026", options: { x: MX, y: 7.05, w: 6.2, h: 0.26, fontFace: MONO, fontSize: 11, color: "8D97A6", margin: 0, charSpacing: 1 } } },
@@ -106,7 +113,7 @@ function slide(master, section, title) {
   const s = pres.addSlide({ masterName: master, sectionTitle: section });
   const n = slideNo;
   s._title = () => s.addText(title, { placeholder: "title", objectName: `title-${n}` });
-  if (master === "CONTENT") s._title(); // other layouts sit on a full-bleed picture: caller adds the title after it
+  if (master === "CONTENT" || master === "SPLIT") s._title(); // other layouts sit on a full-bleed picture: caller adds the title after it
   return s;
 }
 const step = (n, trigger, names, delay = 0, dur = 500) => { (builds[n] = builds[n] || []).push({ trigger, names, delay, dur }); };
@@ -173,14 +180,24 @@ pres.addSection({ title: "Hook" });
 // 3  WHAT IT IS (full-bleed Overview)
 // =====================================================================================
 {
-  const s = slide("SCREEN", "Hook", "27 cited sites, lit by the real SPICE Sun");
-  s.addImage({ path: IMG("overview.jpg"), x: 0, y: 0, w: W, h: H, altText: "LUNARSEYE Overview page: the Moon lit by the SPICE Sun with 27 candidate sites, the selected site's sunlight and Earth statistics, and an hourly timeline", objectName: "overview-shot" });
-  s.addShape(SH.RECTANGLE, { x: 0, y: 5.95, w: W, h: 1.55, fill: { color: BG, transparency: 8 }, line: { color: BG, width: 0 }, objectName: "lower-third-band" });
-  s._title();
-  chip(s, "OVERVIEW", MX, 6.2, { color: FG });
-  mono(s, "5 PAGES  ·  EVIDENCE ON EVERY NUMBER", { x: 2.05, y: 6.27, w: 6.0, h: 0.26, color: MUTED, fontSize: 11.5 });
+  const s = slide("SPLIT", "Hook", "27 cited sites, lit by the real Sun");
+  s.addImage({ path: IMG("globe-crop.jpg"), x: W - 5.6, y: 0, w: 5.6, h: H, altText: "The Moon lit by the SPICE Sun direction, with the 27 candidate sites marked near the south pole", objectName: "globe-crop" });
+  const pages = [
+    ["Overview", "The Moon lit by the real Sun, and an hourly timeline for any site"],
+    ["Illumination & Earth", "Sky chart, sunlight and Earth windows, terrain against flat horizon"],
+    ["Terrain", "3D south pole; slope and roughness from the 20 m LOLA DEM"],
+    ["Compare", "Say what the mission needs, get one recommended site"],
+    ["Data", "Every NASA file with its source and SHA-256"],
+  ];
+  pages.forEach((p, i) => {
+    const y = 1.95 + i * 0.86;
+    mono(s, String(i + 1), { x: MX, y: y + 0.04, w: 0.4, h: 0.4, fontSize: 20, color: i === 3 ? FG : MUTED });
+    T(s, [{ text: p[0], options: { bold: true, fontSize: 21, breakLine: true } }, { text: p[1], options: { fontSize: 15.5, color: MUTED } }], { x: 1.15, y, w: 6.1, h: 0.78 });
+    if (i === 3) chip(s, "KEY FEATURE", 3.0, y + 0.07, { w: 1.55, color: FG, size: 11 });
+    if (i < pages.length - 1) s.addShape(SH.LINE, { x: MX, y: y + 0.82, w: 6.65, h: 0, line: { color: LINE, width: 0.75 } });
+  });
+  T(s, "Every number carries a tag that says what kind of evidence it is.", { x: MX, y: 6.4, w: 6.6, h: 0.5, fontSize: 16, color: MUTED });
   addNotes(s, 3);
-  // title placeholder sits in the band (placeholder defined on the SCREEN layout)
 }
 
 // =====================================================================================
@@ -265,7 +282,7 @@ pres.addSection({ title: "Method and evidence" });
   ];
   steps.forEach((p, i) => {
     const x = MX + i * 2.3;
-    T(s, [{ text: p[0], options: { bold: true, fontSize: 16.5, breakLine: true } }, { text: p[1], options: { fontSize: 14.5, color: MUTED } }], { x, y: 5.42, w: 2.1, h: 1.4 });
+    T(s, [{ text: p[0], options: { bold: true, fontSize: 17, breakLine: true } }, { text: p[1], options: { fontSize: 15, color: MUTED } }], { x, y: 5.42, w: 2.15, h: 1.5 });
   });
   addNotes(s, 6);
 }
@@ -293,13 +310,13 @@ pres.addSection({ title: "Method and evidence" });
   s.addImage({ path: IMG("evidence-drawer-crop.jpg"), x: rx, y: 1.5, w: rw, h: rw / (1027 / 515), altText: "The evidence drawer for one number: LUNARSEYE calculation tag, statement, method, sources and SHA-256", objectName: "evidence-crop" });
   frame(s, rx, 1.5, rw, rw / (1027 / 515));
   const stats = [
-    ["0.01″", "Sun and Earth angles vs JPL Horizons (test tolerance)"],
-    ["≤ 0.05", "vs published LOLA sunlight and Earth maps (largest measured 0.042)"],
-    ["299 + 60", "automated tests, Python and web (last full run, 14 Nov)"],
+    ["0.01″", "Sun and Earth angles vs JPL Horizons (tolerance)"],
+    ["≤ 0.05", "vs published LOLA maps (largest gap 0.042)"],
+    ["299 + 60", "automated tests: Python + web (14 Nov)"],
   ];
   stats.forEach((st, i) => {
     const x = rx + i * (1.8 + 0.14);
-    T(s, [{ text: st[0], options: { fontSize: 25.5, bold: true, breakLine: true } }, { text: st[1], options: { fontSize: 12, color: MUTED } }], { x, y: 4.62, w: 1.8, h: 1.05 });
+    T(s, [{ text: st[0], options: { fontSize: 25.5, bold: true, breakLine: true } }, { text: st[1], options: { fontSize: 14, color: MUTED } }], { x, y: 4.55, w: 1.82, h: 1.2 });
   });
   addNotes(s, 7);
 }
@@ -364,7 +381,7 @@ pres.addSection({ title: "Compare" });
     box(s, 7.3, y, 5.43, 1.3, { name: `res-card-${i}` });
     mono(s, c[0], { x: 7.55, y: y + 0.13, w: 5.0, h: 0.24, fontSize: 11.5, objectName: `res-label-${i}` });
     T(s, c[1], { x: 7.55, y: y + 0.4, w: 5.0, h: 0.34, fontSize: 18.5, bold: true, objectName: `res-main-${i}` });
-    T(s, c[2], { x: 7.55, y: y + 0.76, w: 5.0, h: 0.5, fontSize: 13.5, color: MUTED, objectName: `res-detail-${i}` });
+    T(s, c[2], { x: 7.55, y: y + 0.76, w: 5.0, h: 0.5, fontSize: 15, color: MUTED, objectName: `res-detail-${i}` });
     step(9, "click", [`res-card-${i}`, `res-label-${i}`, `res-main-${i}`, `res-detail-${i}`], 0, 500);
   });
   chip(s, "ASSUMED", MX, 5.98, { color: CAUTION, dashed: true, w: 1.3 });
@@ -397,12 +414,12 @@ pres.addSection({ title: "Demo" });
       const tw = 1.92, x = MX + i * (tw + 0.122);
       s.addImage({ path: IMG(f[0]), x, y: 1.5, w: tw, h: tw * 0.5625, altText: `${f[1]} page of LUNARSEYE`, objectName: `film-${i}` });
       frame(s, x, 1.5, tw, tw * 0.5625);
-      mono(s, `${i + 1}  ${f[1]}`, { x, y: 2.68, w: tw, h: 0.24, fontSize: 10.5, bold: true, charSpacing: 0.5 });
-      T(s, f[2], { x, y: 2.95, w: tw, h: 0.85, fontSize: 13.5, color: MUTED });
+      mono(s, `${i + 1}  ${f[1]}`, { x, y: 2.68, w: tw, h: 0.26, fontSize: 12, bold: true, charSpacing: 0.5 });
+      T(s, f[2], { x, y: 2.98, w: tw, h: 1.1, fontSize: 15, color: MUTED });
     });
-    mono(s, "TRY IT LIVE", { x: MX, y: 4.3, w: 3, h: 0.26, bold: true });
-    T(s, team.url, { x: MX, y: 4.62, w: 7.2, h: 0.7, fontSize: 36, bold: true });
-    T(s, "Pick a site. Press Play. Answer three questions on Compare. Click any number to see its evidence.", { x: MX, y: 5.45, w: 7.0, h: 0.75, fontSize: 17.5, color: MUTED });
+    mono(s, "TRY IT LIVE", { x: MX, y: 4.4, w: 3, h: 0.26, bold: true });
+    T(s, team.url, { x: MX, y: 4.72, w: 7.2, h: 0.7, fontSize: 36, bold: true });
+    T(s, "Pick a site. Press Play. Answer three questions on Compare. Click any number to see its evidence.", { x: MX, y: 5.5, w: 7.0, h: 0.8, fontSize: 18, color: MUTED });
     s.addShape(SH.ROUNDED_RECTANGLE, { x: 8.0, y: 4.15, w: 1.55, h: 1.55, rectRadius: 0.06, fill: { color: "E6EAEF" }, line: { color: "E6EAEF", width: 0 } });
     s.addImage({ path: IMG("qr-live.png"), x: 8.1, y: 4.25, w: 1.35, h: 1.35, altText: `QR code that opens ${team.url}`, objectName: "qr" });
     addNotes(s, 10);
@@ -418,7 +435,7 @@ pres.addSection({ title: "Team and process" });
   const n = team.members.length, gap = 0.3, cw = (12.13 - gap * (n - 1)) / n;
   team.members.forEach((m, i) => {
     const x = MX + i * (cw + gap), y = 1.55;
-    box(s, x, y, cw, 3.95, { name: `member-${i}` });
+    box(s, x, y, cw, 4.3, { name: `member-${i}` });
     const d = 1.7, px = x + 0.35, py = y + 0.4;
     const photo = m.photo ? path.join(ROOT, m.photo) : "";
     if (photo && fs.existsSync(photo)) s.addImage({ path: photo, x: px, y: py, w: d, h: d, rounding: true, altText: `Photo of ${m.name}` });
@@ -428,7 +445,7 @@ pres.addSection({ title: "Team and process" });
     }
     T(s, m.name, { x: x + 2.3, y: y + 0.42, w: cw - 2.55, h: 0.85, fontSize: 23.5, bold: true });
     mono(s, m.role.toUpperCase(), { x: x + 2.3, y: y + 1.32, w: cw - 2.55, h: 0.5, color: isPH(m.role) ? CAUTION : MUTED, bold: true });
-    T(s, m.responsible_for.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, color: phColor(t), breakLine: k < m.responsible_for.length - 1, paraSpaceAfter: 6 } })), { x: x + 0.35, y: y + 2.4, w: cw - 0.7, h: 1.3, fontSize: 16.5 });
+    T(s, m.responsible_for.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, color: phColor(t), breakLine: k < m.responsible_for.length - 1, paraSpaceAfter: 6 } })), { x: x + 0.35, y: y + 2.35, w: cw - 0.7, h: 1.8, fontSize: 18 });
   });
   addNotes(s, 11);
 }
@@ -450,7 +467,7 @@ pres.addSection({ title: "Team and process" });
   log.forEach((l, i) => {
     const y = 1.95 + i * 0.72;
     mono(s, l[0], { x: MX, y: y + 0.03, w: 0.95, h: 0.26, color: MUTED, bold: true });
-    T(s, l[1], { x: 1.7, y, w: 4.75, h: 0.66, fontSize: 15.5 });
+    T(s, l[1], { x: 1.7, y, w: 4.85, h: 0.68, fontSize: 16.5 });
   });
   const slots = [[6.9, 1.5, 5.83, 2.5, "TEAM CLIP · WORKING SESSION"], [6.9, 4.15, 2.85, 1.45, "PHOTO"], [9.88, 4.15, 2.85, 1.45, "PHOTO"]];
   slots.forEach((sl, i) => {
@@ -479,11 +496,11 @@ pres.addSection({ title: "Close" });
     "Scales are our assumptions, not reviewed by lander engineers",
     "Site list is NASA’s 2022 set; NASA updated it to nine regions in Oct 2024 and has named no landing site",
   ];
-  T(s, lim.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < lim.length - 1, paraSpaceAfter: 6 } })), { x: MX + 0.3, y: 2.15, w: 5.55, h: 3.2, fontSize: 16.5 });
+  T(s, lim.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < lim.length - 1, paraSpaceAfter: 6 } })), { x: MX + 0.3, y: 2.15, w: 5.55, h: 3.2, fontSize: 18 });
   box(s, 6.95, 1.5, 5.78, 3.55, { name: "next-panel" });
   mono(s, "NEXT", { x: 7.25, y: 1.72, w: 4, h: 0.26, color: OK, bold: true });
   const nxt = ["Expert review of the weights and scales", "Update to NASA’s current candidate regions", "10 m and 5 m terrain for every site", "Solar-energy and thermal estimates"];
-  T(s, nxt.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < nxt.length - 1, paraSpaceAfter: 6 } })), { x: 7.25, y: 2.15, w: 5.2, h: 3.2, fontSize: 16.5 });
+  T(s, nxt.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < nxt.length - 1, paraSpaceAfter: 6 } })), { x: 7.25, y: 2.15, w: 5.2, h: 3.2, fontSize: 18 });
   T(s, "Built to make a landing-site screening transparent: every number, source and assumption in view.", { x: MX, y: 5.35, w: 8.9, h: 0.9, fontSize: 20.5 });
   addNotes(s, 13);
 }

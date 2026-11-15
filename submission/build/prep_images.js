@@ -88,5 +88,6 @@ async function onCanvas(buf, w, h, name, { align = "left" } = {}) {
     await sharp(path.join(LIVE, src)).resize(1920, 1080, { fit: "cover" }).jpeg({ quality: 90 }).toFile(path.join(OUT, dst));
     await sharp(path.join(LIVE, src)).resize(640, 360, { fit: "cover" }).jpeg({ quality: 86 }).toFile(path.join(OUT, dst.replace(".jpg", "-thumb.jpg")));
   }
+  await sharp(path.join(__dirname, "../assets/derived/hero.jpg")).extract({ left: 690, top: 0, width: 1008, height: 1350 }).jpeg({ quality: 90 }).toFile(path.join(OUT, "globe-crop.jpg"));
   console.log("done");
 })().catch((e) => { console.error(e); process.exit(1); });

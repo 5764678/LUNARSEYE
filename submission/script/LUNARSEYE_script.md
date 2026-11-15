@@ -2,7 +2,7 @@
 
 Slides: `LUNARSEYE_deck.pptx` (PDF backup: `LUNARSEYE_deck.pdf`). The same words are in the speaker notes of every slide.
 
-**Speakers.** A = Thammapat Deesaysamongkol. B = Jinn Sawasdivorn. Swap A and B anywhere; keep each person's stretch continuous.
+**Speakers.** A = Thammapat Deeswasmongkol. B = Jinn Sawasdivorn. Swap A and B anywhere; keep each person's stretch continuous.
 
 **Items to fill in before recording** (they are in square brackets and in orange on the slides): team name, challenge title, each member's role, who did what, and one personal sentence on the process slide. Edit `config/team.json` and `script/narration.js`, then rebuild.
 
