@@ -82,3 +82,22 @@ Both **Thammapat Deeswasmongkol** and **Jinn Sawasdivorn** must appear here befo
 
 - The Space Apps project submission may close **today, 15 Nov, 11:59 pm local time** (my research could not verify this on the official site). Check the Project tab for the exact deadline, and for demo limits (a 7-slide deck or a 30-second video may be required there).
 - Your organiser's video (5–7 minutes, by LINE `@droneth`, 16 Nov 18:00 ICT) is separate.
+
+## Fields from the official guide that were missing above
+
+**NASA Data** (field):
+```
+We use seven NASA/JPL sources. LRO/LOLA elevation (LDEM_75S_240M, 240 m, NASA PDS) gives each site's terrain skyline. The 20 m LOLA south-pole DEM (NASA GSFC PGDA product 90) gives slope and roughness. PGDA site tiles and NASA's candidate landing regions give the 27 sites. NAIF SPICE with the DE440 ephemeris gives Sun and Earth direction from each site every hour. NASA SVS CGI Moon Kit is used only as the globe picture. JPL Horizons and the published LOLA illumination maps (Mazarico et al. 2011) validate our results. Every file's URL, size and SHA-256 are recorded and shown on the Data page.
+```
+
+**Link to Project Demo** (must be 7 slides or fewer, or a video of 30 s or less, public link):
+`https://github.com/5764678/LUNARSEYE/blob/claude/happy-dirac-u8h8ro/submission/LUNARSEYE_nasa_7slides.pdf`
+The 7-slide deck has the team name, both member names, the challenge, a picture of the project, the user experience and the NASA data, as the guide asks. It contains no photos of people.
+
+**Link to Final Project:** `https://lunarseye.onrender.com` (code: the `claude/gifted-allen-smvncn` branch link above).
+
+**Under-18 rule:** the demo and final project must not include any image, video, audio or likeness of anyone under 18. The NASA deck has no photos. If any of you is under 18, do not paste your photos into the Project page; the LINE photos go to the Bangkok organiser, not NASA.
+
+**Web filter (recommended, 2 minutes):** your site is new, so judges' networks might block it. Submit https://www.fortiguard.com/faq/wfratingsubmit with URL `https://lunarseye.onrender.com`, category "Web-based application" (or "Education"), company name `N/A`.
+
+**Submit steps:** tick "Terms and Conditions", tick "Confirm All Work is Original" (only if you can honestly say so, and describe AI help in the Use of SI field), then "Submit for Judging" **before 23:59 Bangkok time tonight**. You can re-submit until then; only the last version counts. Every member must be a confirmed participant of the Bangkok event and listed on the team.

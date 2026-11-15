@@ -23,6 +23,25 @@ for s in prs.slides:
 # drop the section list (it names removed slides)
 for ext in prs.part._element.xpath("//p:extLst/p:ext[@uri='{521415D9-36F7-43E2-AB2F-B90AF26B5E84}']"):
     ext.getparent().remove(ext)
+# member names on the title slide (required by the Space Apps demo guide: team name, members, challenge)
+first = prs.slides[0]
+nb = first.shapes.add_textbox(Inches(0.8), Inches(6.35), Inches(11.5), Inches(0.4))
+nb.text_frame.word_wrap = True
+from pptx.enum.text import PP_ALIGN
+nb.text_frame.paragraphs[0].alignment = PP_ALIGN.LEFT
+r0 = nb.text_frame.paragraphs[0].add_run()
+r0.text = "Thammapat Deeswasmongkol  \u00b7  Jinn Sawasdivorn"
+r0.font.size = Pt(16); r0.font.bold = True; r0.font.name = "Calibri"; r0.font.color.rgb = RGBColor(0xE6, 0xEA, 0xEF)
+# no photos of people in the NASA demo (the rules ban likeness of anyone under 18)
+lastslide = prs.slides[len(KEEP) - 1]
+for sh in list(lastslide.shapes):
+    alt = sh._element.xpath(".//p:cNvPr/@descr")
+    if sh.shape_type == 13 and alt and ("desk" in alt[0] or "teammate" in alt[0]):
+        sh._element.getparent().remove(sh._element)
+    elif sh.shape_type == 1 and abs(sh.width - Inches(1.3)) < Inches(0.05) and abs(sh.height - Inches(1.3)) < Inches(0.05):
+        sh._element.getparent().remove(sh._element)
+    elif sh.has_text_frame and sh.text_frame.text.strip() == "THE TEAM AT WORK":
+        sh._element.getparent().remove(sh._element)
 # credit line on the last slide, bottom-left (clear of the footer)
 last = prs.slides[len(KEEP) - 1]
 tb = last.shapes.add_textbox(Inches(0.6), Inches(6.62), Inches(9.0), Inches(0.4))

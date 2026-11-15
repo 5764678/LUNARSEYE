@@ -13,7 +13,8 @@ Guide: https://www.spaceappschallenge.org/resources/project-submission-guide/ (I
    - Or upload `LUNARSEYE_nasa_7slides.pdf` to Google Drive ("Anyone with the link") or Google Slides.
    - Open the link in a private window before you paste it.
 4. Code link: `https://github.com/5764678/LUNARSEYE/tree/claude/gifted-allen-smvncn` (the branch with Compare). Live app: `https://lunarseye.onrender.com`.
-5. Submit. Keep the confirmation.
+5. Fill the **NASA Data** field and do the optional FortiGuard web-filter request: both are in `team-page/TEAM_PAGE_TEXT.md` (last section).
+6. Tick both boxes, press **Submit for Judging** before 23:59 Bangkok time, and keep the confirmation banner. No photos of people on the NASA page if anyone is under 18.
 
 ## Part 2: LINE `@droneth` (https://lin.ee/N8eJFl9X). Deadline **Mon 16 Nov 2026, 18:00 ICT** (late until Tue 17 Nov 18:00 with a score deduction)
 Staff hours 09:30–17:30.
