@@ -17,17 +17,30 @@ that opens its source, method, limits and SHA-256.
 
 ## Status
 
-Built for a hackathon, 14–15 Nov 2026. It runs locally only; there is no deployment.
+Built for a hackathon, 14–15 Nov 2026.
+
+**Live demo: <https://lunarseye.onrender.com>** (Render free plan, so the first request
+after a quiet period can be slow while it wakes).
+
+**The live site does not run `main`.** It is built from the branch
+`claude/gifted-allen-smvncn`, which auto-deploys on push. That branch is a separate line:
+it adds the Compare and Data pages and the deployment files (`Dockerfile`, `render.yaml`,
+`docs/round2/DEPLOY.md`), and it still uses the `lunaris_*` package names. `main` has none
+of those, so what this README describes below is `main`, not what is deployed. Deployment
+details (Render service, Neon database, build steps) are in `DEPLOY.md` on that branch.
+
+Pages on `main`:
 
 | Page | Route | State |
 | --- | --- | --- |
 | Overview: site list, globe, headline numbers | `/` | works |
 | Illumination & Earth: sky chart, terrain-vs-flat-horizon tables, visible/hidden windows | `/illumination` | works |
 | Terrain: PGDA 20 m height/slope/roughness, 3D south-pole scene | `/terrain` | works |
-| Compare sites, Data page | — | not built |
+| Compare sites, Data page | `/compare`, `/data` | not on `main`; live on the deployed branch |
 
-Not implemented: user-registered sites (the registry is read-only), authentication,
-educational features, migrations, CI, and any deployment. See [Scope cuts](#scope-cuts).
+Not implemented on `main`: Compare and Data pages, user-registered sites (the registry is
+read-only), authentication, educational features, migrations, CI, and deployment files.
+See [Scope cuts](#scope-cuts).
 
 ## Run it
 
@@ -84,6 +97,7 @@ tests/api          API tests
 apps/api           FastAPI service
 apps/web           Next.js 16 / React 19 / React Three Fiber / TanStack Query
 data/              local data store (nothing acquired is committed); fixtures/ is committed
+video/             promo video project (not part of the app)
 ```
 
 ### API
@@ -122,14 +136,14 @@ Deliberate. Still true unless noted.
 
 | Cut | Now |
 | --- | --- |
-| Registering/deleting user sites | Registry is read-only; table has the target columns and CHECKs. A writable registry with no auth needs a decision before any public deploy |
+| Registering/deleting user sites | Registry is read-only; table has the target columns and CHECKs. A writable registry with no auth needs a decision before it is exposed publicly |
 | Alembic migrations | `create_all` + idempotent catalogue seed at start-up |
-| Compare and Data pages | Not built |
+| Compare and Data pages | Not on `main`; built on the deployed branch |
 | Content-addressed cache, single-flight, process pool, ETags | In-process LRU + horizon-mask file cache; science runs in the request thread pool |
 | Golden-master capture against the prototype | A few API tests pin the headline numbers |
 | import-linter / ESLint boundaries, CI, budgets | None |
 | Generated client and Zod | Types are generated (`@hey-api/openapi-ts`); the fetch wrapper is hand-written |
-| Deploy | Local only |
+| Deploy | `main` has no deploy files. The live site is built from `claude/gifted-allen-smvncn` |
 
 Known wrinkles:
 
