@@ -1,0 +1,23 @@
+{
+ "candidates": {
+  "0.5x": {
+   "match": 1.0,
+   "mean_abs_ms": 3.2,
+   "drift_ms_over_section": -1.6
+  },
+  "1x": {
+   "match": 1.0,
+   "mean_abs_ms": 3.1,
+   "drift_ms_over_section": 0.1
+  },
+  "2x": {
+   "match": 0.967,
+   "mean_abs_ms": 4.1,
+   "drift_ms_over_section": -0.4
+  }
+ },
+ "kick_energy_on_beat": 1.15,
+ "kick_energy_off_beat": 0.55,
+ "winner": "1x",
+ "why": "1x and 2x both meet the transients within 6 ms with no drift; 2x matches a few more only because off-beat hits also land on it. 124 BPM is the tempo the library lists for this track. Phase: the low end (kick) sits on the beats of the grid starting at t0, the hats half a beat away."
+}
