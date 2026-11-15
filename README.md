@@ -136,6 +136,10 @@ Known wrinkles:
 - `tests/science/illumination/test_terrain_physics.py` imports
   `lunareyes_api.services.horizon.HorizonMaskService`, so the horizon service keeps that
   module path and constructor to leave the frozen tests untouched.
+- Docstrings and comments in the frozen packages and some tests cite `docs/SCIENCE.md`,
+  `docs/DECISIONS.md`, `docs/ARCHITECTURE.md` and `docs/TASKS.md`. Those files are not in
+  this repository; they came with the prototype (`8edfb32`). Dataset sources and
+  checksums are in `packages/data/src/lunareyes_data/manifests/`.
 - Measured locally for the timeline: a year of hourly samples for one site takes 1.2 s
   cold (the first request for a site adds about 2 s for its horizon mask) and 0.14 s from
   the in-process cache. The response is 1.2 MB, 240 kB gzipped.
