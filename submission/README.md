@@ -15,6 +15,10 @@ Slides, script and video guide for the 5–7 minute English presentation video (
 | `config/team.json` | Team name, challenge title, members, roles, photos, optional demo video. **Fill it in.** |
 | `data/results.json` | The real numbers on slides 2 and 9, fetched from the live Compare API (2027, hourly). |
 | `assets/live`, `assets/derived` | Real screenshots of https://lunarseye.onrender.com (nothing mocked) and crops made from them. |
+| `LUNARSEYE_nasa_7slides.pptx` / `.pdf` | 7-slide cut for the NASA project-submission system (the demo field may accept only 7 slides or a 30 s video). No animations. |
+| `line-pack/` | 15 captioned photos for LINE (organiser asks for 10–20 photos and clips). |
+| `SUBMISSION_CHECKLIST.md` | Both submissions, in order, with deadlines. |
+| `team-page/` | Paste-ready text for the Space Apps team page. |
 | `fonts/` | IBM Plex (the app's font). **Not used by the deck any more**: the deck uses Calibri, which is on every PowerPoint and Google Slides install. |
 | `build/` | Everything that regenerates the above (capture, crops, deck, script). |
 

@@ -10,13 +10,14 @@ Everything here was tested on synthetic clips (`tools/compose.sh`, ffmpeg 6.1). 
 | **Faces of all members visible** in the video | Every slide keeps the bottom-right corner empty for the faces (section 2). |
 | **Slides included** in the video | The deck, shown in full-screen slideshow. |
 | **5 minutes, not more than 7** | Script plan: about 6:00. Hard stop 7:00 (section 6 has a check). |
+| **10–20 photos and clips of the work**, sent with the video (organiser's latest notice) | `line-pack/` has 15 captioned files. Add 1–3 real clips if you have them. |
 | Cover the 6 topics: NASA data, tools, application, demo, team roles, photos/video of the work | Slides 4, 5, 6–9, 10, 11, 12 (matrix in `README.md`). |
 | Send by LINE OA `@droneth`: public video link, project title, team name, **full names of all members** | Template in section 7. |
 | Deadline | **Mon 16 Nov 2026, 18:00 (ICT)**. Late (score deduction) until **Tue 17 Nov 18:00**. After that the team is withdrawn. Staff hours 09:30–17:30. |
 
 The first notice also lists a meeting on **15 Nov** (link `meet.droneth.or.th/m/fbp-vjso-mhd`, "about 5 minutes, up to 7"). The same deck and script work live: switch to the live site for the demo (section 5). If your slot is today, check the meeting time with the organiser now.
 
-**Ask the organiser in writing (LINE `@droneth`) about three things I could not verify:** (1) whether the 15 Nov meeting and the 16 Nov video are both required, (2) whether "faces visible" means at all times or at least once (the plan below satisfies "at all times"), (3) whether you must also submit on the global Space Apps portal (see section 8).
+**Ask the organiser in writing (LINE `@droneth`) about three things I could not verify:** (1) whether the 15 Nov meeting and the 16 Nov video are both required, (2) whether "faces visible" means at all times or at least once (the plan below satisfies "at all times"), (3) the global Space Apps submission is separate and mandatory (see `SUBMISSION_CHECKLIST.md`).
 
 ## 1. Choose how to record
 
