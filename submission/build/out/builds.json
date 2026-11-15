@@ -1,0 +1,133 @@
+{
+ "1": [
+  {
+   "trigger": "auto",
+   "names": [
+    "title-1"
+   ],
+   "delay": 300,
+   "dur": 900
+  },
+  {
+   "trigger": "auto",
+   "names": [
+    "hook-sun"
+   ],
+   "delay": 500,
+   "dur": 600
+  },
+  {
+   "trigger": "auto",
+   "names": [
+    "hook-earth"
+   ],
+   "delay": 450,
+   "dur": 600
+  },
+  {
+   "trigger": "auto",
+   "names": [
+    "hook-terrain"
+   ],
+   "delay": 450,
+   "dur": 600
+  }
+ ],
+ "4": [
+  {
+   "trigger": "click",
+   "names": [
+    "pipe-0",
+    "pipe-arrow-0",
+    "pipe-1",
+    "pipe-arrow-1",
+    "pipe-2",
+    "pipe-arrow-2",
+    "pipe-3"
+   ],
+   "delay": 0,
+   "dur": 600
+  }
+ ],
+ "8": [
+  {
+   "trigger": "click",
+   "names": [
+    "cmp-img-2",
+    "cmp-cap-2"
+   ],
+   "delay": 0,
+   "dur": 500
+  },
+  {
+   "trigger": "click",
+   "names": [
+    "cmp-img-3",
+    "cmp-cap-3"
+   ],
+   "delay": 0,
+   "dur": 500
+  }
+ ],
+ "9": [
+  {
+   "trigger": "click",
+   "names": [
+    "res-card-0",
+    "res-label-0",
+    "res-main-0",
+    "res-detail-0"
+   ],
+   "delay": 0,
+   "dur": 500
+  },
+  {
+   "trigger": "click",
+   "names": [
+    "res-card-1",
+    "res-label-1",
+    "res-main-1",
+    "res-detail-1"
+   ],
+   "delay": 0,
+   "dur": 500
+  },
+  {
+   "trigger": "click",
+   "names": [
+    "res-card-2",
+    "res-label-2",
+    "res-main-2",
+    "res-detail-2"
+   ],
+   "delay": 0,
+   "dur": 500
+  }
+ ],
+ "14": [
+  {
+   "trigger": "auto",
+   "names": [
+    "title-14"
+   ],
+   "delay": 300,
+   "dur": 1300
+  },
+  {
+   "trigger": "auto",
+   "names": [
+    "end-sub"
+   ],
+   "delay": 350,
+   "dur": 800
+  },
+  {
+   "trigger": "auto",
+   "names": [
+    "end-credits"
+   ],
+   "delay": 350,
+   "dur": 800
+  }
+ ]
+}

@@ -39,7 +39,7 @@ async function onCanvas(buf, w, h, name, { align = "left" } = {}) {
   const rw = Math.round(m.width * scale), rh = Math.round(m.height * scale);
   const resized = await sharp(buf).resize(rw, rh, { kernel: "lanczos3" }).toBuffer();
   const left = align === "center" ? Math.round((w - rw) / 2) : 0;
-  const top = 0;
+  const top = align === "center" ? Math.round((h - rh) / 2) : 0;
   await sharp({ create: { width: w, height: h, channels: 4, background: PANEL } })
     .composite([{ input: resized, left, top }]).jpeg({ quality: 92 }).toFile(path.join(OUT, name));
   console.log("wrote", name, `${rw}x${rh} on ${w}x${h}`);

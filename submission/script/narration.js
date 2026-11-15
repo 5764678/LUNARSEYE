@@ -81,9 +81,9 @@ module.exports = {
     },
     {
       n: 11, id: "team", title: "Team roles", who: "B",
-      cues: ["Fill the roles in config/team.json before recording; say in your own words who did what."],
-      text: "We are a team of two. [MEMBER A: ROLE AND WHAT THEY BUILT.] [MEMBER B: ROLE AND WHAT THEY BUILT.] [ONE SENTENCE ON HOW YOU DECIDED AND CHECKED TOGETHER.]",
-      fillIn: true, fillWords: 32,
+      cues: ["Roles are on the slide. Add one sentence in your own words about how you worked together."],
+      text: "We are a team of two. Thammapat handled research refinement, frontend development and the direction of the project. Jinn handled the backend, management, the algorithm and the research data. [ONE SENTENCE ON HOW YOU DECIDED AND CHECKED TOGETHER.]",
+      fillIn: true, fillWords: 14,
       thai: "แนะนำสมาชิกและหน้าที่ของแต่ละคน (กรอกใน config/team.json และพูดด้วยคำของตัวเอง)",
     },
     {

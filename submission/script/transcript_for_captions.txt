@@ -50,6 +50,8 @@ On Compare, we answer three questions, add a slope limit, and one site comes bac
 Two sites are excluded, and the page says why.
 And Data lists every NASA file with its checksum.
 We are a team of two.
+Thammapat handled research refinement, frontend development and the direction of the project.
+Jinn handled the backend, management, the algorithm and the research data.
 Our public commit history tells the story: first the end-to-end path, then Illumination, Terrain, Compare, a live deployment, and a full interface audit, with tests at every step.
 LUNARSEYE is decision support, not a mission decision.
 Coordinates are tile centres, not landing points.

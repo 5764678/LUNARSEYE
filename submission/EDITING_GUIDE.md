@@ -113,7 +113,7 @@ Check the spelling of every name exactly as the organiser registered it. Keep a 
 
 - [ ] All members' faces visible for the whole video (at least at start and end)
 - [ ] Spoken English; every number you say matches the slide
-- [ ] Slides visible; demo shown; roles slide filled in; photos or a clip on slide 12
+- [ ] Slides visible; demo shown; roles slide checked; photos or a clip on slide 12
 - [ ] 5:00–7:00 (`compose.sh check`); loudness about -16 LUFS; no echo
 - [ ] AI-assistance and "not endorsed by NASA" statements present (slide 5, slide 14, description)
 - [ ] No NASA logo anywhere; NASA data credited (slide 15)

@@ -17,7 +17,8 @@ const OUT = path.join(__dirname, "out");
 fs.mkdirSync(OUT, { recursive: true });
 
 // ---------- design system (from apps/web/src/app/tokens.css) ----------
-const SANS = "IBM Plex Sans", MONO = "IBM Plex Mono";
+// Calibri ships with PowerPoint on Windows and Mac and is in Google Slides, so the deck looks the same everywhere.
+const SANS = "Calibri", MONO = "Calibri";
 const THEME = {
   name: "LUNARSEYE Night", headFontFace: SANS, bodyFontFace: SANS,
   colors: {
@@ -60,22 +61,22 @@ pres.defineSlideMaster({
 });
 pres.defineSlideMaster({
   title: "SCREEN", background: { color: BG },
-  objects: [{ placeholder: { options: titleOpts({ x: MX, y: 6.62, w: 8.6, h: 0.6, fontSize: 24, bold: true }), text: "" } }],
+  objects: [{ placeholder: { options: titleOpts({ x: MX, y: 6.62, w: 8.6, h: 0.6, fontSize: 25.5, bold: true }), text: "" } }],
 });
 pres.defineSlideMaster({
   title: "CONTENT", background: { color: BG },
   objects: [
-    { text: { text: "LUNARSEYE  ·  NASA Space Apps Challenge 2026", options: { x: MX, y: 7.05, w: 6.2, h: 0.26, fontFace: MONO, fontSize: 10, color: "8D97A6", margin: 0, charSpacing: 1 } } },
-    { placeholder: { options: titleOpts({ x: MX, y: 0.42, w: 10.2, h: 1.0, fontSize: 28, bold: true }), text: "" } },
+    { text: { text: "LUNARSEYE  ·  NASA Space Apps Challenge 2026", options: { x: MX, y: 7.05, w: 6.2, h: 0.26, fontFace: MONO, fontSize: 11, color: "8D97A6", margin: 0, charSpacing: 1 } } },
+    { placeholder: { options: titleOpts({ x: MX, y: 0.42, w: 10.2, h: 1.0, fontSize: 32, bold: true }), text: "" } },
   ],
-  slideNumber: { x: 7.0, y: 7.05, w: 0.6, h: 0.26, fontFace: MONO, fontSize: 10, color: "8D97A6", align: "left" },
+  slideNumber: { x: 7.0, y: 7.05, w: 0.6, h: 0.26, fontFace: MONO, fontSize: 11, color: "8D97A6", align: "left" },
 });
 
 // ---------- helpers ----------
-const T = (s, text, o = {}) => s.addText(text, { isTextBox: true, fontFace: SANS, fontSize: 16, color: FG, margin: 0, valign: "top", ...o });
-const mono = (s, text, o = {}) => T(s, text, { fontFace: MONO, fontSize: 11, color: MUTED, charSpacing: 1.5, ...o });
+const T = (s, text, o = {}) => s.addText(text, { isTextBox: true, fontFace: SANS, fontSize: 17.5, color: FG, margin: 0, valign: "top", ...o });
+const mono = (s, text, o = {}) => T(s, text, { fontFace: MONO, fontSize: 13, bold: true, color: MUTED, charSpacing: 1.5, ...o });
 function chip(s, text, x, y, o = {}) {
-  const w = o.w ?? text.length * 0.088 + 0.34;
+  const w = o.w ?? text.length * 0.1 + 0.36;
   s.addText(text, {
     shape: SH.ROUNDED_RECTANGLE, rectRadius: 0.05, x, y, w, h: o.h ?? 0.3, align: "center", valign: "middle", margin: 0,
     fontFace: MONO, fontSize: o.size ?? 10.5, bold: true, charSpacing: 1.5, color: o.color ?? FG,
@@ -123,12 +124,11 @@ pres.addSection({ title: "Hook" });
   const s = slide("HERO", "Hook", "Where should we land at the Moon’s south pole?");
   s.addImage({ path: IMG("hero.jpg"), x: 0, y: 0, w: W, h: H, altText: "The Moon lit by the real SPICE Sun direction, with the 27 candidate sites marked near the south pole", objectName: "hero-image" });
   s.addShape(SH.RECTANGLE, { x: 0, y: 0, w: W, h: H, fill: { color: BG, transparency: 60 }, line: { color: BG, width: 0 }, objectName: "hero-dim" });
-  s.addText("LUNARSEYE", { isTextBox: true, x: 0.8, y: 0.6, w: 5, h: 0.4, fontFace: SANS, fontSize: 14, bold: true, charSpacing: 9, color: FG, margin: 0, objectName: "wordmark-small" });
+  s.addText("LUNARSEYE", { isTextBox: true, x: 0.8, y: 0.6, w: 5, h: 0.4, fontFace: SANS, fontSize: 15.5, bold: true, charSpacing: 9, color: FG, margin: 0, objectName: "wordmark-small" });
   s._title();
   // sub-line: three words in the app's data hues, revealed one after the other
-  const cw = (0.6 * 16 + 2) / 72; // IBM Plex Mono 16 pt + 2 pt tracking
-  const w1 = 8 * cw, w2 = 22 * cw, w3 = 10 * cw, gap = 0.12, y = 3.7, x1 = 0.8, x2 = x1 + w1 + gap, x3 = x2 + w2 + gap;
-  const sub = (x, w, runs, name) => T(s, runs, { x, y, w: w + 0.1, h: 0.4, fontFace: MONO, fontSize: 16, charSpacing: 2, objectName: name });
+  const w1 = 1.8, w2 = 4.0, w3 = 1.9, gap = 0.05, y = 3.7, x1 = 0.8, x2 = x1 + w1 + gap, x3 = x2 + w2 + gap; // widths measured for Calibri bold 20 pt + 3 pt tracking
+  const sub = (x, w, runs, name) => T(s, runs, { x, y, w: w + 0.15, h: 0.45, fontFace: MONO, fontSize: 20, bold: true, charSpacing: 3, wrap: false, objectName: name });
   sub(x1, w1, [{ text: "SUNLIGHT", options: { color: SUN } }], "hook-sun");
   sub(x2, w2, [{ text: "·  ", options: { color: MUTED } }, { text: "EARTH LINE OF SIGHT", options: { color: EARTH } }], "hook-earth");
   sub(x3, w3, [{ text: "·  ", options: { color: MUTED } }, { text: "TERRAIN", options: { color: HORIZON } }], "hook-terrain");
@@ -155,17 +155,17 @@ pres.addSection({ title: "Hook" });
     box(s, x, y, 3.9, 3.95, { name: `prob-card-${i}` });
     s.addShape(SH.OVAL, { x: x + 0.3, y: y + 0.33, w: 0.18, h: 0.18, fill: { color: c.hue }, line: { color: c.hue, width: 0 } });
     mono(s, c.tag, { x: x + 0.62, y: y + 0.29, w: 3.1, h: 0.26, color: c.hue, bold: true });
-    T(s, c.q, { x: x + 0.3, y: y + 0.75, w: 3.35, h: 0.85, fontSize: 16, color: MUTED });
+    T(s, c.q, { x: x + 0.3, y: y + 0.75, w: 3.35, h: 0.85, fontSize: 17.5, color: MUTED });
     const rows = c.swap ? [["MALAPERT MASSIF", c.a, c.au, FG], ["PEAK NEAR SHACKLETON", c.b, c.bu, MUTED]] : [["PEAK NEAR SHACKLETON", c.a, c.au, FG], ["MALAPERT MASSIF", c.b, c.bu, MUTED]];
     rows.forEach((r, k) => {
       const ry = y + 1.65 + k * 0.9;
-      mono(s, r[0], { x: x + 0.3, y: ry, w: 3.3, h: 0.24, fontSize: 10.5 });
-      T(s, [{ text: r[1], options: { fontSize: 38, bold: true, color: r[3] } }, { text: r[2], options: { fontSize: 20, color: r[3] } }], { x: x + 0.3, y: ry + 0.24, w: 3.3, h: 0.62 });
+      mono(s, r[0], { x: x + 0.3, y: ry, w: 3.3, h: 0.24, fontSize: 11.5 });
+      T(s, [{ text: r[1], options: { fontSize: 38, bold: true, color: r[3] } }, { text: r[2], options: { fontSize: 21.5, color: r[3] } }], { x: x + 0.3, y: ry + 0.24, w: 3.3, h: 0.62 });
     });
-    T(s, c.cap, { x: x + 0.3, y: y + 3.45, w: 3.4, h: 0.3, fontSize: 13, color: MUTED });
+    T(s, c.cap, { x: x + 0.3, y: y + 3.45, w: 3.4, h: 0.3, fontSize: 14.5, color: MUTED });
   });
-  T(s, "Same year, same method. Peak near Shackleton wins on sunlight and Earth; Malapert massif wins on smooth ground. The best site depends on the mission.", { x: MX, y: 5.68, w: 9.0, h: 0.85, fontSize: 18 });
-  mono(s, "2027 · hourly · LOLA 240 m terrain horizon · live Compare API", { x: MX, y: 6.62, w: 9.0, h: 0.3, fontSize: 10 });
+  T(s, "Same year, same method. Peak near Shackleton wins on sunlight and Earth; Malapert massif wins on smooth ground. The best site depends on the mission.", { x: MX, y: 5.68, w: 9.0, h: 0.85, fontSize: 19.5 });
+  mono(s, "2027 · hourly · LOLA 240 m terrain horizon · live Compare API", { x: MX, y: 6.62, w: 9.0, h: 0.3, fontSize: 11 });
   addNotes(s, 2);
 }
 
@@ -178,7 +178,7 @@ pres.addSection({ title: "Hook" });
   s.addShape(SH.RECTANGLE, { x: 0, y: 5.95, w: W, h: 1.55, fill: { color: BG, transparency: 8 }, line: { color: BG, width: 0 }, objectName: "lower-third-band" });
   s._title();
   chip(s, "OVERVIEW", MX, 6.2, { color: FG });
-  mono(s, "5 PAGES  ·  EVIDENCE ON EVERY NUMBER", { x: 2.05, y: 6.27, w: 6.0, h: 0.26, color: MUTED, fontSize: 10.5 });
+  mono(s, "5 PAGES  ·  EVIDENCE ON EVERY NUMBER", { x: 2.05, y: 6.27, w: 6.0, h: 0.26, color: MUTED, fontSize: 11.5 });
   addNotes(s, 3);
   // title placeholder sits in the band (placeholder defined on the SCREEN layout)
 }
@@ -202,8 +202,8 @@ pres.addSection({ title: "Data and tools" });
     const y = 1.5 + i * 0.64;
     chip(s, r[0], MX, y + 0.12, { w: 1.45, color: r[1], size: 10 });
     T(s, [
-      { text: r[2], options: { bold: true, fontSize: 15, breakLine: true } },
-      { text: r[3], options: { fontSize: 13, color: MUTED } },
+      { text: r[2], options: { bold: true, fontSize: 16.5, breakLine: true } },
+      { text: r[3], options: { fontSize: 14.5, color: MUTED } },
     ], { x: 2.2, y: y + 0.02, w: 6.9, h: 0.58 });
     if (i < rows.length - 1) s.addShape(SH.LINE, { x: MX, y: y + 0.63, w: 8.5, h: 0, line: { color: LINE, width: 0.75 } });
   });
@@ -213,13 +213,13 @@ pres.addSection({ title: "Data and tools" });
   const names = [];
   pipe.forEach((p, i) => {
     const y = 1.5 + i * (ph + pg);
-    s.addText([{ text: p[0], options: { fontFace: MONO, fontSize: 10.5, bold: true, color: MUTED, charSpacing: 1.5, breakLine: true } }, { text: p[1], options: { fontSize: 14, color: FG } }],
+    s.addText([{ text: p[0], options: { fontFace: MONO, fontSize: 11.5, bold: true, color: MUTED, charSpacing: 1.5, breakLine: true } }, { text: p[1], options: { fontSize: 15.5, color: FG } }],
       { shape: SH.ROUNDED_RECTANGLE, rectRadius: 0.08, x: px, y, w: pw, h: ph, fill: { color: PANEL }, line: { color: LINE2, width: 1 }, margin: [6, 11, 6, 11], valign: "middle", objectName: `pipe-${i}` });
     names.push(`pipe-${i}`);
     if (i < pipe.length - 1) { s.addShape(SH.DOWN_ARROW, { x: px + pw / 2 - 0.11, y: y + ph + 0.02, w: 0.22, h: pg - 0.04, fill: { color: CTRL }, line: { color: CTRL, width: 0 }, objectName: `pipe-arrow-${i}` }); names.push(`pipe-arrow-${i}`); }
   });
   step(4, "click", names, 0, 600);
-  T(s, "Nothing downloaded is committed. The 2.7 GB 20 m DEM is read as HTTP byte ranges and never downloaded whole.", { x: MX, y: 6.12, w: 8.7, h: 0.55, fontSize: 12.5, color: MUTED });
+  T(s, "Nothing downloaded is committed. The 2.7 GB 20 m DEM is read as HTTP byte ranges and never downloaded whole.", { x: MX, y: 6.12, w: 8.7, h: 0.55, fontSize: 13.5, color: MUTED });
   addNotes(s, 4);
 }
 
@@ -237,14 +237,14 @@ pres.addSection({ title: "Data and tools" });
     const x = MX + i * (3.97 + 0.11);
     box(s, x, 1.45, 3.97, 2.75, { name: `tool-col-${i}` });
     mono(s, c[0], { x: x + 0.3, y: 1.68, w: 3.4, h: 0.26, bold: true });
-    T(s, c[1].map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < c[1].length - 1, paraSpaceAfter: 5 } })), { x: x + 0.3, y: 2.1, w: 3.45, h: 1.95, fontSize: 15 });
+    T(s, c[1].map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < c[1].length - 1, paraSpaceAfter: 5 } })), { x: x + 0.3, y: 2.1, w: 3.45, h: 1.95, fontSize: 16.5 });
   });
   box(s, MX, 4.35, 12.13, 0.85, { name: "tool-quality" });
   mono(s, "QUALITY", { x: MX + 0.3, y: 4.62, w: 1.2, h: 0.26, bold: true });
-  T(s, "pytest + hypothesis  ·  Vitest  ·  checks against JPL Horizons and published LOLA maps  ·  browser smoke test", { x: 2.0, y: 4.58, w: 10.5, h: 0.5, fontSize: 14, valign: "middle" });
+  T(s, "pytest + hypothesis  ·  Vitest  ·  checks against JPL Horizons and published LOLA maps  ·  browser smoke test", { x: 2.0, y: 4.58, w: 10.5, h: 0.5, fontSize: 15.5, valign: "middle" });
   box(s, MX, 5.38, 9.0, 1.4, { line: CAUTION, dashed: true, fill: null, name: "ai-box" });
   chip(s, "AI USE", MX + 0.25, 5.55, { color: CAUTION, dashed: true, size: 10.5 });
-  T(s, "Claude Code (Anthropic) helped write the code. Sun and Earth positions come from NASA SPICE, not from an AI model. Independent project, not endorsed by NASA. No NASA logos are used.", { x: MX + 0.25, y: 5.95, w: 8.5, h: 0.78, fontSize: 14 });
+  T(s, "Claude Code (Anthropic) helped write the code. Sun and Earth positions come from NASA SPICE, not from an AI model. Independent project, not endorsed by NASA. No NASA logos are used.", { x: MX + 0.25, y: 5.95, w: 8.5, h: 0.78, fontSize: 15.5 });
   addNotes(s, 5);
 }
 
@@ -265,7 +265,7 @@ pres.addSection({ title: "Method and evidence" });
   ];
   steps.forEach((p, i) => {
     const x = MX + i * 2.3;
-    T(s, [{ text: p[0], options: { bold: true, fontSize: 15, breakLine: true } }, { text: p[1], options: { fontSize: 13, color: MUTED } }], { x, y: 5.42, w: 2.1, h: 1.4 });
+    T(s, [{ text: p[0], options: { bold: true, fontSize: 16.5, breakLine: true } }, { text: p[1], options: { fontSize: 14.5, color: MUTED } }], { x, y: 5.42, w: 2.1, h: 1.4 });
   });
   addNotes(s, 6);
 }
@@ -286,9 +286,9 @@ pres.addSection({ title: "Method and evidence" });
   tags.forEach((t, i) => {
     const y = 1.55 + i * 0.66;
     chip(s, t[0], MX, y + 0.08, { w: 1.55, color: t[1], dashed: t[2], size: 11 });
-    T(s, t[3], { x: 2.4, y: y + 0.03, w: 4.4, h: 0.55, fontSize: 15, valign: "middle" });
+    T(s, t[3], { x: 2.4, y: y + 0.03, w: 4.4, h: 0.55, fontSize: 16.5, valign: "middle" });
   });
-  T(s, "Click any number in the app to open its source, method, limits and SHA-256.", { x: MX, y: 5.6, w: 6.2, h: 0.7, fontSize: 14, color: MUTED });
+  T(s, "Click any number in the app to open its source, method, limits and SHA-256.", { x: MX, y: 5.6, w: 6.2, h: 0.7, fontSize: 15.5, color: MUTED });
   const rx = 7.05, rw = 5.68;
   s.addImage({ path: IMG("evidence-drawer-crop.jpg"), x: rx, y: 1.5, w: rw, h: rw / (1027 / 515), altText: "The evidence drawer for one number: LUNARSEYE calculation tag, statement, method, sources and SHA-256", objectName: "evidence-crop" });
   frame(s, rx, 1.5, rw, rw / (1027 / 515));
@@ -299,7 +299,7 @@ pres.addSection({ title: "Method and evidence" });
   ];
   stats.forEach((st, i) => {
     const x = rx + i * (1.8 + 0.14);
-    T(s, [{ text: st[0], options: { fontSize: 24, bold: true, breakLine: true } }, { text: st[1], options: { fontSize: 11, color: MUTED } }], { x, y: 4.62, w: 1.8, h: 1.05 });
+    T(s, [{ text: st[0], options: { fontSize: 25.5, bold: true, breakLine: true } }, { text: st[1], options: { fontSize: 12, color: MUTED } }], { x, y: 4.62, w: 1.8, h: 1.05 });
   });
   addNotes(s, 7);
 }
@@ -324,9 +324,9 @@ pres.addSection({ title: "Compare" });
   caps.forEach((c, i) => {
     const x = MX + i * 3.05;
     T(s, [
-      { text: c[0], options: { fontFace: MONO, fontSize: 20, bold: true, color: MUTED, breakLine: true } },
-      { text: c[1], options: { bold: true, fontSize: 16, breakLine: true } },
-      { text: c[2], options: { fontSize: 13, color: MUTED } },
+      { text: c[0], options: { fontFace: MONO, fontSize: 21.5, bold: true, color: MUTED, breakLine: true } },
+      { text: c[1], options: { bold: true, fontSize: 17.5, breakLine: true } },
+      { text: c[2], options: { fontSize: 14.5, color: MUTED } },
     ], { x, y: 5.45, w: 2.9, h: 1.55, objectName: `cmp-cap-${i + 1}` });
   });
   step(8, "click", ["cmp-img-2", "cmp-cap-2"], 0, 500);
@@ -362,13 +362,13 @@ pres.addSection({ title: "Compare" });
   cards.forEach((c, i) => {
     const y = 1.5 + i * 1.42;
     box(s, 7.3, y, 5.43, 1.3, { name: `res-card-${i}` });
-    mono(s, c[0], { x: 7.55, y: y + 0.13, w: 5.0, h: 0.24, fontSize: 10.5, objectName: `res-label-${i}` });
-    T(s, c[1], { x: 7.55, y: y + 0.4, w: 5.0, h: 0.34, fontSize: 17, bold: true, objectName: `res-main-${i}` });
-    T(s, c[2], { x: 7.55, y: y + 0.76, w: 5.0, h: 0.5, fontSize: 12.5, color: MUTED, objectName: `res-detail-${i}` });
+    mono(s, c[0], { x: 7.55, y: y + 0.13, w: 5.0, h: 0.24, fontSize: 11.5, objectName: `res-label-${i}` });
+    T(s, c[1], { x: 7.55, y: y + 0.4, w: 5.0, h: 0.34, fontSize: 18.5, bold: true, objectName: `res-main-${i}` });
+    T(s, c[2], { x: 7.55, y: y + 0.76, w: 5.0, h: 0.5, fontSize: 13.5, color: MUTED, objectName: `res-detail-${i}` });
     step(9, "click", [`res-card-${i}`, `res-label-${i}`, `res-main-${i}`, `res-detail-${i}`], 0, 500);
   });
   chip(s, "ASSUMED", MX, 5.98, { color: CAUTION, dashed: true, w: 1.3 });
-  T(s, "Scores use fixed scales that are our assumptions: slope 0 at 20°, roughness 0 at 1 m RMS, darkness and outage 0 at one synodic month (29.5 d). Not yet reviewed by lander engineers.", { x: 2.1, y: 5.95, w: 7.5, h: 0.9, fontSize: 13, color: MUTED });
+  T(s, "Scores use fixed scales that are our assumptions: slope 0 at 20°, roughness 0 at 1 m RMS, darkness and outage 0 at one synodic month (29.5 d). Not yet reviewed by lander engineers.", { x: 2.1, y: 5.95, w: 7.5, h: 0.9, fontSize: 14.5, color: MUTED });
   addNotes(s, 9);
 }
 
@@ -397,12 +397,12 @@ pres.addSection({ title: "Demo" });
       const tw = 1.92, x = MX + i * (tw + 0.122);
       s.addImage({ path: IMG(f[0]), x, y: 1.5, w: tw, h: tw * 0.5625, altText: `${f[1]} page of LUNARSEYE`, objectName: `film-${i}` });
       frame(s, x, 1.5, tw, tw * 0.5625);
-      mono(s, `${i + 1}  ${f[1]}`, { x, y: 2.68, w: tw, h: 0.24, fontSize: 9.5, bold: true, charSpacing: 0.5 });
-      T(s, f[2], { x, y: 2.95, w: tw, h: 0.85, fontSize: 12.5, color: MUTED });
+      mono(s, `${i + 1}  ${f[1]}`, { x, y: 2.68, w: tw, h: 0.24, fontSize: 10.5, bold: true, charSpacing: 0.5 });
+      T(s, f[2], { x, y: 2.95, w: tw, h: 0.85, fontSize: 13.5, color: MUTED });
     });
     mono(s, "TRY IT LIVE", { x: MX, y: 4.3, w: 3, h: 0.26, bold: true });
     T(s, team.url, { x: MX, y: 4.62, w: 7.2, h: 0.7, fontSize: 36, bold: true });
-    T(s, "Pick a site. Press Play. Answer three questions on Compare. Click any number to see its evidence.", { x: MX, y: 5.45, w: 7.0, h: 0.75, fontSize: 16, color: MUTED });
+    T(s, "Pick a site. Press Play. Answer three questions on Compare. Click any number to see its evidence.", { x: MX, y: 5.45, w: 7.0, h: 0.75, fontSize: 17.5, color: MUTED });
     s.addShape(SH.ROUNDED_RECTANGLE, { x: 8.0, y: 4.15, w: 1.55, h: 1.55, rectRadius: 0.06, fill: { color: "E6EAEF" }, line: { color: "E6EAEF", width: 0 } });
     s.addImage({ path: IMG("qr-live.png"), x: 8.1, y: 4.25, w: 1.35, h: 1.35, altText: `QR code that opens ${team.url}`, objectName: "qr" });
     addNotes(s, 10);
@@ -426,9 +426,9 @@ pres.addSection({ title: "Team and process" });
       s.addShape(SH.OVAL, { x: px, y: py, w: d, h: d, line: { color: CAUTION, width: 1.25, dashType: "dash" } });
       mono(s, "PHOTO", { x: px, y: py + d / 2 - 0.12, w: d, h: 0.24, align: "center", color: CAUTION, bold: true });
     }
-    T(s, m.name, { x: x + 2.3, y: y + 0.42, w: cw - 2.55, h: 0.85, fontSize: 22, bold: true });
+    T(s, m.name, { x: x + 2.3, y: y + 0.42, w: cw - 2.55, h: 0.85, fontSize: 23.5, bold: true });
     mono(s, m.role.toUpperCase(), { x: x + 2.3, y: y + 1.32, w: cw - 2.55, h: 0.5, color: isPH(m.role) ? CAUTION : MUTED, bold: true });
-    T(s, m.responsible_for.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, color: phColor(t), breakLine: k < m.responsible_for.length - 1, paraSpaceAfter: 6 } })), { x: x + 0.35, y: y + 2.4, w: cw - 0.7, h: 1.3, fontSize: 15 });
+    T(s, m.responsible_for.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, color: phColor(t), breakLine: k < m.responsible_for.length - 1, paraSpaceAfter: 6 } })), { x: x + 0.35, y: y + 2.4, w: cw - 0.7, h: 1.3, fontSize: 16.5 });
   });
   addNotes(s, 11);
 }
@@ -450,7 +450,7 @@ pres.addSection({ title: "Team and process" });
   log.forEach((l, i) => {
     const y = 1.95 + i * 0.72;
     mono(s, l[0], { x: MX, y: y + 0.03, w: 0.95, h: 0.26, color: MUTED, bold: true });
-    T(s, l[1], { x: 1.7, y, w: 4.75, h: 0.66, fontSize: 14 });
+    T(s, l[1], { x: 1.7, y, w: 4.75, h: 0.66, fontSize: 15.5 });
   });
   const slots = [[6.9, 1.5, 5.83, 2.5, "TEAM CLIP · WORKING SESSION"], [6.9, 4.15, 2.85, 1.45, "PHOTO"], [9.88, 4.15, 2.85, 1.45, "PHOTO"]];
   slots.forEach((sl, i) => {
@@ -479,12 +479,12 @@ pres.addSection({ title: "Close" });
     "Scales are our assumptions, not reviewed by lander engineers",
     "Site list is NASA’s 2022 set; NASA updated it to nine regions in Oct 2024 and has named no landing site",
   ];
-  T(s, lim.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < lim.length - 1, paraSpaceAfter: 6 } })), { x: MX + 0.3, y: 2.15, w: 5.55, h: 3.2, fontSize: 15 });
+  T(s, lim.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < lim.length - 1, paraSpaceAfter: 6 } })), { x: MX + 0.3, y: 2.15, w: 5.55, h: 3.2, fontSize: 16.5 });
   box(s, 6.95, 1.5, 5.78, 3.55, { name: "next-panel" });
   mono(s, "NEXT", { x: 7.25, y: 1.72, w: 4, h: 0.26, color: OK, bold: true });
   const nxt = ["Expert review of the weights and scales", "Update to NASA’s current candidate regions", "10 m and 5 m terrain for every site", "Solar-energy and thermal estimates"];
-  T(s, nxt.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < nxt.length - 1, paraSpaceAfter: 6 } })), { x: 7.25, y: 2.15, w: 5.2, h: 3.2, fontSize: 15 });
-  T(s, "Built to make a landing-site screening transparent: every number, source and assumption in view.", { x: MX, y: 5.35, w: 8.9, h: 0.9, fontSize: 19 });
+  T(s, nxt.map((t, k) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: k < nxt.length - 1, paraSpaceAfter: 6 } })), { x: 7.25, y: 2.15, w: 5.2, h: 3.2, fontSize: 16.5 });
+  T(s, "Built to make a landing-site screening transparent: every number, source and assumption in view.", { x: MX, y: 5.35, w: 8.9, h: 0.9, fontSize: 20.5 });
   addNotes(s, 13);
 }
 
@@ -496,13 +496,13 @@ pres.addSection({ title: "Close" });
   s.addImage({ path: IMG("hero-dim.jpg"), x: 0, y: 0, w: W, h: H, altText: "The Moon, dimmed", objectName: "end-bg" });
   s.addShape(SH.RECTANGLE, { x: 0, y: 0, w: W, h: H, fill: { color: BG, transparency: 45 }, line: { color: BG, width: 0 }, objectName: "end-dim" });
   s._title(); // after the background so it sits on top
-  T(s, "lunar south-pole site analysis", { x: 2.2, y: 2.85, w: 8.93, h: 0.4, fontFace: MONO, fontSize: 16, color: FGPRESS, align: "center", charSpacing: 2, objectName: "end-sub" });
+  T(s, "lunar south-pole site analysis", { x: 2.2, y: 2.85, w: 8.93, h: 0.4, fontFace: MONO, fontSize: 17.5, color: FGPRESS, align: "center", charSpacing: 2, objectName: "end-sub" });
   const names = team.members.map((m) => m.name).join(", ");
   T(s, [
     { text: `PROJECT BY  ${names}`, options: { breakLine: true } },
     { text: `${team.event}  /  ${team.url}`, options: { breakLine: true } },
     { text: "Independent project. Not endorsed by NASA.", options: { color: MUTED } },
-  ], { x: 1.7, y: 6.3, w: 9.9, h: 0.85, fontFace: MONO, fontSize: 12, color: FGPRESS, align: "center", charSpacing: 1, objectName: "end-credits" });
+  ], { x: 1.7, y: 6.3, w: 9.9, h: 0.85, fontFace: MONO, fontSize: 13, color: FGPRESS, align: "center", charSpacing: 1, objectName: "end-credits" });
   step(14, "auto", ["title-14"], 300, 1300);
   step(14, "auto", ["end-sub"], 350, 800);
   step(14, "auto", ["end-credits"], 350, 800);
@@ -528,20 +528,20 @@ pres.addSection({ title: "Appendix" });
   ];
   refs.forEach((r, i) => {
     const col = i % 2, row = Math.floor(i / 2), x = MX + col * 6.2, y = 1.5 + row * 1.2;
-    T(s, [{ text: r[0], options: { bold: true, fontSize: 13, breakLine: true } }, { text: r[1], options: { fontSize: 11, color: MUTED } }], { x, y, w: 5.9, h: 1.1 });
+    T(s, [{ text: r[0], options: { bold: true, fontSize: 14.5, breakLine: true } }, { text: r[1], options: { fontSize: 12, color: MUTED } }], { x, y, w: 5.9, h: 1.1 });
   });
-  T(s, "LUNARSEYE is an independent project. It is not endorsed by NASA, and no NASA logos are used. NASA data credit: NASA / JPL / GSFC / PDS / PGDA / NAIF / SVS.", { x: MX, y: 6.4, w: 11.5, h: 0.5, fontSize: 12, color: FGPRESS });
+  T(s, "LUNARSEYE is an independent project. It is not endorsed by NASA, and no NASA logos are used. NASA data credit: NASA / JPL / GSFC / PDS / PGDA / NAIF / SVS.", { x: MX, y: 6.4, w: 11.5, h: 0.5, fontSize: 13, color: FGPRESS });
   addNotes(s, 0);
 }
 {
   // A2 compare scales
   const s = slide("CONTENT", "Appendix", "Appendix: Compare weights and fixed scales");
   const parsed = results.reference_scales.map((t) => { const m = t.match(/^weight (.+?) = ([0-9.]+); scale: (.*)$/); return m ? [m[1], (parseFloat(m[2]) * 100).toFixed(1) + " %", m[3]] : null; }).filter(Boolean);
-  const head = (t) => ({ text: t, options: { bold: true, color: "8D97A6", fontFace: MONO, fontSize: 10.5, fill: { color: "10151C" } } });
+  const head = (t) => ({ text: t, options: { bold: true, color: "8D97A6", fontFace: MONO, fontSize: 11.5, fill: { color: "10151C" } } });
   const rows = [[head("MEASURE"), head("WEIGHT"), head("SCALE (SCORE 1 → 0)")]];
   parsed.forEach((p) => rows.push([{ text: p[0], options: { bold: true } }, { text: p[1], options: { fontFace: MONO } }, { text: p[2], options: { color: "C3CBD6" } }]));
-  s.addTable(rows, { x: MX, y: 1.5, w: 12.13, colW: [3.2, 1.3, 7.63], fontFace: SANS, fontSize: 12.5, color: "E6EAEF", border: { type: "solid", color: "1C232D", pt: 0.75 }, rowH: 0.42, valign: "middle", margin: [0.04, 0.1, 0.04, 0.1] });
-  T(s, "Weights shown for the default mission (all three needs “Important”). Priorities map to weights 0 / 1 / 2 / 4 for not needed / nice to have / important / critical, normalised to sum to 1. A site over a hard limit is excluded before any scoring. Every weight and scale is ASSUMED: it was chosen by looking at the 27 catalogue sites in 2027 and has not been reviewed against a real lander.", { x: MX, y: 5.5, w: 9.0, h: 1.3, fontSize: 12.5, color: MUTED });
+  s.addTable(rows, { x: MX, y: 1.5, w: 12.13, colW: [3.2, 1.3, 7.63], fontFace: SANS, fontSize: 13.5, color: "E6EAEF", border: { type: "solid", color: "1C232D", pt: 0.75 }, rowH: 0.42, valign: "middle", margin: [0.04, 0.1, 0.04, 0.1] });
+  T(s, "Weights shown for the default mission (all three needs “Important”). Priorities map to weights 0 / 1 / 2 / 4 for not needed / nice to have / important / critical, normalised to sum to 1. A site over a hard limit is excluded before any scoring. Every weight and scale is ASSUMED: it was chosen by looking at the 27 catalogue sites in 2027 and has not been reviewed against a real lander.", { x: MX, y: 5.5, w: 9.0, h: 1.3, fontSize: 13.5, color: MUTED });
   addNotes(s, 0);
 }
 {
@@ -551,10 +551,10 @@ pres.addSection({ title: "Appendix" });
   const nw = 2.2, ng = 0.28;
   nodes.forEach((n, i) => {
     const x = MX + i * (nw + ng);
-    s.addText([{ text: n[0], options: { fontFace: MONO, fontSize: 10.5, bold: true, color: "8D97A6", charSpacing: 1.5, breakLine: true } }, { text: n[1], options: { fontSize: 13, color: "E6EAEF" } }], { shape: SH.ROUNDED_RECTANGLE, rectRadius: 0.08, x, y: 2.3, w: nw, h: 1.7, fill: { color: PANEL }, line: { color: LINE2, width: 1 }, margin: [8, 11, 8, 11], valign: "middle" });
+    s.addText([{ text: n[0], options: { fontFace: MONO, fontSize: 11.5, bold: true, color: "8D97A6", charSpacing: 1.5, breakLine: true } }, { text: n[1], options: { fontSize: 14.5, color: "E6EAEF" } }], { shape: SH.ROUNDED_RECTANGLE, rectRadius: 0.08, x, y: 2.3, w: nw, h: 1.7, fill: { color: PANEL }, line: { color: LINE2, width: 1 }, margin: [8, 11, 8, 11], valign: "middle" });
     if (i < nodes.length - 1) s.addShape(SH.RIGHT_ARROW, { x: x + nw + 0.03, y: 2.98, w: ng - 0.06, h: 0.3, fill: { color: CTRL }, line: { color: CTRL, width: 0 } });
   });
-  T(s, "Rules the code follows: evidence on every number; a value that cannot be computed is null with a reason, never 0; thresholds, weights and scales are labelled assumptions; Sun and Earth numbers use the terrain horizon (the flat horizon is reported beside it).", { x: MX, y: 4.5, w: 9.0, h: 1.2, fontSize: 15, color: MUTED });
+  T(s, "Rules the code follows: evidence on every number; a value that cannot be computed is null with a reason, never 0; thresholds, weights and scales are labelled assumptions; Sun and Earth numbers use the terrain horizon (the flat horizon is reported beside it).", { x: MX, y: 4.5, w: 9.0, h: 1.2, fontSize: 16.5, color: MUTED });
   addNotes(s, 0);
 }
 {
@@ -563,7 +563,7 @@ pres.addSection({ title: "Appendix" });
   const qa = narr.qa.slice(0, 6);
   qa.forEach((q, i) => {
     const col = i % 2, row = Math.floor(i / 2), x = MX + col * 6.2, y = 1.45 + row * 1.75;
-    T(s, [{ text: q.q, options: { bold: true, fontSize: 13, breakLine: true } }, { text: q.a.length > 230 ? q.a.slice(0, q.a.lastIndexOf(" ", 230)) + " …" : q.a, options: { fontSize: 11, color: MUTED } }], { x, y, w: 5.9, h: 1.65 });
+    T(s, [{ text: q.q, options: { bold: true, fontSize: 14.5, breakLine: true } }, { text: q.a.length > 230 ? q.a.slice(0, q.a.lastIndexOf(" ", 230)) + " …" : q.a, options: { fontSize: 12, color: MUTED } }], { x, y, w: 5.9, h: 1.65 });
   });
   addNotes(s, 0);
 }

@@ -1,4 +1,4 @@
-# LUNARSEYE: presentation script (English, about 5:58)
+# LUNARSEYE: presentation script (English, about 6:01)
 
 Slides: `LUNARSEYE_deck.pptx` (PDF backup: `LUNARSEYE_deck.pdf`). The same words are in the speaker notes of every slide.
 
@@ -20,19 +20,19 @@ Slides: `LUNARSEYE_deck.pptx` (PDF backup: `LUNARSEYE_deck.pdf`). The same words
 | 8 | Compare: how it decides | Thammapat (A) | 56 | 0:28 |
 | 9 | Compare: three missions, three answers | Jinn (B) | 59 | 0:29 |
 | 10 | Live demo | A and B | 100 (demo) | 1:01 |
-| 11 | Team roles | Jinn (B) | 38 (incl. your words) | 0:19 |
+| 11 | Team roles | Jinn (B) | 43 (incl. your words) | 0:22 |
 | 12 | Process: photos and video | Thammapat (A) | 28 (incl. your words) | 0:14 |
 | 13 | Honest limits and what's next | Jinn (B) | 51 | 0:25 |
 | 14 | Thank you | A and B | 15 | 0:08 |
-| | **Total** | | **692** | **5:58** |
+| | **Total** | | **697** | **6:01** |
 
 Pace used: 125 words a minute plus 1 s per slide change. The demo is paced by its footage (1:00).
 
 | If you speak at | Total video |
 |---|---|
-| 110 wpm | 6:37 |
-| 125 wpm (planned) | 5:58 |
-| 140 wpm | 5:28 |
+| 110 wpm | 6:40 |
+| 125 wpm (planned) | 6:01 |
+| 140 wpm | 5:30 |
 
 Rules: 5 minutes is recommended, **7:00 is the hard maximum**. Aim to finish between 5:45 and 6:30. Do not slow down below about 100 words a minute: research on accented speech found that artificially slow speech is less comprehensible. If you run long, cut words, not speed (see the trim list).
 
@@ -157,12 +157,14 @@ Rules: 5 minutes is recommended, **7:00 is the hard maximum**. Aim to finish bet
 *ไทย (ไว้ซ้อม ไม่ต้องอ่านออกเสียง):* เดโม (ประมาณ 60 วินาที): ลูกโลก → Illumination → Terrain → Compare (ตอบคำถาม, ใส่ข้อจำกัดความชัน, ได้ไซต์แนะนำ) → Data
 
 ### Slide 11. Team roles  
-*Jinn (B) · about 0:19 · 38 words*
+*Jinn (B) · about 0:22 · 43 words*
 
-- **Cue:** Fill the roles in config/team.json before recording; say in your own words who did what.
+- **Cue:** Roles are on the slide. Add one sentence in your own words about how you worked together.
 
 > We are a team of two.
-> [MEMBER A: ROLE AND WHAT THEY BUILT.] [MEMBER B: ROLE AND WHAT THEY BUILT.] [ONE SENTENCE ON HOW YOU DECIDED AND CHECKED TOGETHER.]
+> Thammapat handled research refinement, frontend development and the direction of the project.
+> Jinn handled the backend, management, the algorithm and the research data.
+> [ONE SENTENCE ON HOW YOU DECIDED AND CHECKED TOGETHER.]
 
 *ไทย (ไว้ซ้อม ไม่ต้องอ่านออกเสียง):* แนะนำสมาชิกและหน้าที่ของแต่ละคน (กรอกใน config/team.json และพูดด้วยคำของตัวเอง)
 

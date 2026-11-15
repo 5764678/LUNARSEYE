@@ -15,12 +15,12 @@ Slides, script and video guide for the 5–7 minute English presentation video (
 | `config/team.json` | Team name, challenge title, members, roles, photos, optional demo video. **Fill it in.** |
 | `data/results.json` | The real numbers on slides 2 and 9, fetched from the live Compare API (2027, hourly). |
 | `assets/live`, `assets/derived` | Real screenshots of https://lunarseye.onrender.com (nothing mocked) and crops made from them. |
-| `fonts/` | IBM Plex Sans/Mono (OFL) from the app. Install them before opening the .pptx; otherwise PowerPoint substitutes another font. Google Slides already has IBM Plex. |
+| `fonts/` | IBM Plex (the app's font). **Not used by the deck any more**: the deck uses Calibri, which is on every PowerPoint and Google Slides install. |
 | `build/` | Everything that regenerates the above (capture, crops, deck, script). |
 
 ## Before you record: fill in (orange on the slides)
 
-1. `config/team.json`: `team_name`, `challenge_title` (likely "Lunar Landing Site Navigator": **check the exact title on your team page**), each member's `role` and `responsible_for`, optional `photo` paths and `process_photos` (up to 3). The member names were read from the end card of your demo video: **check the spelling**.
+1. `config/team.json`: `team_name`, `challenge_title` (likely "Lunar Landing Site Navigator": **check the exact title on your team page**), optional `photo` paths and `process_photos` (up to 3). The member names were read from the end card of your demo video: **check the spelling**.
 2. `script/narration.js`: the `[TEAM NAME]`, roles and process sentences (slides 1, 11, 12).
 3. Rebuild (from this folder):
    ```bash
@@ -37,7 +37,7 @@ Slides, script and video guide for the 5–7 minute English presentation video (
 | 2. Tools and technologies | Slide 5 (stack, tests, **AI-assistance disclosure**) |
 | 3. Application of data and tools to the challenge, practical benefit | Slides 2, 6, 7, 8, 9: the method, evidence tags, validation, and **Compare** (mission questions → one recommended site) with real results for three missions |
 | 4. Live demo | Slide 10 (demo run order, live URL + QR); script demo beats; `EDITING_GUIDE.md` §5 |
-| 5. Team roles and responsibilities | Slide 11 (fill in `config/team.json`) |
+| 5. Team roles and responsibilities | Slide 11 (Thammapat: research refinement, frontend development, direction. Jinn: backend, management, algorithm, research data) |
 | 6. Photos and videos of the work | Slide 12 (build log from real git history + three slots for your own photos/clip) |
 | English | Script, slides, captions text |
 | 5 min recommended, 7 min maximum | Script plan 5:58 (6:37 at 110 wpm, 5:28 at 140 wpm); `compose.sh check` warns above 7:00 |

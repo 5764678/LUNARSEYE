@@ -9,18 +9,31 @@
   "members": [
     {
       "name": "Thammapat Deesaysamongkol",
-      "role": "[ROLE]",
-      "responsible_for": ["[What this person built or decided]", "[Another responsibility]"],
+      "role": "Frontend and direction",
+      "responsible_for": [
+        "Research refinement",
+        "Frontend development",
+        "Project direction"
+      ],
       "photo": ""
     },
     {
       "name": "Jinn Sawasdivorn",
-      "role": "[ROLE]",
-      "responsible_for": ["[What this person built or decided]", "[Another responsibility]"],
+      "role": "Backend and algorithm",
+      "responsible_for": [
+        "Backend",
+        "Management",
+        "Algorithm",
+        "Research data"
+      ],
       "photo": ""
     }
   ],
-  "process_photos": ["", "", ""],
+  "process_photos": [
+    "",
+    "",
+    ""
+  ],
   "_process_photos_help": "Up to 3 image paths (relative to submission/), for example assets/team/working-1.jpg. Empty slots show a labelled placeholder.",
   "demo_video": "",
   "_demo_video_help": "Optional path to your demo video (mp4), for example assets/demo/lunarseye-demo.mp4. If set, slide 10 becomes the full-screen video."
