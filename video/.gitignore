@@ -1,0 +1,11 @@
+node_modules/
+out/
+public/seq/
+*.log
+
+# Leftovers of an earlier capture pass (1920 px window, superseded by cmp-* / dat-*); unused.
+public/textures/compare-*
+public/textures/data-*
+src/layout/compare-*
+src/layout/data-*
+src/layout/open*.json

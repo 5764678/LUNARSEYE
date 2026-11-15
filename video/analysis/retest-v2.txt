@@ -1,0 +1,36 @@
+== cut retest (with-music render v2) ==
+kick grid in the render: t = 0.0870 + n x 0.48389 s
+  pullBack   frame  103  nearest beat   7  error -1.23 f
+  illum      frame  220  nearest beat  15  error -0.36 f
+  terrain    frame  321  nearest beat  22  error -0.98 f
+  compare    frame  423  nearest beat  29  error -0.59 f
+  answer     frame  481  nearest beat  33  error -0.66 f
+  data       frame  684  nearest beat  47  error -0.89 f
+  outro      frame  771  nearest beat  53  error -1.00 f
+  wordmark   frame  829  nearest beat  57  error -1.06 f
+worst 1.23 f (pass <= 3, ideal <= 1.5)
+
+== effect landing vs Sequence start (v2; the cue table starts each file 1.28 f early to cancel this) ==
+lock-quick.mp3             designed  294.0f  landed +1.28f (+42.7 ms)
+switch-click-quick.mp3     designed  444.0f  landed +1.28f (+42.7 ms)
+switch-tap.mp3             designed  460.0f  landed +1.27f (+42.3 ms)
+mean +42.6 ms = +1.28f, spread 0.3 ms
+
+== same probes, no-music render ==
+lock-quick.mp3             designed  294.0f  landed +1.28f (+42.7 ms)
+switch-click-quick.mp3     designed  444.0f  landed +1.28f (+42.7 ms)
+switch-tap.mp3             designed  460.0f  landed +1.27f (+42.3 ms)
+mean +42.6 ms = +1.28f, spread 0.3 ms
+
+== levels ==
+out/v2.mp4
+mean_volume: -21.6 dB
+max_volume: -4.4 dB
+29.845333
+out/v2-nobgm.mp4
+mean_volume: -28.6 dB
+max_volume: -6.0 dB
+29.845333
+
+== picture identical between the two renders? (PSNR, inf = identical) ==
+average:50.430859
