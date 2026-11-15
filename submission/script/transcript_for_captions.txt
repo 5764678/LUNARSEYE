@@ -1,0 +1,61 @@
+Where should we land at the Moon's south pole?
+Three things decide it: how long the Sun shines, whether Earth is in view, and how smooth the ground is.
+We are , and this is LUNARSEYE.
+Look at two candidate sites in 2027.
+Peak near Shackleton has direct sunlight 88 percent of the year; Malapert massif, only 46.
+Earth is in view 61 percent of the time, against 51.
+But Malapert has the smoother ground.
+Sites trade off, so the best site depends on the mission.
+LUNARSEYE brings these answers together.
+It covers 27 cited candidate sites on five pages: Overview, Illumination, Terrain, Compare and Data.
+Every number carries a tag that says what kind of evidence it is, and opens its source.
+We use seven NASA data sources.
+LOLA terrain from the Lunar Reconnaissance Orbiter: 240 metres for the horizon, 20 metres for slope.
+SPICE and DE440 from NASA NAIF give the Sun and Earth direction every hour.
+PGDA tiles and NASA's candidate regions give the 27 sites.
+The Moon picture is visual only.
+JPL Horizons and published LOLA maps are how we check ourselves.
+Every file is pinned by its SHA-256 hash.
+The science is Python: NumPy, SciPy, SpiceyPy and rasterio.
+FastAPI and PostgreSQL serve it, and the interface is Next.js with three.js.
+We wrote automated tests with pytest and Vitest.
+We also used an AI coding assistant, Claude Code, and we say so openly.
+Every result is checked against NASA references.
+For each site we build the terrain skyline from LOLA: 1,440 directions, out to 200 kilometres.
+SPICE gives the Sun and Earth positions every hour of 2027.
+If a body is above the skyline, it counts.
+That gives time in sunlight, longest darkness, and Earth line of sight: geometry only, not a radio link.
+Every value is tagged: observation, derived, model, calculation, assumed or placeholder.
+Click one and you see the source, the method, the limits and the file hash.
+We check our geometry against JPL Horizons, our sunlight against published LOLA maps, and our code with hundreds of automated tests.
+Now our key feature: Compare.
+First, you say what the mission needs, and any hard limits.
+Second, a site that breaks a limit is ruled out, with the reason, never just scored lower.
+Third, you get one recommended site, with its reasons and what it gives up.
+The scales behind the score are shown as assumptions.
+Same three sites, three missions.
+Balanced: Peak near Shackleton wins, 71 to 58, and the pick holds under every one-step change.
+If only landing safety matters, Malapert massif wins, narrowly: 70.5 to 69.2.
+Set a five-degree slope limit, and the other two are excluded, with their slopes shown.
+Same data, different mission, different answer, and the tool shows why.
+On the globe, 27 cited sites sit under the real SPICE Sun.
+We pick Peak near Shackleton.
+Hour by hour: gold is sunlight, blue is Earth.
+The sky chart shows the terrain skyline.
+Where the Sun is below it, terrain blocks the light.
+Terrain uses the 20-metre LOLA model for slope and roughness.
+You enter your own thresholds.
+We ship no default safe value.
+On Compare, we answer three questions, add a slope limit, and one site comes back with its reasons.
+Two sites are excluded, and the page says why.
+And Data lists every NASA file with its checksum.
+We are a team of two.
+Our public commit history tells the story: first the end-to-end path, then Illumination, Terrain, Compare, a live deployment, and a full interface audit, with tests at every step.
+LUNARSEYE is decision support, not a mission decision.
+Coordinates are tile centres, not landing points.
+Earth visibility is geometry, not a radio link.
+Our scales are assumptions that lander engineers should review, and our site list is NASA's 2022 one.
+Next: expert-reviewed scales, the current regions, finer terrain, and solar-energy estimates.
+Thank you.
+LUNARSEYE: lunar south-pole site analysis.
+Try it at lunarseye dot onrender dot com.

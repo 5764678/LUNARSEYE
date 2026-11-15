@@ -1,0 +1,27 @@
+{
+  "_help": "Fill in every value that still starts with '[' and rebuild: node build/build_deck.js && python3 build/postprocess.py. Names below were read from the end card of your demo video: please check the spelling.",
+  "project": "LUNARSEYE",
+  "tagline": "lunar south-pole site analysis",
+  "event": "NASA Space Apps Challenge 2026",
+  "challenge_title": "[CHALLENGE TITLE]",
+  "team_name": "[TEAM NAME]",
+  "url": "lunarseye.onrender.com",
+  "members": [
+    {
+      "name": "Thammapat Deesaysamongkol",
+      "role": "[ROLE]",
+      "responsible_for": ["[What this person built or decided]", "[Another responsibility]"],
+      "photo": ""
+    },
+    {
+      "name": "Jinn Sawasdivorn",
+      "role": "[ROLE]",
+      "responsible_for": ["[What this person built or decided]", "[Another responsibility]"],
+      "photo": ""
+    }
+  ],
+  "process_photos": ["", "", ""],
+  "_process_photos_help": "Up to 3 image paths (relative to submission/), for example assets/team/working-1.jpg. Empty slots show a labelled placeholder.",
+  "demo_video": "",
+  "_demo_video_help": "Optional path to your demo video (mp4), for example assets/demo/lunarseye-demo.mp4. If set, slide 10 becomes the full-screen video."
+}

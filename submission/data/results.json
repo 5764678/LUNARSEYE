@@ -1,0 +1,168 @@
+{
+ "source": "https://lunarseye.onrender.com/api/v1/compare (live Render deployment), fetched 2026-11-15",
+ "window": {
+  "start_utc": "2027-01-01T00:00:00Z",
+  "end_utc": "2028-01-01T00:00:00Z",
+  "step_hours": 1.0,
+  "samples": 8761
+ },
+ "footprint_radius_m": 50.0,
+ "observer_height_m": 2,
+ "sites": {
+  "Connecting ridge": {
+   "latitude_deg": -89.4632,
+   "longitude_deg": 222.51,
+   "sunlit_pct": 73.5,
+   "mean_visible_sun_disc_pct": 68.5,
+   "longest_darkness_days": 19.7,
+   "longest_sunlit_days": 154.5,
+   "earth_visible_pct": 54.2,
+   "longest_earth_outage_days": 12.7,
+   "slope_at_site_deg": 5.5,
+   "slope_p95_deg": 7.3,
+   "roughness_rms_m": 0.45,
+   "surface_height_m": 1942
+  },
+  "Malapert massif": {
+   "latitude_deg": -85.9948,
+   "longitude_deg": 359.764,
+   "sunlit_pct": 46.4,
+   "mean_visible_sun_disc_pct": 41.4,
+   "longest_darkness_days": 27.5,
+   "longest_sunlit_days": 12.0,
+   "earth_visible_pct": 50.7,
+   "longest_earth_outage_days": 13.6,
+   "slope_at_site_deg": 4.6,
+   "slope_p95_deg": 5.5,
+   "roughness_rms_m": 0.38,
+   "surface_height_m": 4786
+  },
+  "Peak near Shackleton": {
+   "latitude_deg": -88.811,
+   "longitude_deg": 123.69,
+   "sunlit_pct": 88.3,
+   "mean_visible_sun_disc_pct": 84.1,
+   "longest_darkness_days": 5.7,
+   "longest_sunlit_days": 130.2,
+   "earth_visible_pct": 60.6,
+   "longest_earth_outage_days": 11.2,
+   "slope_at_site_deg": 3.7,
+   "slope_p95_deg": 4.9,
+   "roughness_rms_m": 0.52,
+   "surface_height_m": 1639
+  }
+ },
+ "scenarios": {
+  "default": {
+   "pick": "Peak near Shackleton",
+   "confidence": "clear",
+   "headline": "Peak near Shackleton is the best fit for this mission: 71.3/100 against 58.2/100 for Connecting ridge (a clear lead).",
+   "ranking": [
+    {
+     "name": "Peak near Shackleton",
+     "status": "recommended",
+     "score_100": 71.3,
+     "reasons": []
+    },
+    {
+     "name": "Connecting ridge",
+     "status": "ranked",
+     "score_100": 58.2,
+     "reasons": []
+    },
+    {
+     "name": "Malapert massif",
+     "status": "ranked",
+     "score_100": 50.4,
+     "reasons": []
+    }
+   ],
+   "robustness": "Stable: the pick stays the same under all 6 one-step changes to the priorities.",
+   "reasons": [
+    "Sunlight and power (important, 33 % of the score): 83.6/100, the best of the 3 ranked sites; sunlit 88.3 % of the time, mean visible disc 84.1 %, longest darkness 5.7 d.",
+    "Direct-to-Earth comms (important, 33 % of the score): 61.2/100, the best of the 3 ranked sites; Earth in view 60.6 % of the time, longest outage 11.2 d."
+   ],
+   "tradeoffs": [
+    "Landing safety (important, 33 % of the score): 69.2/100, behind Malapert massif (70.5/100); slope 3.7\u00b0 at the site and 4.9\u00b0 at the footprint's 95th percentile, roughness 0.52 m."
+   ]
+  },
+  "landing_only": {
+   "pick": "Malapert massif",
+   "confidence": "narrow",
+   "headline": "Malapert massif is the best fit for this mission: 70.5/100 against 69.2/100 for Peak near Shackleton (a narrow lead, so treat the two as close).",
+   "ranking": [
+    {
+     "name": "Malapert massif",
+     "status": "recommended",
+     "score_100": 70.5,
+     "reasons": []
+    },
+    {
+     "name": "Peak near Shackleton",
+     "status": "ranked",
+     "score_100": 69.2,
+     "reasons": []
+    },
+    {
+     "name": "Connecting ridge",
+     "status": "ranked",
+     "score_100": 63.8,
+     "reasons": []
+    }
+   ],
+   "robustness": "The pick holds under 1 of 3 one-step changes to the priorities. It changes when: Sunlight and power set to nice to have favours Peak near Shackleton; Direct-to-Earth comms set to nice to have favours Peak near Shackleton.",
+   "reasons": [
+    "Landing safety (critical, 100 % of the score): 70.5/100, the best of the 3 ranked sites; slope 4.6\u00b0 at the site and 5.5\u00b0 at the footprint's 95th percentile, roughness 0.38 m."
+   ],
+   "tradeoffs": []
+  },
+  "slope_5deg": {
+   "pick": "Peak near Shackleton",
+   "confidence": "only_option",
+   "headline": "Peak near Shackleton is the only compared site that meets the mission limits (71.3/100).",
+   "ranking": [
+    {
+     "name": "Peak near Shackleton",
+     "status": "recommended",
+     "score_100": 71.3,
+     "reasons": []
+    },
+    {
+     "name": "Malapert massif",
+     "status": "excluded",
+     "score_100": null,
+     "reasons": [
+      "footprint slope (p95) 5.5\u00b0 is over the 5\u00b0 limit"
+     ]
+    },
+    {
+     "name": "Connecting ridge",
+     "status": "excluded",
+     "score_100": null,
+     "reasons": [
+      "slope at the site 5.5\u00b0 is over the 5\u00b0 limit",
+      "footprint slope (p95) 7.3\u00b0 is over the 5\u00b0 limit"
+     ]
+    }
+   ],
+   "robustness": null,
+   "reasons": [
+    "Sunlight and power (important, 33 % of the score): 83.6/100; sunlit 88.3 % of the time, mean visible disc 84.1 %, longest darkness 5.7 d.",
+    "Direct-to-Earth comms (important, 33 % of the score): 61.2/100; Earth in view 60.6 % of the time, longest outage 11.2 d.",
+    "Landing safety (important, 33 % of the score): 69.2/100; slope 3.7\u00b0 at the site and 4.9\u00b0 at the footprint's 95th percentile, roughness 0.52 m."
+   ],
+   "tradeoffs": []
+  }
+ },
+ "compare_method": "1. Sites that break a mission limit are excluded (a null value cannot be checked and is excluded too). 2. Each scored measure maps linearly to 0..1 on a fixed reference scale, clamped at both ends. 3. A need's score is the weighted mean of its measures; the mission score is the weighted mean of the needs, with weights from the priorities (not needed 0, nice to have 1, important 2, critical 4, normalised to sum to 1). 4. The highest score is recommended; the lead over the runner-up is called clear from 5 points of 100, moderate from 2, else narrow. 5. The pick is recomputed with each priority moved one step down and one step up.",
+ "reference_scales": [
+  "weight Sun: mean visible disk = 0.133; scale: The fraction itself.",
+  "weight Sun: illuminated = 0.067; scale: The fraction itself.",
+  "weight Sun: longest darkness = 0.133; scale: No darkness scores 1; one synodic month (29.53 d) or longer in the dark scores 0.",
+  "weight Earth: visible = 0.200; scale: The fraction itself.",
+  "weight Earth: longest outage = 0.133; scale: No outage scores 1; one synodic month (29.53 d) or longer without Earth scores 0.",
+  "weight Slope at site = 0.100; scale: 0\u00b0 scores 1; 20\u00b0 or steeper scores 0 (assumed beyond any lander's tolerance).",
+  "weight Slope p95 (footprint) = 0.133; scale: 0\u00b0 scores 1; 20\u00b0 or steeper scores 0 (assumed beyond any lander's tolerance).",
+  "weight Roughness = 0.100; scale: 0 m scores 1; 1 m RMS or rougher scores 0. Holds for the default footprint only."
+ ]
+}
