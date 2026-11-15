@@ -454,29 +454,21 @@ pres.addSection({ title: "Team and process" });
 // 12  PROCESS
 // =====================================================================================
 {
-  const s = slide("CONTENT", "Team and process", "How we built it");
-  mono(s, "BUILD LOG · PUBLIC GIT HISTORY", { x: MX, y: 1.5, w: 5.8, h: 0.26, bold: true });
+  const s = slide("CONTENT", "Team and process", "How we built it: the public git history");
   const log = [
-    ["14 NOV", "Phase 1: one end-to-end path, from a cited site to an evidence-backed timeline"],
-    ["14 NOV", "Illumination page: sky chart, terrain-vs-flat tables, window lists"],
-    ["14 NOV", "Terrain page: south pole lit by the SPICE Sun; 20 m slope and roughness"],
-    ["14 NOV", "Compare: mission questions and one recommended site"],
-    ["14 NOV", "Live deployment, database on Neon, Data page"],
-    ["14 NOV", "Interface audit: one palette, accessible states, phone layout"],
+    ["14 NOV", "Phase 1", "One end-to-end path, from a cited site to an evidence-backed timeline"],
+    ["14 NOV", "Illumination page", "Sky chart, terrain-vs-flat tables, sunlight and Earth windows"],
+    ["14 NOV", "Terrain page", "South pole lit by the SPICE Sun; 20 m slope and roughness"],
+    ["14 NOV", "Compare", "Mission questions and one recommended site, with reasons"],
+    ["14 NOV", "Live deployment", "Hosted online, database on Neon, Data page added"],
+    ["14 NOV", "Interface audit", "One palette, accessible states, phone layout"],
   ];
   log.forEach((l, i) => {
-    const y = 1.95 + i * 0.72;
-    mono(s, l[0], { x: MX, y: y + 0.03, w: 0.95, h: 0.26, color: MUTED, bold: true });
-    T(s, l[1], { x: 1.7, y, w: 4.85, h: 0.68, fontSize: 16.5 });
-  });
-  const slots = [[6.9, 1.5, 5.83, 2.5, "TEAM CLIP · WORKING SESSION"], [6.9, 4.15, 2.85, 1.45, "PHOTO"], [9.88, 4.15, 2.85, 1.45, "PHOTO"]];
-  slots.forEach((sl, i) => {
-    const p = team.process_photos && team.process_photos[i] ? path.join(ROOT, team.process_photos[i]) : "";
-    if (p && fs.existsSync(p)) { s.addImage({ path: p, x: sl[0], y: sl[1], w: sl[2], h: sl[3], sizing: { type: "cover", w: sl[2], h: sl[3] }, altText: "Team at work" }); frame(s, sl[0], sl[1], sl[2], sl[3]); }
-    else {
-      box(s, sl[0], sl[1], sl[2], sl[3], { line: CAUTION, dashed: true, fill: null });
-      mono(s, sl[4], { x: sl[0], y: sl[1] + sl[3] / 2 - 0.12, w: sl[2], h: 0.24, align: "center", color: CAUTION, bold: true });
-    }
+    const col = i % 3, row = Math.floor(i / 3), x = MX + col * 4.1, y = 1.55 + row * 2.05;
+    box(s, x, y, 3.95, 1.85, { name: `log-${i}` });
+    mono(s, l[0], { x: x + 0.28, y: y + 0.22, w: 2, h: 0.26, color: MUTED });
+    T(s, l[1], { x: x + 0.28, y: y + 0.55, w: 3.4, h: 0.4, fontSize: 21, bold: true });
+    T(s, l[2], { x: x + 0.28, y: y + 0.98, w: 3.4, h: 0.8, fontSize: 15.5, color: MUTED });
   });
   addNotes(s, 12);
 }

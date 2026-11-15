@@ -21,7 +21,7 @@ Slides: `LUNARSEYE_deck.pptx` (PDF backup: `LUNARSEYE_deck.pdf`). The same words
 | 9 | Compare: three missions, three answers | Jinn (B) | 59 | 0:29 |
 | 10 | Live demo | A and B | 100 (demo) | 1:01 |
 | 11 | Team roles | Jinn (B) | 43 (incl. your words) | 0:22 |
-| 12 | Process: photos and video | Thammapat (A) | 28 (incl. your words) | 0:14 |
+| 12 | Process: photos and video | Thammapat (A) | 28 | 0:14 |
 | 13 | Honest limits and what's next | Jinn (B) | 51 | 0:25 |
 | 14 | Thank you | A and B | 15 | 0:08 |
 | | **Total** | | **697** | **6:01** |
@@ -171,10 +171,7 @@ Rules: 5 minutes is recommended, **7:00 is the hard maximum**. Aim to finish bet
 ### Slide 12. Process: photos and video  
 *Thammapat (A) · about 0:14 · 28 words*
 
-- **Cue:** Show your own photos or a short clip of the team at work in the slots on this slide.
-
 > Our public commit history tells the story: first the end-to-end path, then Illumination, Terrain, Compare, a live deployment, and a full interface audit, with tests at every step.
-> [ADD ONE PERSONAL SENTENCE ABOUT HOW YOU WORKED.]
 
 *ไทย (ไว้ซ้อม ไม่ต้องอ่านออกเสียง):* ประวัติ commit บอกเรื่องราวการพัฒนา: เส้นทางหลัก → Illumination → Terrain → Compare → deploy → ปรับ UI พร้อมแสดงภาพ/คลิปทีม
 

@@ -20,7 +20,7 @@ Slides, script and video guide for the 5–7 minute English presentation video (
 
 ## Before you record: fill in (orange on the slides)
 
-1. `config/team.json`: `team_name`, `challenge_title` (likely "Lunar Landing Site Navigator": **check the exact title on your team page**), optional `photo` paths and `process_photos` (up to 3). The member names were read from the end card of your demo video: **check the spelling**.
+1. `config/team.json`: `team_name`, `challenge_title` (likely "Lunar Landing Site Navigator": **check the exact title on your team page**), The member names were read from the end card of your demo video: **check the spelling**.
 2. `script/narration.js`: the `[TEAM NAME]`, roles and process sentences (slides 1, 11, 12).
 3. Rebuild (from this folder):
    ```bash
@@ -38,7 +38,7 @@ Slides, script and video guide for the 5–7 minute English presentation video (
 | 3. Application of data and tools to the challenge, practical benefit | Slides 2, 6, 7, 8, 9: the method, evidence tags, validation, and **Compare** (mission questions → one recommended site) with real results for three missions |
 | 4. Live demo | Slide 10 (demo run order, live URL + QR); script demo beats; `EDITING_GUIDE.md` §5 |
 | 5. Team roles and responsibilities | Slide 11 (Thammapat: research refinement, frontend development, direction. Jinn: backend, management, algorithm, research data) |
-| 6. Photos and videos of the work | Slide 12 (build log from real git history + three slots for your own photos/clip) |
+| 6. Photos and videos of the work | Slide 11 (member photos) and slide 12 (build log from real git history). Slide 12 has no photo slots now; add a short clip of the team at work if you want more process evidence |
 | English | Script, slides, captions text |
 | 5 min recommended, 7 min maximum | Script plan 5:58 (6:37 at 110 wpm, 5:28 at 140 wpm); `compose.sh check` warns above 7:00 |
 | Faces of all members visible | Face corner kept clear on every slide (`EDITING_GUIDE.md` §2); `compose.sh pip` / `side` |

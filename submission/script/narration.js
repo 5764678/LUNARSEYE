@@ -88,9 +88,8 @@ module.exports = {
     },
     {
       n: 12, id: "process", title: "Process: photos and video", who: "A",
-      cues: ["Show your own photos or a short clip of the team at work in the slots on this slide."],
-      text: "Our public commit history tells the story: first the end-to-end path, then Illumination, Terrain, Compare, a live deployment, and a full interface audit, with tests at every step. [ADD ONE PERSONAL SENTENCE ABOUT HOW YOU WORKED.]",
-      fillIn: true,
+      cues: [],
+      text: "Our public commit history tells the story: first the end-to-end path, then Illumination, Terrain, Compare, a live deployment, and a full interface audit, with tests at every step.",
       thai: "ประวัติ commit บอกเรื่องราวการพัฒนา: เส้นทางหลัก → Illumination → Terrain → Compare → deploy → ปรับ UI พร้อมแสดงภาพ/คลิปทีม",
     },
     {

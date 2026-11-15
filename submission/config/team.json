@@ -15,7 +15,7 @@
         "Frontend development",
         "Project direction"
       ],
-      "photo": ""
+      "photo": "assets/team/thammapat.jpg"
     },
     {
       "name": "Jinn Sawasdivorn",
@@ -26,15 +26,9 @@
         "Algorithm",
         "Research data"
       ],
-      "photo": ""
+      "photo": "assets/team/jinn.jpg"
     }
   ],
-  "process_photos": [
-    "",
-    "",
-    ""
-  ],
-  "_process_photos_help": "Up to 3 image paths (relative to submission/), for example assets/team/working-1.jpg. Empty slots show a labelled placeholder.",
   "demo_video": "",
   "_demo_video_help": "Optional path to your demo video (mp4), for example assets/demo/lunarseye-demo.mp4. If set, slide 10 becomes the full-screen video."
 }
