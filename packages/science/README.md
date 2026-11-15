@@ -2,7 +2,7 @@
 
 The scientific core of LUNAREYES. Pure, deterministic, unit-explicit code.
 
-**Rules for this package** (see `docs/ARCHITECTURE.md`):
+**Rules for this package** (originally set out in `docs/ARCHITECTURE.md`, which is not in this repository):
 
 - No web framework imports, no network access, no implicit file I/O. Data loading
   lives in `lunareyes-data`; HTTP lives in `lunareyes-api`.
@@ -12,7 +12,7 @@ The scientific core of LUNAREYES. Pure, deterministic, unit-explicit code.
   observation, a derived product, a model output, a calculation, an assumption,
   or a placeholder.
 
-## Contents (Milestone 01)
+## Contents
 
 | Module | Status | Purpose |
 | --- | --- | --- |
@@ -21,13 +21,17 @@ The scientific core of LUNAREYES. Pure, deterministic, unit-explicit code.
 | `coordinates` | implemented | Selenographic coordinate validation, normalization, spherical ↔ Cartesian |
 | `provenance` | implemented | Evidence / source-reference model |
 | `runtime` | implemented | Scientific toolchain version report (reproducibility) |
-| `horizon_mask` | implemented (T-10) | `HorizonMask` type, contract C1 (computation: T-15) |
-| `terrain` | in progress (M02) | `polar_stereographic` implemented (T-10); elevation, slope, roughness from LOLA DEMs planned |
-| `geometry` | planned (M03) | Sun/Earth positions and local az/el via SPICE |
-| `illumination` | planned (M04) | Geometric and terrain-aware illumination |
-| `visibility` | planned (M04) | Geometric and terrain-aware Earth line of sight |
-| `energy` | planned (future) | Solar energy estimation |
-| `scoring` | planned (M05) | Constraints, scoring and site comparison |
+| `horizon_mask` | implemented | `HorizonMask` type (contract C1) |
+| `terrain` | implemented | Polar stereographic projection, DEM grids, terrain horizon, slope and roughness analysis, south-pole scene heightmap |
+| `geometry` | implemented | Sun/Earth positions and local az/el via SPICE, validated against JPL Horizons |
+| `illumination` | implemented | Visible disc fraction, illumination timelines and windows, terrain-aware and flat-horizon |
+| `visibility` | implemented | Geometric Earth line of sight (not a radio link) |
+| `energy` | planned | Solar energy estimation |
+| `scoring` | planned | Constraints, scoring and site comparison |
 
 Planned modules contain only a docstring describing their responsibility. They
 intentionally expose no functions until they are implemented and validated.
+
+This package is frozen: it is unchanged from the prototype at `8edfb32`. Its docstrings
+cite `docs/` files (`SCIENCE.md`, `DECISIONS.md`, `ARCHITECTURE.md`, `TASKS.md`) that are
+not in this repository.

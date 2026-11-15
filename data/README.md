@@ -8,9 +8,10 @@ time, tool version).
 | Directory | Contents | Committed? |
 | --- | --- | --- |
 | `raw/<dataset-id>/` | Source products exactly as distributed (e.g. LOLA GDR `.LBL` + `.IMG`) | no |
-| `processed/<dataset-id>/` | LUNAREYES-derived artefacts (Milestone 02+), each with its own provenance | no |
+| `processed/<dataset-id>/` | LUNAREYES-derived artefacts (horizon masks, globe texture, cached PGDA windows), each with its own provenance | no |
 | `kernels/<dataset-id>/` | NAIF SPICE kernels | no |
-| `state/` | Application state: the SQLite development database | no |
+| `state/` | Reserved for local application state; currently unused (the API uses Postgres) | no |
 | `fixtures/` | Small, documented test fixtures and validation references | **yes** |
 
-See `docs/DATA_SOURCES.md` for every dataset, its source, citation and verification status.
+Each dataset's source, citation, size and checksums are in its manifest under
+`packages/data/src/lunareyes_data/manifests/`.
