@@ -45,7 +45,7 @@ Rules: 5 minutes is recommended, **7:00 is the hard maximum**. Aim to finish bet
 
 > Where should we land at the Moon's south pole?
 > Three things decide it: how long the Sun shines, whether Earth is in view, and how smooth the ground is.
-> We are [TEAM NAME], and this is LUNARSEYE.
+> We are LUNATHEGOAT, and this is LUNARSEYE.
 
 *ไทย (ไว้ซ้อม ไม่ต้องอ่านออกเสียง):* เปิดด้วยคำถามว่าควรลงจอดที่ขั้วใต้ดวงจันทร์ตรงไหน ปัจจัยหลักสามอย่างคือแสงอาทิตย์ แนวมองเห็นโลก และความเรียบของพื้นผิว
 

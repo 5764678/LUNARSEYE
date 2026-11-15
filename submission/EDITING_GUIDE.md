@@ -96,7 +96,7 @@ Open the check output: the duration must be **under 7:00**. If it is over, use t
 ```
 ลิงก์คลิปวิดีโอนำเสนอผลงาน / Video link: <paste the public link>
 ชื่อโครงงาน / Project title: LUNARSEYE — lunar south-pole site analysis
-ชื่อทีม / Team name: [TEAM NAME]
+ชื่อทีม / Team name: LUNATHEGOAT
 สมาชิก / Team members: Thammapat Deeswasmongkol, Jinn Sawasdivorn
 ```
 Check the spelling of every name exactly as the organiser registered it. Keep a copy of the video file in two places.

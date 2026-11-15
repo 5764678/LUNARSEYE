@@ -143,7 +143,7 @@ pres.addSection({ title: "Hook" });
   sub(x1, w1, [{ text: "SUNLIGHT", options: { color: SUN } }], "hook-sun");
   sub(x2, w2, [{ text: "·  ", options: { color: MUTED } }, { text: "EARTH LINE OF SIGHT", options: { color: EARTH } }], "hook-earth");
   sub(x3, w3, [{ text: "·  ", options: { color: MUTED } }, { text: "TERRAIN", options: { color: HORIZON } }], "hook-terrain");
-  mono(s, `${team.event.toUpperCase()}  ·  ${team.challenge_title}`, { x: 0.8, y: 6.85, w: 8.6, h: 0.3, color: isPH(team.challenge_title) ? CAUTION : MUTED, objectName: "hook-event" });
+  mono(s, `TEAM ${team.team_name.toUpperCase()}  ·  ${team.event.toUpperCase()}  ·  ${team.challenge_title}`, { x: 0.8, y: 6.85, w: 11.5, h: 0.3, color: isPH(team.challenge_title) ? CAUTION : MUTED, objectName: "hook-event" });
   step(1, "auto", ["title-1"], 300, 900);
   step(1, "auto", ["hook-sun"], 500, 600);
   step(1, "auto", ["hook-earth"], 450, 600);
@@ -518,6 +518,7 @@ pres.addSection({ title: "Close" });
   T(s, "lunar south-pole site analysis", { x: 2.2, y: 2.85, w: 8.93, h: 0.4, fontFace: MONO, fontSize: 17.5, color: FGPRESS, align: "center", charSpacing: 2, objectName: "end-sub" });
   const names = team.members.map((m) => m.name).join(", ");
   T(s, [
+    { text: `TEAM ${team.team_name.toUpperCase()}`, options: { breakLine: true, bold: true } },
     { text: `PROJECT BY  ${names}`, options: { breakLine: true } },
     { text: `${team.event}  /  ${team.url}`, options: { breakLine: true } },
     { text: "Independent project. Not endorsed by NASA.", options: { color: MUTED } },
